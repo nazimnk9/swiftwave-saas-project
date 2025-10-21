@@ -8,21 +8,31 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Lock, Eye, EyeOff, Moon, Sun } from "lucide-react"
 import Image from "next/image"
+import axios from "axios"
+import { BASE_URL } from "@/lib/baseUrl"
+import { LoaderOverlay } from "./loader-overlay"
+import { ToastNotification } from "./toast-notification"
 
 interface PasswordSetupPageProps {
   email: string
   onComplete: () => void
   toggleTheme: () => void
   isDark: boolean
+  token?: string
 }
 
-export default function PasswordSetupPage({ email, onComplete, toggleTheme, isDark }: PasswordSetupPageProps) {
+export default function PasswordSetupPage({ email, onComplete, toggleTheme, isDark, token }: PasswordSetupPageProps) {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [toast, setToast] = useState<{
+    title: string
+    description: string
+    variant: "default" | "destructive"
+  } | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,14 +54,60 @@ export default function PasswordSetupPage({ email, onComplete, toggleTheme, isDa
     }
 
     setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoading(false)
-    onComplete()
+    try {
+      if (token) {
+        const response = await axios.put(`${BASE_URL}/auth/verify/${token}`, {
+          password: password,
+        })
+        console.log("[v0] Password verification successful:", response.data)
+      }
+      setIsLoading(false)
+
+      setToast({
+        title: "Success",
+        description: "Your password has been set successfully! Registration is complete.",
+        variant: "default",
+      })
+
+      setTimeout(() => {
+        onComplete()
+      }, 1500)
+    } catch (err) {
+      console.log("[v0] Password verification error:", err)
+      setIsLoading(false)
+
+      if (axios.isAxiosError(err)) {
+        const errorMessage = err.response?.data?.message || "Password setup failed. Please try again."
+        setError(errorMessage)
+        setToast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        })
+      } else {
+        setError("An error occurred. Please try again.")
+        setToast({
+          title: "Error",
+          description: "An error occurred. Please try again.",
+          variant: "destructive",
+        })
+      }
+    }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
+      <LoaderOverlay isLoading={isLoading} message="Completing registration..." />
+
+      {toast && (
+        <ToastNotification
+          title={toast.title}
+          description={toast.description}
+          variant={toast.variant}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       {/* Theme Toggle */}
       <button
         onClick={toggleTheme}

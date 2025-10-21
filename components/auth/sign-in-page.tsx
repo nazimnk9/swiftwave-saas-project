@@ -8,6 +8,10 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mail, Lock, Eye, EyeOff, Moon, Sun } from "lucide-react"
 import Image from "next/image"
+import axios from "axios"
+import { BASE_URL } from "@/lib/baseUrl"
+import { LoaderOverlay } from "./loader-overlay"
+import { ToastNotification } from "./toast-notification"
 
 interface SignInPageProps {
   onSignIn: () => void
@@ -22,6 +26,11 @@ export default function SignInPage({ onSignIn, onSignUpClick, toggleTheme, isDar
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [toast, setToast] = useState<{
+    title: string
+    description: string
+    variant: "default" | "destructive"
+  } | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,14 +42,60 @@ export default function SignInPage({ onSignIn, onSignUpClick, toggleTheme, isDar
     }
 
     setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoading(false)
-    onSignIn()
+    try {
+      const response = await axios.post(`${BASE_URL}/token`, {
+        email: email,
+        password: password,
+      })
+
+      console.log("[v0] Sign in successful:", response.data)
+      setIsLoading(false)
+
+      setToast({
+        title: "Success",
+        description: "You have been signed in successfully!",
+        variant: "default",
+      })
+
+      setTimeout(() => {
+        onSignIn()
+      }, 1500)
+    } catch (err) {
+      console.log("[v0] Sign in error:", err)
+      setIsLoading(false)
+
+      if (axios.isAxiosError(err)) {
+        const errorMessage = err.response?.data?.message || "Sign in failed. Please try again."
+        setError(errorMessage)
+        setToast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        })
+      } else {
+        setError("An error occurred. Please try again.")
+        setToast({
+          title: "Error",
+          description: "An error occurred. Please try again.",
+          variant: "destructive",
+        })
+      }
+    }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
+      <LoaderOverlay isLoading={isLoading} message="Signing in..." />
+
+      {toast && (
+        <ToastNotification
+          title={toast.title}
+          description={toast.description}
+          variant={toast.variant}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       {/* Theme Toggle */}
       <button
         onClick={toggleTheme}
@@ -147,7 +202,7 @@ export default function SignInPage({ onSignIn, onSignUpClick, toggleTheme, isDar
                 variant="outline"
                 onClick={onSignUpClick}
                 disabled={isLoading}
-                className="w-full h-11 border-2 border-border hover:bg-muted text-foreground font-semibold bg-transparent"
+                className="w-full h-11 border-2 border-border hover:bg-primary/10 dark:hover:bg-primary/20 text-foreground font-semibold bg-transparent transition-colors"
               >
                 Create Account
               </Button>
