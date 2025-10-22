@@ -307,6 +307,7 @@ export default function Home() {
     localStorage.removeItem("authToken")
     localStorage.removeItem("userEmail")
     localStorage.removeItem("userPassword")
+    //router.push("/")
     setCurrentStep("signin")
   }
 
