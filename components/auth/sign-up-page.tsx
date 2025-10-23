@@ -1643,7 +1643,8 @@ export default function SignUpPage({ onSignInClick, toggleTheme, isDark }: SignU
     company: "",
   })
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
+  const [generalError, setGeneralError] = useState("")
   const [toast, setToast] = useState<{
     title: string
     description: string
@@ -1658,31 +1659,32 @@ export default function SignUpPage({ onSignInClick, toggleTheme, isDark }: SignU
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError("")
+    setGeneralError("")
+    setFieldErrors({})
 
     // Validation
     if (!formData.firstName.trim()) {
-      setError("First name is required")
+      setGeneralError("First name is required")
       return
     }
     if (!formData.lastName.trim()) {
-      setError("Last name is required")
+      setGeneralError("Last name is required")
       return
     }
     if (!formData.email) {
-      setError("Email is required")
+      setGeneralError("Email is required")
       return
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setError("Please enter a valid email")
+      setGeneralError("Please enter a valid email")
       return
     }
     if (!formData.phone.trim()) {
-      setError("Phone number is required")
+      setGeneralError("Phone number is required")
       return
     }
     if (!formData.company.trim()) {
-      setError("Company name is required")
+      setGeneralError("Company name is required")
       return
     }
 
@@ -1720,18 +1722,36 @@ export default function SignUpPage({ onSignInClick, toggleTheme, isDark }: SignU
       setIsLoading(false)
 
       if (axios.isAxiosError(err)) {
-        const errorMessage = err.response?.data?.message || "Registration failed. Please try again."
-        setError(errorMessage)
+        if (err.response?.data && typeof err.response.data === "object") {
+          const errorData = err.response.data as Record<string, string[]>
+          // Check if response contains field-level errors
+          if (errorData.email || errorData.phone || errorData.first_name || errorData.last_name || errorData.org_name) {
+            setFieldErrors({
+              email: errorData.email || [],
+              phone: errorData.phone || [],
+              firstName: errorData.first_name || [],
+              lastName: errorData.last_name || [],
+              company: errorData.org_name || [],
+            })
+            setGeneralError("Please fix the errors below")
+          } else {
+            const errorMessage = err.response?.data?.message || "Registration failed. Please try again."
+            setGeneralError(errorMessage)
+          }
+        } else {
+          const errorMessage = err.response?.data?.message || "Registration failed. Please try again."
+          setGeneralError(errorMessage)
+        }
         setToast({
           title: "Error",
-          description: errorMessage,
+          description: `${generalError}`,
           variant: "destructive",
         })
       } else {
-        setError("An error occurred. Please try again.")
+        setGeneralError("An error occurred. Please try again.")
         setToast({
           title: "Error",
-          description: "An error occurred. Please try again.",
+          description: `${generalError}`,
           variant: "destructive",
         })
       }
@@ -1793,9 +1813,12 @@ export default function SignUpPage({ onSignInClick, toggleTheme, isDark }: SignU
                       value={formData.firstName}
                       onChange={handleChange}
                       disabled={isLoading}
-                      className="pl-10 h-11 border-2 border-border focus:border-primary"
+                      className={`pl-10 h-11 border-2 ${fieldErrors.firstName ? "border-destructive" : "border-border"} focus:border-primary`}
                     />
                   </div>
+                  {fieldErrors.firstName && (
+                    <p className="text-xs text-destructive">{fieldErrors.firstName.join(", ")}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">Last Name</label>
@@ -1808,9 +1831,12 @@ export default function SignUpPage({ onSignInClick, toggleTheme, isDark }: SignU
                       value={formData.lastName}
                       onChange={handleChange}
                       disabled={isLoading}
-                      className="pl-10 h-11 border-2 border-border focus:border-primary"
+                      className={`pl-10 h-11 border-2 ${fieldErrors.lastName ? "border-destructive" : "border-border"} focus:border-primary`}
                     />
                   </div>
+                  {fieldErrors.lastName && (
+                    <p className="text-xs text-destructive">{fieldErrors.lastName.join(", ")}</p>
+                  )}
                 </div>
               </div>
 
@@ -1826,9 +1852,10 @@ export default function SignUpPage({ onSignInClick, toggleTheme, isDark }: SignU
                     value={formData.email}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className="pl-10 h-11 border-2 border-border focus:border-primary"
+                    className={`pl-10 h-11 border-2 ${fieldErrors.email ? "border-destructive" : "border-border"} focus:border-primary`}
                   />
                 </div>
+                {fieldErrors.email && <p className="text-xs text-destructive">{fieldErrors.email.join(", ")}</p>}
               </div>
 
               {/* Phone Field */}
@@ -1843,9 +1870,10 @@ export default function SignUpPage({ onSignInClick, toggleTheme, isDark }: SignU
                     value={formData.phone}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className="pl-10 h-11 border-2 border-border focus:border-primary"
+                    className={`pl-10 h-11 border-2 ${fieldErrors.phone ? "border-destructive" : "border-border"} focus:border-primary`}
                   />
                 </div>
+                {fieldErrors.phone && <p className="text-xs text-destructive">{fieldErrors.phone.join(", ")}</p>}
               </div>
 
               <div className="space-y-2">
@@ -1859,14 +1887,15 @@ export default function SignUpPage({ onSignInClick, toggleTheme, isDark }: SignU
                     value={formData.company}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className="pl-10 h-11 border-2 border-border focus:border-primary"
+                    className={`pl-10 h-11 border-2 ${fieldErrors.company ? "border-destructive" : "border-border"} focus:border-primary`}
                   />
                 </div>
+                {fieldErrors.company && <p className="text-xs text-destructive">{fieldErrors.company.join(", ")}</p>}
               </div>
 
-              {error && (
+              {generalError && (
                 <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm">
-                  {error}
+                  {generalError}
                 </div>
               )}
 

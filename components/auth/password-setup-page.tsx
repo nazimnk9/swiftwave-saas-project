@@ -521,18 +521,29 @@ export default function PasswordSetupPage({ email, toggleTheme, isDark, token }:
       setIsLoading(false)
 
       if (axios.isAxiosError(err)) {
-        const errorMessage = err.response?.data?.message || "Password setup failed. Please try again."
-        setError(errorMessage)
+        if (err.response?.data && typeof err.response.data === "object") {
+          const errorData = err.response.data as Record<string, string>
+          // Handle detail error message (e.g., "User is already active or token is not valid")
+          if (errorData.detail) {
+            setError(errorData.detail)
+          } else {
+            const errorMessage = err.response?.data?.message || "Password setup failed. Please try again."
+            setError(errorMessage)
+          }
+        } else {
+          const errorMessage = err.response?.data?.message || "Password setup failed. Please try again."
+          setError(errorMessage)
+        }
         setToast({
           title: "Error",
-          description: errorMessage,
+          description: error || "Password setup failed",
           variant: "destructive",
         })
       } else {
         setError("An error occurred. Please try again.")
         setToast({
           title: "Error",
-          description: "An error occurred. Please try again.",
+          description: error || "An error occurred. Please try again.",
           variant: "destructive",
         })
       }

@@ -470,7 +470,8 @@ export default function SignInPage({onSignIn, onSignUpClick, toggleTheme, isDark
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
+  const [generalError, setGeneralError] = useState("")
   const [toast, setToast] = useState<{
     title: string
     description: string
@@ -480,10 +481,11 @@ export default function SignInPage({onSignIn, onSignUpClick, toggleTheme, isDark
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError("")
+    setGeneralError("")
+    setFieldErrors({})
 
     if (!email || !password) {
-      setError("Email and password are required")
+      setGeneralError("Email and password are required")
       return
     }
 
@@ -518,18 +520,38 @@ export default function SignInPage({onSignIn, onSignUpClick, toggleTheme, isDark
       setIsLoading(false)
 
       if (axios.isAxiosError(err)) {
-        const errorMessage = err.response?.data?.message || "Sign in failed. Please try again."
-        setError(errorMessage)
+        if (err.response?.data && typeof err.response.data === "object") {
+          const errorData = err.response.data as Record<string, string[] | string>
+          // Check if response contains field-level errors
+          if (errorData.email || errorData.password) {
+            setFieldErrors({
+              email: Array.isArray(errorData.email) ? errorData.email : [],
+              password: Array.isArray(errorData.password) ? errorData.password : [],
+            })
+            setGeneralError("Please check the form for errors")
+          } else if (errorData.detail) {
+            // Handle detail error message (e.g., "No active account found with the given credentials")
+            setGeneralError(
+              typeof errorData.detail === "string" ? errorData.detail : "Sign in failed. Please try again.",
+            )
+          } else {
+            const errorMessage = err.response?.data?.message || "Sign in failed. Please try again."
+            setGeneralError(errorMessage)
+          }
+        } else {
+          const errorMessage = err.response?.data?.message || "Sign in failed. Please try again."
+          setGeneralError(errorMessage)
+        }
         setToast({
           title: "Error",
-          description: errorMessage,
+          description: `${generalError}`,
           variant: "destructive",
         })
       } else {
-        setError("An error occurred. Please try again.")
+        setGeneralError("An error occurred. Please try again.")
         setToast({
           title: "Error",
-          description: "An error occurred. Please try again.",
+          description: `${generalError}`,
           variant: "destructive",
         })
       }
@@ -586,11 +608,22 @@ export default function SignInPage({onSignIn, onSignUpClick, toggleTheme, isDark
                     type="email"
                     placeholder="you@example.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value)
+                      if (fieldErrors.email) {
+                        setFieldErrors((prev) => {
+                          const updated = { ...prev }
+                          delete updated.email
+                          return updated
+                        })
+                      }
+                    }}
+                    
                     disabled={isLoading}
                     className="pl-10 h-11 border-2 border-border focus:border-primary"
                   />
                 </div>
+                {fieldErrors.email && <p className="text-xs text-destructive">{fieldErrors.email.join(", ")}</p>}
               </div>
 
               <div className="space-y-2">
@@ -606,7 +639,16 @@ export default function SignInPage({onSignIn, onSignUpClick, toggleTheme, isDark
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      if (fieldErrors.password) {
+                        setFieldErrors((prev) => {
+                          const updated = { ...prev }
+                          delete updated.password
+                          return updated
+                        })
+                      }
+                    }}
                     disabled={isLoading}
                     className="pl-10 pr-10 h-11 border-2 border-border focus:border-primary"
                   />
@@ -618,11 +660,12 @@ export default function SignInPage({onSignIn, onSignUpClick, toggleTheme, isDark
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                {fieldErrors.password && <p className="text-xs text-destructive">{fieldErrors.password.join(", ")}</p>}
               </div>
 
-              {error && (
+              {generalError && (
                 <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm">
-                  {error}
+                  {generalError}
                 </div>
               )}
 
