@@ -401,7 +401,7 @@ export function BusinessSettingsPage() {
     try {
       console.log("[v0] Starting integration for platform:", platform.name)
 
-      const oauthUrl = `https://id.jobadder.com/connect/authorize?response_type=${encodeURIComponent(platform.response_type)}&client_id=${encodeURIComponent(platform.client_id)}&scope=${encodeURIComponent(platform.scope)}&redirect_uri=${encodeURIComponent(platform.redirect_uri)}&state=${encodeURIComponent(platform.state)}`
+      const oauthUrl = `https://id.jobadder.com/connect/authorize?response_type=${encodeURIComponent(platform.response_type)}&client_id=${encodeURIComponent(platform.client_id)}&scope=${encodeURIComponent(platform.scope)}&redirect_uri=${encodeURIComponent(platform.redirect_uri)}&state=${encodeURIComponent(platform.state)}&prompt=login`
 
       console.log("[v0] Redirecting to OAuth URL:", oauthUrl)
 
