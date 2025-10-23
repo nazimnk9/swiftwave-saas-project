@@ -344,7 +344,7 @@ export function BusinessSettingsPage() {
 
         // Post the authorization code to backend
         const response = await axios.post(
-          `${BASE_URL}/organizations/platform/connect/`,
+          `${BASE_URL}/organizations/platform/connect`,
           {
             code: code,
             redirect_uri: redirectUri,
