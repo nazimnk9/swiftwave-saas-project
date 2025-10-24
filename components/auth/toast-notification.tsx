@@ -5,7 +5,7 @@ import { X } from "lucide-react"
 
 interface ToastNotificationProps {
   title: string
-  description: string
+  description: string | React.ReactNode
   variant?: "default" | "destructive"
   onClose: () => void
   autoClose?: boolean

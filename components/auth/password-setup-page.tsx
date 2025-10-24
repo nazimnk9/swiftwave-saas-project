@@ -482,20 +482,20 @@ export default function PasswordSetupPage({ email, toggleTheme, isDark, token }:
     e.preventDefault()
     setError("")
 
-    if (!password || !confirmPassword) {
-      setError("Both password fields are required")
-      return
-    }
+    // if (!password || !confirmPassword) {
+    //   setError("Both password fields are required")
+    //   return
+    // }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters")
-      return
-    }
+    // if (password.length < 8) {
+    //   setError("Password must be at least 8 characters")
+    //   return
+    // }
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      return
-    }
+    // if (password !== confirmPassword) {
+    //   setError("Passwords do not match")
+    //   return
+    // }
 
     setIsLoading(true)
     try {
@@ -543,7 +543,7 @@ export default function PasswordSetupPage({ email, toggleTheme, isDark, token }:
         setError("An error occurred. Please try again.")
         setToast({
           title: "Error",
-          description: error || "An error occurred. Please try again.",
+          description: "An error occurred. Please try again.",
           variant: "destructive",
         })
       }
@@ -575,12 +575,7 @@ export default function PasswordSetupPage({ email, toggleTheme, isDark, token }:
         {/* Logo */}
         <div className="flex justify-center mb-12">
           <div className="relative w-32 h-32">
-            <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-amAg8THqjWHBmPKqbcD6xZh8k5ZJlf.png"
-              alt="SwiftWave.AI Logo"
-              fill
-              className="object-contain"
-            />
+            <Image src="/logo.png" alt="SwiftWave.AI Logo" fill className="object-contain" />
           </div>
         </div>
 

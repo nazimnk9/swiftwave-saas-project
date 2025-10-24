@@ -152,6 +152,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import Link from "next/link"
+import { getCookie, deleteCookie, hasCookie } from 'cookies-next'
+
 
 interface TopbarProps {
   onMenuClick: () => void
@@ -172,6 +174,11 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
   })
 
   useEffect(() => {
+//     // Get a cookie value
+// const authToken = getCookie('authToken')
+
+// // Check if a cookie exists
+// const isLoggedIn = hasCookie('authToken')
     const firstName = localStorage.getItem("userFirstName") || ""
     const lastName = localStorage.getItem("userLastName") || ""
     const email = localStorage.getItem("userEmail") || ""
@@ -188,6 +195,8 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
   ]
 
   const handleSignOut = () => {
+    deleteCookie('authToken')
+    deleteCookie('userEmail')
     localStorage.removeItem("authToken")
     localStorage.removeItem("userEmail")
     localStorage.removeItem("userPassword")
@@ -200,7 +209,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
   const displayName = userInfo.firstName && userInfo.lastName ? `${userInfo.firstName} ${userInfo.lastName}` : "User"
 
   return (
-    <div className="h-40 bg-card border-b border-border flex items-center justify-between px-4 md:px-6 gap-4">
+    <div className="h-30 bg-card border-b border-border flex items-center justify-between px-4 md:px-6 gap-4">
       {/* Left Section */}
       <div className="flex items-center gap-4 flex-1">
         <Button variant="ghost" size="icon" onClick={onMenuClick} className="md:hidden">
@@ -210,7 +219,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
         <div className="hidden md:flex items-center gap-2">
           <div className="relative w-32 h-32">
             <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-amAg8THqjWHBmPKqbcD6xZh8k5ZJlf.png"
+              src="/logo.png"
               alt="SwiftWave.AI Logo"
               fill
               className="object-contain"
@@ -218,7 +227,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
           </div>
         </div>
 
-        <div className="hidden md:flex flex-1 max-w-md">
+        <div className="hidden md:flex flex-1 max-w-md" style={{marginLeft: "50px"}}>
           <div className="relative w-full">
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
             <Input placeholder="Search jobs, candidates..." className="pl-10 h-10 border-border focus:border-primary" />

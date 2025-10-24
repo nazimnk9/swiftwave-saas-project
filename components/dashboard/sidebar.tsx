@@ -940,11 +940,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         }`}
       >
         {/* Logo and Close Button */}
-        <div className="p-8 border-b border-sidebar-border flex items-center justify-between min-h-40">
+        <div className="p-8 border-b border-sidebar-border flex items-center justify-between h-30">
           <Link href="/dashboard" onClick={handleCloseOnMobile}>
             <div className="relative w-32 h-32">
               <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-amAg8THqjWHBmPKqbcD6xZh8k5ZJlf.png"
+                src="/logo.png"
                 alt="SwiftWave.AI"
                 fill
                 className="object-contain"

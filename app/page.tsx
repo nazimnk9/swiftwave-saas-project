@@ -256,6 +256,88 @@
 //   )
 // }
 
+// "use client"
+
+// import { useState, useEffect } from "react"
+// import SignUpPage from "@/components/auth/sign-up-page"
+// import SignInPage from "@/components/auth/sign-in-page"
+// import PasswordSetupPage from "@/components/auth/password-setup-page"
+// import Dashboard from "@/components/dashboard/dashboard"
+// import { ThemeProvider } from "@/components/theme-provider"
+// import { useRouter } from "next/navigation"
+
+// type AuthStep = "signin" | "signup" | "password-setup" | "dashboard"
+
+// export default function Home() {
+//   const [currentStep, setCurrentStep] = useState<AuthStep>("signin")
+//   const [isDark, setIsDark] = useState(false)
+//   const [isLoading, setIsLoading] = useState(true)
+//   const router = useRouter()
+
+//   useEffect(() => {
+//     const savedTheme = localStorage.getItem("theme")
+//     if (savedTheme === "dark") {
+//       setIsDark(true)
+//       document.documentElement.classList.add("dark")
+//     }
+
+//     const authToken = localStorage.getItem("authToken")
+//     if (authToken) {
+//       setCurrentStep("dashboard")
+//     }
+//     setIsLoading(false)
+//   }, [])
+
+//   const toggleTheme = () => {
+//     setIsDark(!isDark)
+//     if (!isDark) {
+//       document.documentElement.classList.add("dark")
+//       localStorage.setItem("theme", "dark")
+//     } else {
+//       document.documentElement.classList.remove("dark")
+//       localStorage.setItem("theme", "light")
+//     }
+//   }
+
+//   const handleSignIn = () => {
+//      setCurrentStep("dashboard")
+//    }
+
+//   const handleLogout = () => {
+//     localStorage.removeItem("authToken")
+//     localStorage.removeItem("userEmail")
+//     localStorage.removeItem("userPassword")
+//     //router.push("/")
+//     setCurrentStep("signin")
+//   }
+
+//   if (isLoading) {
+//     return null
+//   }
+
+//   return (
+//     <ThemeProvider>
+//       <div className={isDark ? "dark" : ""}>
+//         {currentStep === "signin" && (
+//           <SignInPage onSignIn={handleSignIn} onSignUpClick={() => setCurrentStep("signup")} toggleTheme={toggleTheme} isDark={isDark} />
+//         )}
+//         {currentStep === "signup" && (
+//           <SignUpPage onSignInClick={() => setCurrentStep("signin")} toggleTheme={toggleTheme} isDark={isDark} />
+//         )}
+//         {currentStep === "password-setup" && (
+//           <PasswordSetupPage
+//             email={localStorage.getItem("userEmail") || ""}
+//             toggleTheme={toggleTheme}
+//             isDark={isDark}
+//           />
+//         )}
+//         {currentStep === "dashboard" && <Dashboard onLogout={handleLogout} toggleTheme={toggleTheme} isDark={isDark} />}
+//       </div>
+//     </ThemeProvider>
+//   )
+// }
+
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -283,10 +365,10 @@ export default function Home() {
 
     const authToken = localStorage.getItem("authToken")
     if (authToken) {
-      setCurrentStep("dashboard")
+      router.push("/dashboard")
     }
     setIsLoading(false)
-  }, [])
+  }, [router])
 
   const toggleTheme = () => {
     setIsDark(!isDark)
@@ -299,15 +381,10 @@ export default function Home() {
     }
   }
 
-  const handleSignIn = () => {
-     setCurrentStep("dashboard")
-   }
-
   const handleLogout = () => {
     localStorage.removeItem("authToken")
     localStorage.removeItem("userEmail")
     localStorage.removeItem("userPassword")
-    //router.push("/")
     setCurrentStep("signin")
   }
 
@@ -319,7 +396,7 @@ export default function Home() {
     <ThemeProvider>
       <div className={isDark ? "dark" : ""}>
         {currentStep === "signin" && (
-          <SignInPage onSignIn={handleSignIn} onSignUpClick={() => setCurrentStep("signup")} toggleTheme={toggleTheme} isDark={isDark} />
+          <SignInPage onSignUpClick={() => setCurrentStep("signup")} toggleTheme={toggleTheme} isDark={isDark} />
         )}
         {currentStep === "signup" && (
           <SignUpPage onSignInClick={() => setCurrentStep("signin")} toggleTheme={toggleTheme} isDark={isDark} />
