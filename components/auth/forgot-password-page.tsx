@@ -380,7 +380,7 @@ export default function ForgotPasswordPage({ onBackClick, toggleTheme, isDark }:
 
               <div className="space-y-3 text-sm text-muted-foreground">
                 <p>{successMessage}</p>
-                <p>Click the link in the email to reset your password. The link will expire in 24 hours.</p>
+                <p>Click the link in the email to reset your password. The link will expire in 24 hours. Check spam folder if you don't see it.</p>
               </div>
 
               <Button
