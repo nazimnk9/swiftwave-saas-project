@@ -344,11 +344,13 @@ import { useState, useEffect } from "react"
 import SignUpPage from "@/components/auth/sign-up-page"
 import SignInPage from "@/components/auth/sign-in-page"
 import PasswordSetupPage from "@/components/auth/password-setup-page"
+import EmailConfirmationPage from "@/components/auth/email-confirmation-page"
+import ForgotPasswordPage from "@/components/auth/forgot-password-page"
 import Dashboard from "@/components/dashboard/dashboard"
 import { ThemeProvider } from "@/components/theme-provider"
 import { useRouter } from "next/navigation"
 
-type AuthStep = "signin" | "signup" | "password-setup" | "dashboard"
+type AuthStep = "signin" | "signup" | "password-setup" | "dashboard" | "email-confirmation" | "forgot-password"
 
 export default function Home() {
   const [currentStep, setCurrentStep] = useState<AuthStep>("signin")
@@ -396,10 +398,31 @@ export default function Home() {
     <ThemeProvider>
       <div className={isDark ? "dark" : ""}>
         {currentStep === "signin" && (
-          <SignInPage onSignUpClick={() => setCurrentStep("signup")} toggleTheme={toggleTheme} isDark={isDark} />
+          <SignInPage
+            onSignUpClick={() => setCurrentStep("signup")}
+            onForgotClick={() => setCurrentStep("forgot-password")}
+            toggleTheme={toggleTheme}
+            isDark={isDark}
+          />
         )}
         {currentStep === "signup" && (
-          <SignUpPage onSignInClick={() => setCurrentStep("signin")} toggleTheme={toggleTheme} isDark={isDark} />
+          <SignUpPage
+            onSignInClick={() => setCurrentStep("signin")}
+            onSignUpSuccess={() => setCurrentStep("email-confirmation")}
+            toggleTheme={toggleTheme}
+            isDark={isDark}
+          />
+        )}
+        {currentStep === "email-confirmation" && (
+          <EmailConfirmationPage
+            email={localStorage.getItem("userEmail") || ""}
+            onSignInClick={() => setCurrentStep("signin")}
+            toggleTheme={toggleTheme}
+            isDark={isDark}
+          />
+        )}
+        {currentStep === "forgot-password" && (
+          <ForgotPasswordPage onBackClick={() => setCurrentStep("signin")} toggleTheme={toggleTheme} isDark={isDark} />
         )}
         {currentStep === "password-setup" && (
           <PasswordSetupPage

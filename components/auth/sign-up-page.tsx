@@ -1962,6 +1962,7 @@ import { ToastNotification } from "./toast-notification"
 
 interface SignUpPageProps {
   onSignInClick: () => void
+  onSignUpSuccess: () => void
   toggleTheme: () => void
   isDark: boolean
 }
@@ -1974,7 +1975,7 @@ export interface UserData {
   company: string
 }
 
-export default function SignUpPage({ onSignInClick, toggleTheme, isDark }: SignUpPageProps) {
+export default function SignUpPage({ onSignInClick,onSignUpSuccess, toggleTheme, isDark }: SignUpPageProps) {
   const [formData, setFormData] = useState<UserData>({
     firstName: "",
     lastName: "",
@@ -2070,7 +2071,7 @@ export default function SignUpPage({ onSignInClick, toggleTheme, isDark }: SignU
 
       setTimeout(() => {
         router.push("/")
-        onSignInClick()
+        onSignUpSuccess()
       }, 1500)
     } catch (err) {
       console.log("[v0] Registration error:", err)
@@ -2164,7 +2165,7 @@ export default function SignUpPage({ onSignInClick, toggleTheme, isDark }: SignU
         <div className="flex justify-center mb-12">
           <div className="relative w-32 h-32">
             <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-amAg8THqjWHBmPKqbcD6xZh8k5ZJlf.png"
+              src="/logo.png"
               alt="SwiftWave.AI Logo"
               fill
               className="object-contain"

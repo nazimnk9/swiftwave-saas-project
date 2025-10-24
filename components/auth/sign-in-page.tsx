@@ -988,11 +988,12 @@ import { setCookie } from 'cookies-next'; // or use document.cookie
 
 interface SignInPageProps {
   onSignUpClick: () => void
+  onForgotClick: () => void
   toggleTheme: () => void
   isDark: boolean
 }
 
-export default function SignInPage({ onSignUpClick, toggleTheme, isDark }: SignInPageProps) {
+export default function SignInPage({ onSignUpClick,onForgotClick, toggleTheme, isDark }: SignInPageProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -1129,7 +1130,7 @@ export default function SignInPage({ onSignUpClick, toggleTheme, isDark }: SignI
         <div className="flex justify-center mb-12">
           <div className="relative w-32 h-32">
             <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-amAg8THqjWHBmPKqbcD6xZh8k5ZJlf.png"
+              src="/logo.png"
               alt="SwiftWave.AI Logo"
               fill
               className="object-contain"
@@ -1176,7 +1177,11 @@ export default function SignInPage({ onSignUpClick, toggleTheme, isDark }: SignI
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium text-foreground">Password</label>
-                  <button type="button" className="text-sm text-primary hover:text-primary/80 font-medium">
+                  <button
+                    type="button"
+                    onClick={onForgotClick}
+                    className="text-sm text-primary hover:text-primary/80 font-medium"
+                  >
                     Forgot?
                   </button>
                 </div>
