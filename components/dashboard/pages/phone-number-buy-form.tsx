@@ -883,10 +883,10 @@ export function PhoneNumberBuyForm() {
     e.preventDefault()
     setError("")
 
-    if (!formData.bundle_id || !formData.address_id) {
-      setError("Please select both Bundle and Address")
-      return
-    }
+    // if (!formData.bundle_id || !formData.address_id) {
+    //   setError("Please select both Bundle and Address")
+    //   return
+    // }
 
     try {
       setIsLoading(true)

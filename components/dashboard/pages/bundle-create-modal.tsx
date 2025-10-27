@@ -45,10 +45,10 @@ export function BundleCreateModal({ onClose, onBundleCreated }: BundleCreateModa
     e.preventDefault()
     setError("")
 
-    if (!formData.friendly_name || !formData.email) {
-      setError("Please fill in all required fields")
-      return
-    }
+    // if (!formData.friendly_name || !formData.email) {
+    //   setError("Please fill in all required fields")
+    //   return
+    // }
 
     try {
       setIsLoading(true)

@@ -295,10 +295,10 @@ export function AddressCreateModal({ onClose, onAddressCreated }: AddressCreateM
     e.preventDefault()
     setError("")
 
-    if (!formData.customer_name || !formData.street || !formData.city || !formData.region || !formData.postal_code) {
-      setError("Please fill in all required fields")
-      return
-    }
+    // if (!formData.customer_name || !formData.street || !formData.city || !formData.region || !formData.postal_code) {
+    //   setError("Please fill in all required fields")
+    //   return
+    // }
 
     try {
       setIsLoading(true)
