@@ -163,7 +163,7 @@ export function NumberListPage() {
                           {number.voice_capable ? (
                             <CheckCircle2 className="w-5 h-5 text-green-500" />
                           ) : (
-                            <XCircle className="w-5 h-5 text-muted-foreground" />
+                            <XCircle className="w-5 h-5 text-red-500" />
                           )}
                           <span className="text-sm font-medium text-foreground">Voice</span>
                         </div>
@@ -171,7 +171,7 @@ export function NumberListPage() {
                           {number.sms_capable ? (
                             <CheckCircle2 className="w-5 h-5 text-green-500" />
                           ) : (
-                            <XCircle className="w-5 h-5 text-muted-foreground" />
+                            <XCircle className="w-5 h-5 text-red-500" />
                           )}
                           <span className="text-sm font-medium text-foreground">SMS</span>
                         </div>
@@ -179,7 +179,7 @@ export function NumberListPage() {
                           {number.mms_capable ? (
                             <CheckCircle2 className="w-5 h-5 text-green-500" />
                           ) : (
-                            <XCircle className="w-5 h-5 text-muted-foreground" />
+                            <XCircle className="w-5 h-5 text-red-500" />
                           )}
                           <span className="text-sm font-medium text-foreground">MMS</span>
                         </div>
@@ -187,7 +187,7 @@ export function NumberListPage() {
                           {number.fax_capable ? (
                             <CheckCircle2 className="w-5 h-5 text-green-500" />
                           ) : (
-                            <XCircle className="w-5 h-5 text-muted-foreground" />
+                            <XCircle className="w-5 h-5 text-red-500" />
                           )}
                           <span className="text-sm font-medium text-foreground">Fax</span>
                         </div>
