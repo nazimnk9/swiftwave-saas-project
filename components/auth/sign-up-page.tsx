@@ -2309,7 +2309,7 @@ export default function SignUpPage({ onSignInClick,onSignUpSuccess, toggleTheme,
                 variant="outline"
                 onClick={onSignInClick}
                 disabled={isLoading}
-                className="w-full h-11 border-2 border-border hover:bg-primary/10 dark:hover:bg-primary/20 text-foreground font-semibold bg-transparent transition-colors"
+                className="w-full h-11 border-2 border-border hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 text-foreground font-semibold bg-transparent transition-colors"
               >
                 Sign In
               </Button>

@@ -385,7 +385,7 @@ export default function ForgotPasswordPage({ onBackClick, toggleTheme, isDark }:
 
               <Button
                 onClick={onBackClick}
-                className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base"
+                className="w-full h-11 bg-primary hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 text-primary-foreground font-semibold text-base"
               >
                 Back to Sign In
               </Button>
@@ -481,7 +481,7 @@ export default function ForgotPasswordPage({ onBackClick, toggleTheme, isDark }:
                 onClick={onBackClick}
                 disabled={isLoading}
                 variant="outline"
-                className="w-full h-11 border-2 border-border hover:bg-primary/10 dark:hover:bg-primary/20 text-foreground font-semibold bg-transparent transition-colors flex items-center justify-center gap-2"
+                className="w-full h-11 border-2 border-border hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 text-foreground font-semibold bg-transparent transition-colors flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to Sign In

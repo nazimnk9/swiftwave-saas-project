@@ -138,7 +138,7 @@ export default function EmailVerificationPage({
                 <p>Didn't receive the email?</p>
                 <button
                   type="button"
-                  className="text-primary hover:text-primary/80 font-medium mt-1"
+                  className="text-primary hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 font-medium mt-1"
                   disabled={isLoading}
                 >
                   Resend verification code
