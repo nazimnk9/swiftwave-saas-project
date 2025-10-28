@@ -216,7 +216,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
           <Menu className="w-5 h-5" />
         </Button>
 
-        <div className="hidden md:flex items-center gap-2">
+        {/* <div className="hidden md:flex items-center gap-2">
           <div className="relative w-32 h-32">
             <Image
               src="/logo.png"
@@ -225,7 +225,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
               className="object-contain"
             />
           </div>
-        </div>
+        </div> */}
 
         <div className="hidden md:flex flex-1 max-w-md" style={{marginLeft: "50px"}}>
           <div className="relative w-full">

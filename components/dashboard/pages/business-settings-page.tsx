@@ -1319,21 +1319,20 @@ export function BusinessSettingsPage() {
       )}
 
       <div className="p-4 md:p-8 space-y-8">
+        {/* Error Message */}
+        {error && (
+          <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive">{error}</div>
+        )}
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-foreground">Business Settings</h1>
           <p className="text-muted-foreground mt-2">Manage your business integrations and settings</p>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive">{error}</div>
-        )}
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column: Integration Cards */}
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-foreground">Integration Cards</h2>
+            {/* <h2 className="text-xl font-semibold text-foreground">Integration Cards</h2> */}
             {platforms.length === 0 && !isLoading && (
               <div className="text-center py-8 text-muted-foreground">No integrations available at the moment.</div>
             )}
@@ -1389,8 +1388,118 @@ export function BusinessSettingsPage() {
           </div>
 
           {/* Right Column: Phone Numbers Card */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <h2 className="text-xl font-semibold text-foreground">Phone Numbers</h2>
+            <Card className="border-2 border-border hover:shadow-lg hover:border-primary/50 transition-all duration-300 h-full">
+              <CardHeader>
+                <div className="flex items-start gap-3">
+                  <div className="p-2.5 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg">
+                    <Phone className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-lg">Manage Phone Numbers</CardTitle>
+                    <CardDescription className="mt-2">
+                      Manage the phone numbers used by your automations.
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex gap-3">
+                  <Button
+                    onClick={handleMyNumbers}
+                    variant="outline"
+                    className="flex-1 gap-2 border-primary/50 text-primary hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 font-semibold transition-all duration-200"
+                  >
+                    <Phone className="w-4 h-4" />
+                    My Numbers
+                  </Button>
+                  <Button
+                    onClick={handleBuyPhoneNumber}
+                    className="flex-1 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all duration-200"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Buy Phone Number
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div> */}
+        </div>
+      </div>
+      <div className="p-4 md:p-8 space-y-8">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Phone Numbers</h1>
+          {/* <p className="text-muted-foreground mt-2">Manage your business integrations and settings</p> */}
+        </div>
+
+        {/* Error Message */}
+        {/* {error && (
+          <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive">{error}</div>
+        )} */}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column: Integration Cards */}
+          {/* <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-foreground">Integration Cards</h2>
+            {platforms.length === 0 && !isLoading && (
+              <div className="text-center py-8 text-muted-foreground">No integrations available at the moment.</div>
+            )}
+
+            {platforms.map((platform) => (
+              <Card
+                key={platform.id}
+                className="border-2 border-border hover:shadow-lg hover:border-primary/50 transition-all duration-300 group h-full"
+              >
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className="p-2.5 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg group-hover:from-primary/30 group-hover:to-primary/20 transition-colors">
+                        <Zap className="w-6 h-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <CardTitle className="text-lg">{platform.name} Integration</CardTitle>
+                        <CardDescription className="mt-2">
+                          {platform.description ||
+                            `Connect your ${platform.name} account to enable automation features.`}
+                        </CardDescription>
+                        <div className="mt-3 flex items-center gap-2 flex-wrap">
+                          <span className="inline-block px-2.5 py-1 bg-green-500 rounded-full text-xs font-medium text-black-500">
+                            Status: {platform.status}
+                          </span>
+                          {platform.is_connected && (
+                            <span className="inline-block px-2.5 py-1 bg-green-500/20 text-green-700 dark:text-green-400 rounded-full flex items-center gap-1.5 text-xs font-medium">
+                              <Check className="w-3.5 h-3.5" />
+                              Connected
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    onClick={() => handleIntegrate(platform)}
+                    disabled={isIntegrating || platform.is_connected}
+                    className={`gap-2 ${
+                      platform.is_connected
+                        ? "bg-muted text-muted-foreground cursor-not-allowed"
+                        : "bg-primary hover:bg-primary/90 text-primary-foreground"
+                    } font-semibold transition-all duration-200`}
+                  >
+                    <Zap className="w-4 h-4" />
+                    {platform.is_connected ? "Already Integrated" : `Integrate ${platform.name} Account`}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div> */}
+
+          {/* Right Column: Phone Numbers Card */}
+          <div className="space-y-4">
+            {/* <h2 className="text-xl font-semibold text-foreground">Phone Numbers</h2> */}
             <Card className="border-2 border-border hover:shadow-lg hover:border-primary/50 transition-all duration-300 h-full">
               <CardHeader>
                 <div className="flex items-start gap-3">

@@ -84,10 +84,10 @@ export function JobsPage() {
             <h1 className="text-3xl font-bold text-foreground">Jobs</h1>
             <p className="text-muted-foreground mt-2">Manage and track all your job postings</p>
           </div>
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2 w-full md:w-auto">
+          {/* <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2 w-full md:w-auto">
             <Plus className="w-5 h-5" />
             Post New Job
-          </Button>
+          </Button> */}
         </div>
 
         {/* Search and Filter */}
