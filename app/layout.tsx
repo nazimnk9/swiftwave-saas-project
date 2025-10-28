@@ -10,7 +10,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "SwiftWave.AI - Less is More",
   description: "Professional SaaS Platform",
-  generator: "v0.app",
+  generator: "aryan",
 }
 
 export default function RootLayout({
