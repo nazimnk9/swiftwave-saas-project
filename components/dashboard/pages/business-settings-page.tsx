@@ -1519,14 +1519,14 @@ export function BusinessSettingsPage() {
                   <Button
                     onClick={handleMyNumbers}
                     variant="outline"
-                    className="flex-1 gap-2 border-primary/50 text-primary hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 font-semibold transition-all duration-200"
+                    className="gap-2 border-primary/50 text-primary hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 font-semibold transition-all duration-200"
                   >
                     <Phone className="w-4 h-4" />
                     My Numbers
                   </Button>
                   <Button
                     onClick={handleBuyPhoneNumber}
-                    className="flex-1 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all duration-200"
+                    className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all duration-200"
                   >
                     <Plus className="w-4 h-4" />
                     Buy Phone Number

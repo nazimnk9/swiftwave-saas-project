@@ -941,7 +941,7 @@ export function SettingsPage() {
                   <Button
                     onClick={() => setShowDeactivateModal(true)}
                     variant="outline"
-                    className="border-destructive/50 text-destructive hover:bg-destructive/50 font-semibold gap-2"
+                    className="border-2 border-border hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 text-foreground font-semibold transition-all duration-200"
                   >
                     <AlertTriangle className="w-4 h-4" />
                     Deactivate Profile
