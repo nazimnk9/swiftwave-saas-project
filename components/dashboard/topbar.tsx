@@ -238,7 +238,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
       {/* Right Section */}
       <div className="flex items-center gap-2">
         {/* Theme Toggle */}
-        <Button variant="ghost" size="icon" onClick={toggleTheme} className="hover:bg-muted">
+        <Button variant="ghost" size="icon" onClick={toggleTheme} className="hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50">
           {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </Button>
 
@@ -248,7 +248,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
             variant="ghost"
             size="icon"
             onClick={() => setShowNotifications(!showNotifications)}
-            className="hover:bg-muted relative"
+            className="hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 relative"
           >
             <Bell className="w-5 h-5" />
             <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />

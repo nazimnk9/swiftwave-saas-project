@@ -1356,7 +1356,7 @@ export function BusinessSettingsPage() {
                             `Connect your ${platform.name} account to enable automation features.`}
                         </CardDescription>
                         <div className="mt-3 flex items-center gap-2 flex-wrap">
-                          <span className="inline-block px-2.5 py-1 bg-muted rounded-full text-xs font-medium text-muted-foreground">
+                          <span className="inline-block px-2.5 py-1 bg-green-500 rounded-full text-xs font-medium text-black-500">
                             Status: {platform.status}
                           </span>
                           {platform.is_connected && (
