@@ -1621,7 +1621,7 @@ export function SettingsPage() {
       {showChangePasswordModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <Card className="w-full max-w-md border-2 border-border">
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 p-6">
               <CardTitle className="flex items-center gap-2">
                 <Lock className="w-5 h-5" />
                 Change Password
@@ -1689,7 +1689,7 @@ export function SettingsPage() {
       {showDeactivateModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <Card className="w-full max-w-md border-2 border-border">
-            <CardHeader className="bg-gradient-to-r from-destructive/5 to-destructive/10">
+            <CardHeader className="bg-gradient-to-r from-destructive/5 to-destructive/10 p-6">
               <CardTitle className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="w-5 h-5" />
                 Deactivate Profile
