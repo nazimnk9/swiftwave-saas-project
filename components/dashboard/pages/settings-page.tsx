@@ -1889,8 +1889,8 @@ export function SettingsPage() {
           description: settingsData.description,
           name: settingsData.name,
           //status: settingsData.status,
-          first_name: settingsData.firstName,
-          last_name: settingsData.lastName,
+          first_name_input: settingsData.firstName,
+          last_name_input: settingsData.lastName,
         },
         {
           headers: {
