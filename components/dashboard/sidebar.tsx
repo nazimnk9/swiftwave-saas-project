@@ -1158,6 +1158,16 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     //   icon: Mail,
     //   href: "/dashboard/messages",
     // },
+    {
+      id: "organization-users",
+      label: "Organization User",
+      icon: Users,
+      href: "/dashboard/user-list",
+      submenu: [
+        { label: "User List", href: "/dashboard/user-list" },
+        { label: "Invite List", href: "/dashboard/invite-list" },
+      ],
+    },
   ]
 
   const bottomItems = [
