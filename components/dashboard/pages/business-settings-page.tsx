@@ -1579,6 +1579,22 @@ interface PlatformResponse {
   results: Platform[]
 }
 
+interface CurrentOrg {
+  id: number
+  slug: string
+  email: string
+  phone: string
+  website: string | null
+  address: string | null
+  country: string | null
+  description: string | null
+  logo: object | null
+  name: string
+  status: string
+  first_name: string
+  last_name: string
+}
+
 export function BusinessSettingsPage() {
   const [platforms, setPlatforms] = useState<Platform[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -1589,10 +1605,12 @@ export function BusinessSettingsPage() {
     variant: "default" | "destructive"
   } | null>(null)
   const [isIntegrating, setIsIntegrating] = useState(false)
+  const [currentOrg, setCurrentOrg] = useState<CurrentOrg | null>(null)
   const router = useRouter()
 
   useEffect(() => {
     fetchPlatforms()
+    fetchCurrentOrganization()
     checkOAuthCallback()
   }, [])
 
@@ -1636,6 +1654,28 @@ export function BusinessSettingsPage() {
           variant: "destructive",
         })
       }
+    }
+  }
+
+
+  const fetchCurrentOrganization = async () => {
+    try {
+      const authToken = localStorage.getItem("authToken")
+
+      if (!authToken) {
+        return
+      }
+
+      const response = await axios.get(`${BASE_URL}/organizations/me`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      })
+
+      console.log("[v0] Current organization fetched:", response.data)
+      setCurrentOrg(response.data)
+    } catch (err) {
+      console.log("[v0] Error fetching current organization:", err)
     }
   }
 
@@ -1738,8 +1778,71 @@ export function BusinessSettingsPage() {
     }
   }
 
-  const handleBuyPhoneNumber = () => {
-    router.push("/dashboard/phone-number-buy")
+  const handleBuyPhoneNumber = async () => {
+    try {
+      if (!currentOrg) {
+        setToast({
+          title: "Error",
+          description: "Organization information not loaded",
+          variant: "destructive",
+        })
+        return
+      }
+
+      setIsIntegrating(true)
+      const authToken = localStorage.getItem("authToken")
+
+      if (!authToken) {
+        setToast({
+          title: "Error",
+          description: "Authentication token not found",
+          variant: "destructive",
+        })
+        setIsIntegrating(false)
+        return
+      }
+
+      const response = await axios.post(
+        `${BASE_URL}/phone_number/subaccounts/create`,
+        {
+          friendly_name: currentOrg.name,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        },
+      )
+
+      console.log("[v0] Subaccount created:", response.data)
+
+      setToast({
+        title: "Success",
+        description: "Subaccount created successfully",
+        variant: "default",
+      })
+
+      setIsIntegrating(false)
+      router.push("/dashboard/phone-number-buy")
+    } catch (err) {
+      console.log("[v0] Error creating subaccount:", err)
+      setIsIntegrating(false)
+
+      if (axios.isAxiosError(err)) {
+        const errorMessage = err.response?.data?.error || "Failed to create subaccount"
+        setToast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        })
+      } else {
+        setToast({
+          title: "Error",
+          description: "An error occurred while creating subaccount",
+          variant: "destructive",
+        })
+      }
+    }
   }
 
   const handleMyNumbers = () => {
