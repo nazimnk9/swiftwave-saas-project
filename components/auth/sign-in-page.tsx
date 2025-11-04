@@ -1140,7 +1140,7 @@ export default function SignInPage({ onSignUpClick,onForgotClick, toggleTheme, i
 
         <Card className="border-2 border-border shadow-lg">
           <CardHeader className="space-y-2 text-center">
-            <CardTitle className="text-3xl font-bold text-primary">Welcome Back</CardTitle>
+            <CardTitle className="text-3xl font-bold text-primary/50">Welcome Back</CardTitle>
             <CardDescription className="text-base">Sign in to your SwiftWave.AI account</CardDescription>
           </CardHeader>
 
@@ -1180,7 +1180,7 @@ export default function SignInPage({ onSignUpClick,onForgotClick, toggleTheme, i
                   <button
                     type="button"
                     onClick={onForgotClick}
-                    className="text-sm text-primary hover:text-primary/80 font-medium"
+                    className="text-sm text-primary hover:text-primary/50 font-medium"
                   >
                     Forgot?
                   </button>
@@ -1227,7 +1227,7 @@ export default function SignInPage({ onSignUpClick,onForgotClick, toggleTheme, i
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base relative"
+                className="w-full h-11 bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold text-base relative"
               >
                 {isLoading ? (
                   <>

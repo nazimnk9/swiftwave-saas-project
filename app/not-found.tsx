@@ -394,7 +394,7 @@ export default function NotFound() {
             <button
               onClick={handleGoHome}
               disabled={isLoading}
-              className="group relative inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary hover:bg-primary/90 dark:bg-primary/90 dark:hover:bg-primary text-primary-foreground font-semibold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+              className="group relative inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary/50 hover:bg-primary/70 dark:bg-primary/90 dark:hover:bg-primary text-primary-foreground font-semibold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
             >
               <span className="relative z-10 flex items-center gap-2">
                 <Home className="w-5 h-5" />
@@ -406,7 +406,7 @@ export default function NotFound() {
 
             <Link
               href="/dashboard"
-              className="group inline-flex items-center justify-center gap-2 px-8 py-3 border-2 border-primary text-primary hover:bg-primary/10 dark:hover:bg-primary/20 font-semibold rounded-lg transition-all duration-300"
+              className="group inline-flex items-center justify-center gap-2 px-8 py-3 border-2 border-primary/50 text-primary hover:bg-primary/10 dark:hover:bg-primary/20 font-semibold rounded-lg transition-all duration-300"
             >
               Go to Dashboard
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

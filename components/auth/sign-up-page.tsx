@@ -2175,7 +2175,7 @@ export default function SignUpPage({ onSignInClick,onSignUpSuccess, toggleTheme,
 
         <Card className="border-2 border-border shadow-lg">
           <CardHeader className="space-y-2 text-center">
-            <CardTitle className="text-3xl font-bold text-primary">Create Account</CardTitle>
+            <CardTitle className="text-3xl font-bold text-primary/50">Create Account</CardTitle>
             <CardDescription className="text-base">Join SwiftWave.AI and start your journey</CardDescription>
           </CardHeader>
 
@@ -2283,7 +2283,7 @@ export default function SignUpPage({ onSignInClick,onSignUpSuccess, toggleTheme,
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base relative"
+                className="w-full h-11 bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold text-base relative"
               >
                 {isLoading ? (
                   <>

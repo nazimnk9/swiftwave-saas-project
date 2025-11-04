@@ -4578,7 +4578,7 @@ export function PhoneNumberBuyForm() {
                 <Button
                   type="submit"
                   disabled={isLoading || !selectedPhoneNumber || !selectedBundle}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                  className="bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold"
                 >
                   {isLoading ? "Processing..." : "Submit Purchase"}
                 </Button>

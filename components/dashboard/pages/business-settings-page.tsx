@@ -2097,7 +2097,7 @@ export function BusinessSettingsPage() {
                   </Button>
                   <Button
                     onClick={handleBuyPhoneNumber}
-                    className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all duration-200"
+                    className="gap-2 bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold transition-all duration-200"
                   >
                     <Plus className="w-4 h-4" />
                     Buy Phone Number
