@@ -81,7 +81,7 @@ export default function EmailVerificationPage({
 
         <Card className="border-2 border-border shadow-lg">
           <CardHeader className="space-y-2 text-center">
-            <CardTitle className="text-3xl font-bold text-primary">Verify Your Email</CardTitle>
+            <CardTitle className="text-3xl font-bold text-primary/50">Verify Your Email</CardTitle>
             <CardDescription className="text-base">
               We've sent a verification link to <span className="font-semibold text-foreground">{email}</span>
             </CardDescription>

@@ -53,7 +53,7 @@ export default function EmailConfirmationPage({
                 <CheckCircle className="w-8 h-8 text-primary" />
               </div>
             </div>
-            <CardTitle className="text-3xl font-bold text-primary">Check Your Email</CardTitle>
+            <CardTitle className="text-3xl font-bold text-primary/50">Check Your Email</CardTitle>
             <CardDescription className="text-base">A confirmation link has been sent to your email</CardDescription>
           </CardHeader>
 

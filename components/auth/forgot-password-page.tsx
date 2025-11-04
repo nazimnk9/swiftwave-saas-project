@@ -431,7 +431,7 @@ export default function ForgotPasswordPage({ onBackClick, toggleTheme, isDark }:
 
         <Card className="border-2 border-border shadow-lg">
           <CardHeader className="space-y-2 text-center">
-            <CardTitle className="text-3xl font-bold text-primary">Reset Password</CardTitle>
+            <CardTitle className="text-3xl font-bold text-primary/50">Reset Password</CardTitle>
             <CardDescription className="text-base">Enter your email to receive a reset link</CardDescription>
           </CardHeader>
 

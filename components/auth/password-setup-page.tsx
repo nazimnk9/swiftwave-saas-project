@@ -581,7 +581,7 @@ export default function PasswordSetupPage({ email, toggleTheme, isDark, token }:
 
         <Card className="border-2 border-border shadow-lg">
           <CardHeader className="space-y-2 text-center">
-            <CardTitle className="text-3xl font-bold text-primary">Set Your Password</CardTitle>
+            <CardTitle className="text-3xl font-bold text-primary/50">Set Your Password</CardTitle>
             <CardDescription className="text-base">Secure your account with a strong password</CardDescription>
             <p className="text-sm text-muted-foreground mt-2">{email}</p>
           </CardHeader>
