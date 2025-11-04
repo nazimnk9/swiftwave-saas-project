@@ -272,7 +272,7 @@ export function InviteUserPage() {
         {/* Header with Back Button */}
         <div className="flex items-center gap-4">
           <Link href="/dashboard/invite-list">
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" className="bg-gradient-to-r from-primary/30 to-primary/30 dark:hover:text-white/50">
               <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>
