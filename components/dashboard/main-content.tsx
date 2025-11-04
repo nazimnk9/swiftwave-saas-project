@@ -613,7 +613,7 @@ export function MainContent() {
               <Users className="w-8 h-8 text-purple-600 mb-3" />
               <h3 className="font-semibold text-foreground mb-2">View Candidates</h3>
               <p className="text-sm text-muted-foreground mb-4">Browse and manage all candidates</p>
-              <Button variant="outline" className="cursor-pointer w-full border-border">
+              <Button className="cursor-pointer w-full border-border bg-primary/50 hover:bg-primary/70 text-primary-foreground">
                 View Candidates
               </Button>
             </CardContent>
@@ -624,7 +624,7 @@ export function MainContent() {
               <AlertCircle className="w-8 h-8 text-orange-600 mb-3" />
               <h3 className="font-semibold text-foreground mb-2">Pending Actions</h3>
               <p className="text-sm text-muted-foreground mb-4">3 items need your attention</p>
-              <Button variant="outline" className="cursor-pointer w-full border-border">
+              <Button className="cursor-pointer w-full border-border bg-primary/50 hover:bg-primary/70 text-primary-foreground">
                 Review
               </Button>
             </CardContent>
