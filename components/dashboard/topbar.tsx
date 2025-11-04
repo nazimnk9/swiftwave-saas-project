@@ -927,7 +927,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
                       setShowOrgSelector(false)
                       handleSwitchOrganization(org.uid)
                     }}
-                    className={`w-full px-4 py-3 text-left text-sm hover:bg-muted transition-colors border-b border-border last:border-b-0 ${
+                    className={`cursor-pointer w-full px-4 py-3 text-left text-sm hover:bg-muted transition-colors border-b border-border last:border-b-0 ${
                       currentOrg?.name === org.organization.name ? "bg-primary/10 font-semibold text-primary" : ""
                     }`}
                   >
