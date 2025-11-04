@@ -1380,7 +1380,7 @@ export function CreateBundleModal({ open, onOpenChange, onNext, selectedCountryC
               <button
                 type="button"
                 onClick={() => setShowCountriesDropdown(!showCountriesDropdown)}
-                className="w-full px-4 py-3 border-2 border-border rounded-lg bg-background text-foreground text-left flex items-center justify-between hover:border-primary focus:border-primary transition-all"
+                className="cursor-pointer w-full px-4 py-3 border-2 border-border rounded-lg bg-background text-foreground text-left flex items-center justify-between hover:border-primary focus:border-primary transition-all"
               >
                 <span>
                   {formData.country_code
@@ -1406,7 +1406,7 @@ export function CreateBundleModal({ open, onOpenChange, onNext, selectedCountryC
                         key={country.country_code}
                         type="button"
                         onClick={() => handleSelectCountry(country.country_code)}
-                        className="w-full px-4 py-3 text-left hover:bg-primary/10 text-foreground flex items-center justify-between border-b border-border/50 last:border-b-0"
+                        className="cursor-pointer w-full px-4 py-3 text-left hover:bg-primary/10 text-foreground flex items-center justify-between border-b border-border/50 last:border-b-0"
                       >
                         <span>{country.country}</span>
                         <span className="text-xs font-semibold text-primary">{country.country_code}</span>
@@ -1454,14 +1454,14 @@ export function CreateBundleModal({ open, onOpenChange, onNext, selectedCountryC
               type="button"
               onClick={handleCancel}
               variant="outline"
-              className="flex-1 border-2 border-border bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50"
+              className="cursor-pointer flex-1 border-2 border-border bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
-              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+              className="cursor-pointer flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
             >
               Next
             </Button>

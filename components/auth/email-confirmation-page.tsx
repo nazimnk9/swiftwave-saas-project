@@ -33,7 +33,7 @@ export default function EmailConfirmationPage({
       {/* Theme Toggle */}
       <button
         onClick={toggleTheme}
-        className="absolute top-4 right-4 p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors"
+        className="absolute top-4 right-4 p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors cursor-pointer"
       >
         {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
       </button>

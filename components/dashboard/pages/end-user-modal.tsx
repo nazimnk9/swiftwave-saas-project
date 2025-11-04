@@ -1182,14 +1182,14 @@ export function EndUserModal({ open, onOpenChange, onBack, onNext }: EndUserModa
               type="button"
               onClick={onBack}
               variant="outline"
-              className="flex-1 border-2 border-border bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50"
+              className="cursor-pointer flex-1 border-2 border-border bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
             <Button
               type="submit"
-              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+              className="cursor-pointer flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
             >
               Next
               <ArrowRight className="w-4 h-4 ml-2" />

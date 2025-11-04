@@ -566,7 +566,7 @@ export default function PasswordSetupPage({ email, toggleTheme, isDark, token }:
       {/* Theme Toggle */}
       <button
         onClick={toggleTheme}
-        className="absolute top-4 right-4 p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors"
+        className="cursor-pointer absolute top-4 right-4 p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors"
       >
         {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
       </button>
@@ -603,7 +603,7 @@ export default function PasswordSetupPage({ email, toggleTheme, isDark, token }:
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                    className="cursor-pointer absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -625,7 +625,7 @@ export default function PasswordSetupPage({ email, toggleTheme, isDark, token }:
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                    className="cursor-pointer absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                   >
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -650,7 +650,7 @@ export default function PasswordSetupPage({ email, toggleTheme, isDark, token }:
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-11 bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold text-base relative"
+                className="cursor-pointer w-full h-11 bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold text-base relative"
               >
                 {isLoading ? (
                   <>

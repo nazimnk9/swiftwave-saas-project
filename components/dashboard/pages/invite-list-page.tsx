@@ -333,7 +333,7 @@ export function InviteListPage() {
             <p className="text-foreground/60 mt-1">Manage user invitations</p>
           </div>
           <Link href="/dashboard/invite-user">
-            <Button className="flex items-center gap-2">
+            <Button className="cursor-pointer flex items-center gap-2">
               <Plus className="w-5 h-5" />
               Invite User
             </Button>
@@ -362,7 +362,7 @@ export function InviteListPage() {
                   variant="outline" 
                   size="sm" 
                   onClick={fetchInvites}
-                  className="border-red-300 text-red-700 hover:bg-red-100"
+                  className="cursor-pointer border-red-300 text-red-700 hover:bg-red-100"
                 >
                   Retry
                 </Button>
@@ -441,7 +441,7 @@ export function InviteListPage() {
                 {searchTerm && (
                   <Button 
                     variant="outline" 
-                    className="mt-4"
+                    className="cursor-pointer mt-4"
                     onClick={() => setSearchTerm("")}
                   >
                     Clear Search

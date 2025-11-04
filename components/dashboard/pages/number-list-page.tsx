@@ -98,7 +98,7 @@ export function NumberListPage() {
           <Button
             onClick={handleBack}
             variant="outline"
-            className="border-2 border-border hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 text-foreground font-semibold transition-all duration-200"
+            className="cursor-pointer border-2 border-border hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 text-foreground font-semibold transition-all duration-200"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back

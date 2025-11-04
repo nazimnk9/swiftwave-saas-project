@@ -984,7 +984,7 @@ export function ProfilePage() {
                   <Button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2"
+                    className="cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2"
                   >
                     <Save className="w-4 h-4" />
                     {isSaving ? "Saving..." : "Save Changes"}

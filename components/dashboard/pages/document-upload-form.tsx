@@ -206,7 +206,7 @@ export function DocumentUploadForm({ bundleId, onBack, onNext }: DocumentUploadF
                   type="button"
                   onClick={onBack}
                   variant="outline"
-                  className="flex-1 border-2 border-border hover:bg-muted bg-transparent text-foreground font-semibold transition-all duration-200"
+                  className="cursor-pointer flex-1 border-2 border-border hover:bg-muted bg-transparent text-foreground font-semibold transition-all duration-200"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back
@@ -214,7 +214,7 @@ export function DocumentUploadForm({ bundleId, onBack, onNext }: DocumentUploadF
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="cursor-pointer flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
                   Next
                   <ArrowRight className="w-4 h-4 ml-2" />

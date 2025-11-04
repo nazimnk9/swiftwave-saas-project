@@ -108,7 +108,7 @@ export function HelpPage() {
               <Card key={faq.id} className="border-border">
                 <button
                   onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
-                  className="w-full p-6 flex items-center justify-between hover:bg-muted transition-colors"
+                  className="cursor-pointer w-full p-6 flex items-center justify-between hover:bg-muted transition-colors"
                 >
                   <h3 className="font-semibold text-foreground text-left">{faq.question}</h3>
                   <ChevronDown

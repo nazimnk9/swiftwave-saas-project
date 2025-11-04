@@ -1202,7 +1202,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Logo and Close Button */}
         <div className="p-8 border-b border-sidebar-border flex items-center justify-between h-30">
           <Link href="/dashboard" onClick={handleCloseOnMobile}>
-            <div className="relative w-32 h-32">
+            <div className="cursor-pointer relative w-32 h-32">
               <Image
                 src="/logo.png"
                 alt="SwiftWave.AI"
@@ -1213,7 +1213,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </Link>
           <button
             onClick={onClose}
-            className="md:hidden p-2 hover:bg-sidebar-accent rounded-lg transition-colors"
+            className="cursor-pointer md:hidden p-2 hover:bg-sidebar-accent rounded-lg transition-colors"
             aria-label="Close sidebar"
           >
             <X className="w-5 h-5 text-sidebar-foreground" />
@@ -1233,7 +1233,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 {hasSubmenu ? (
                   <button
                     onClick={() => toggleExpand(item.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${
+                    className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${
                       active
                         ? "bg-sidebar-accent text-primary/80"
                         : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -1247,7 +1247,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <Link
                     href={item.href}
                     onClick={handleCloseOnMobile}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${
+                    className={`cursor-pointer flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${
                       active
                         ? "bg-sidebar-accent text-primary/80"
                         : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -1266,7 +1266,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         key={idx}
                         href={subitem.href}
                         onClick={handleCloseOnMobile}
-                        className={`block px-4 py-2 text-sm rounded-lg transition-colors ${
+                        className={`cursor-pointer block px-4 py-2 text-sm rounded-lg transition-colors ${
                           isActive(subitem.href)
                             ? "text-primary/80 bg-sidebar-accent"
                             : "text-sidebar-foreground/70 hover:text-primary/80 hover:bg-sidebar-accent"
@@ -1293,7 +1293,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 key={item.id}
                 href={item.href}
                 onClick={handleCloseOnMobile}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                className={`cursor-pointer flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   active
                     ? "bg-sidebar-accent text-primary/80"
                     : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"

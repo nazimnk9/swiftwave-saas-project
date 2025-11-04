@@ -509,7 +509,7 @@ export function InviteUserPage() {
         {/* Header with Back Button */}
         <div className="flex items-center gap-4">
           <Link href="/dashboard/invite-list">
-            <Button variant="outline" size="icon" className="bg-gradient-to-r from-primary/30 to-primary/30 dark:hover:text-white/50">
+            <Button variant="outline" size="icon" className="cursor-pointer bg-gradient-to-r from-primary/30 to-primary/30 dark:hover:text-white/50">
               <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>
@@ -601,7 +601,7 @@ export function InviteUserPage() {
                 )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading || !email.trim() || !role}>
+              <Button type="submit" className="cursor-pointer w-full" disabled={isLoading || !email.trim() || !role}>
                 {isLoading ? "Sending..." : "Send Invitation"}
               </Button>
             </form>

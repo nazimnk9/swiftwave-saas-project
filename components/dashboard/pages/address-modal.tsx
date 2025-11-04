@@ -946,7 +946,7 @@ export function AddressModal({ open, onOpenChange, onBack, onNext, selectedCount
                 <button
                   type="button"
                   onClick={() => setShowCountriesDropdown(!showCountriesDropdown)}
-                  className="w-full px-4 py-3 border-2 border-border rounded-lg bg-background text-foreground text-left flex items-center justify-between hover:border-primary"
+                  className="cursor-pointer w-full px-4 py-3 border-2 border-border rounded-lg bg-background text-foreground text-left flex items-center justify-between hover:border-primary"
                 >
                   <span>
                     {formData.iso_country
@@ -974,7 +974,7 @@ export function AddressModal({ open, onOpenChange, onBack, onNext, selectedCount
                           key={country.country_code}
                           type="button"
                           onClick={() => handleSelectCountry(country.country_code)}
-                          className="w-full px-4 py-3 text-left hover:bg-primary/10 text-foreground flex items-center justify-between border-b border-border/50"
+                          className="cursor-pointer w-full px-4 py-3 text-left hover:bg-primary/10 text-foreground flex items-center justify-between border-b border-border/50"
                         >
                           <span>{country.country}</span>
                           <span className="text-xs font-semibold text-primary">{country.country_code}</span>
@@ -992,14 +992,14 @@ export function AddressModal({ open, onOpenChange, onBack, onNext, selectedCount
               type="button"
               onClick={onBack}
               variant="outline"
-              className="flex-1 border-2 border-border bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50"
+              className="cursor-pointer flex-1 border-2 border-border bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
             <Button
               type="submit"
-              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+              className="cursor-pointer flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
             >
               Next
               <ArrowRight className="w-4 h-4 ml-2" />

@@ -52,7 +52,7 @@ export default function EmailVerificationPage({
       {/* Theme Toggle */}
       <button
         onClick={toggleTheme}
-        className="absolute top-4 right-4 p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors"
+        className="absolute top-4 right-4 p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors cursor-pointer"
       >
         {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
       </button>
@@ -60,7 +60,7 @@ export default function EmailVerificationPage({
       {/* Back Button */}
       <button
         onClick={onBackClick}
-        className="absolute top-4 left-4 p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors flex items-center gap-2"
+        className="cursor-pointer absolute top-4 left-4 p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors flex items-center gap-2"
       >
         <ArrowLeft className="w-5 h-5" />
         <span className="text-sm font-medium">Back</span>
@@ -122,7 +122,7 @@ export default function EmailVerificationPage({
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-11 bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold text-base relative"
+                className="cursor-pointer w-full h-11 bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold text-base relative"
               >
                 {isLoading ? (
                   <>
@@ -138,7 +138,7 @@ export default function EmailVerificationPage({
                 <p>Didn't receive the email?</p>
                 <button
                   type="button"
-                  className="text-primary hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 font-medium mt-1"
+                  className="cursor-pointer text-primary hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 font-medium mt-1"
                   disabled={isLoading}
                 >
                   Resend verification code

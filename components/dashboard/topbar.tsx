@@ -872,7 +872,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
     <div className="h-30 bg-card border-b border-border flex items-center justify-between px-4 md:px-6 gap-4">
       {/* Left Section */}
       <div className="flex items-center gap-4 flex-1">
-        <Button variant="ghost" size="icon" onClick={onMenuClick} className="md:hidden">
+        <Button variant="ghost" size="icon" onClick={onMenuClick} className="cursor-pointer md:hidden">
           <Menu className="w-5 h-5" />
         </Button>
 
@@ -895,7 +895,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
         <button
           onClick={() => !isSelectorDisabled && setShowOrgSelector(!showOrgSelector)}
           disabled={isSelectorDisabled}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 border border-border ${
+          className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 border border-border ${
             isSelectorDisabled
               ? "bg-muted/50 cursor-not-allowed opacity-60"
               : "bg-primary/20 hover:bg-primary/30 cursor-pointer"
@@ -944,7 +944,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
       {/* Right Section */}
       <div className="flex items-center gap-2">
         {/* Theme Toggle */}
-        <Button variant="ghost" size="icon" onClick={toggleTheme} className="bg-primary/20 hover:bg-primary/30">
+        <Button variant="ghost" size="icon" onClick={toggleTheme} className="cursor-pointer bg-primary/20 hover:bg-primary/30">
           {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </Button>
 
@@ -954,7 +954,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
             variant="ghost"
             size="icon"
             onClick={() => setShowNotifications(!showNotifications)}
-            className="bg-primary/20 hover:bg-primary/30 relative"
+            className="cursor-pointer bg-primary/20 hover:bg-primary/30 relative"
           >
             <Bell className="w-5 h-5" />
             <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
@@ -995,7 +995,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
         {/* User Menu */}
         <div className="relative">
           <Button variant="ghost" size="icon" onClick={() => setShowUserMenu(!showUserMenu)} className="hover:bg-muted">
-            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+            <div className="cursor-pointer w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
               <User className="w-4 h-4 text-primary" />
             </div>
           </Button>
@@ -1010,7 +1010,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
                 <Link
                   href="/dashboard/profile"
                   onClick={() => setShowUserMenu(false)}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors"
+                  className="cursor-pointer w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors"
                 >
                   <User className="w-4 h-4" />
                   Profile
@@ -1018,7 +1018,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
                 <Link
                   href="/dashboard/settings"
                   onClick={() => setShowUserMenu(false)}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors"
+                  className="cursor-pointer w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors"
                 >
                   <Settings className="w-4 h-4" />
                   Settings
@@ -1029,7 +1029,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
                     setShowUserMenu(false)
                     handleSignOut()
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                  className="cursor-pointer w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                   Sign Out

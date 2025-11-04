@@ -4409,7 +4409,7 @@ export function PhoneNumberBuyForm() {
                   <button
                     type="button"
                     onClick={() => setShowCountriesDropdown(!showCountriesDropdown)}
-                    className="w-full px-4 py-3 border-2 border-border rounded-lg bg-background text-foreground text-left flex items-center justify-between hover:border-primary focus:border-primary transition-all"
+                    className="cursor-pointer w-full px-4 py-3 border-2 border-border rounded-lg bg-background text-foreground text-left flex items-center justify-between hover:border-primary focus:border-primary transition-all"
                   >
                     <span>
                       {selectedCountry
@@ -4437,7 +4437,7 @@ export function PhoneNumberBuyForm() {
                             key={country.country_code}
                             type="button"
                             onClick={() => handleCountrySelect(country.country_code)}
-                            className="w-full px-4 py-3 text-left hover:bg-primary/10 text-foreground flex items-center justify-between border-b border-border/50 last:border-b-0"
+                            className="cursor-pointer w-full px-4 py-3 text-left hover:bg-primary/10 text-foreground flex items-center justify-between border-b border-border/50 last:border-b-0"
                           >
                             <span>{country.country}</span>
                             <span className="text-xs font-semibold text-primary">{country.country_code}</span>
@@ -4457,7 +4457,7 @@ export function PhoneNumberBuyForm() {
                     type="button"
                     onClick={() => setShowPhoneDropdown(!showPhoneDropdown)}
                     disabled={!selectedCountry}
-                    className="w-full px-4 py-3 border-2 border-border rounded-lg bg-background text-foreground text-left flex items-center justify-between hover:border-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="cursor-pointer w-full px-4 py-3 border-2 border-border rounded-lg bg-background text-foreground text-left flex items-center justify-between hover:border-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
                     <span>
                       {selectedPhoneNumber || (selectedCountry ? "Select Phone Number" : "Select a country first")}
@@ -4488,7 +4488,7 @@ export function PhoneNumberBuyForm() {
                               setShowPhoneDropdown(false)
                               setPhoneSearch("")
                             }}
-                            className="w-full px-4 py-3 text-left hover:bg-primary/10 text-foreground flex items-center justify-between border-b border-border/50 last:border-b-0"
+                            className="cursor-pointer w-full px-4 py-3 text-left hover:bg-primary/10 text-foreground flex items-center justify-between border-b border-border/50 last:border-b-0"
                           >
                             <div>
                               <p className="font-medium">{phone.phone_number}</p>
@@ -4516,7 +4516,7 @@ export function PhoneNumberBuyForm() {
                       setCreateBundleStep(0)
                       setShowCreateBundleModal(true)
                     }}
-                    className="text-xs border-2 border-primary text-primary hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50"
+                    className="cursor-pointer text-xs border-2 border-primary text-primary hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50"
                   >
                     + Create Bundle
                   </Button>
@@ -4525,7 +4525,7 @@ export function PhoneNumberBuyForm() {
                   <button
                     type="button"
                     onClick={() => setShowBundleDropdown(!showBundleDropdown)}
-                    className="w-full px-4 py-3 border-2 border-border rounded-lg bg-background text-foreground text-left flex items-center justify-between hover:border-primary transition-all"
+                    className="cursor-pointer w-full px-4 py-3 border-2 border-border rounded-lg bg-background text-foreground text-left flex items-center justify-between hover:border-primary transition-all"
                   >
                     <span>
                       {selectedBundle ? bundles.find((b) => b.id === selectedBundle)?.friendly_name : "Select Bundle"}
@@ -4553,7 +4553,7 @@ export function PhoneNumberBuyForm() {
                               setShowBundleDropdown(false)
                               setBundleSearch("")
                             }}
-                            className="w-full px-4 py-3 text-left hover:bg-primary/10 text-foreground border-b border-border/50 last:border-b-0"
+                            className="cursor-pointer w-full px-4 py-3 text-left hover:bg-primary/10 text-foreground border-b border-border/50 last:border-b-0"
                           >
                             {bundle.friendly_name}
                           </button>
@@ -4569,7 +4569,7 @@ export function PhoneNumberBuyForm() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-2 border-border bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50"
+                  className="cursor-pointer border-2 border-border bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50"
                   onClick={() => router.back()}
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
@@ -4578,7 +4578,7 @@ export function PhoneNumberBuyForm() {
                 <Button
                   type="submit"
                   disabled={isLoading || !selectedPhoneNumber || !selectedBundle}
-                  className="bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold"
+                  className="cursor-pointer bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold"
                 >
                   {isLoading ? "Processing..." : "Submit Purchase"}
                 </Button>

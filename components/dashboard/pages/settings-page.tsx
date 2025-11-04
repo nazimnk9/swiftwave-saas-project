@@ -2156,7 +2156,7 @@ export function SettingsPage() {
                 <Button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2"
+                  className="cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2"
                 >
                   <Save className="w-4 h-4" />
                   {isSaving ? "Saving..." : "Save Changes"}
@@ -2229,7 +2229,7 @@ export function SettingsPage() {
                 <Button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2"
+                  className="cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2"
                 >
                   <Save className="w-4 h-4" />
                   {isSaving ? "Saving..." : "Save Changes"}
@@ -2311,7 +2311,7 @@ export function SettingsPage() {
                 <div className="flex gap-3">
                   <Button
                     onClick={() => setShowChangePasswordModal(true)}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2"
+                    className="cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2"
                   >
                     <Lock className="w-4 h-4" />
                     Change Password
@@ -2319,7 +2319,7 @@ export function SettingsPage() {
                   <Button
                     onClick={() => setShowDeactivateModal(true)}
                     variant="outline"
-                    className="border-2 border-border hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 text-foreground font-semibold transition-all duration-200"
+                    className="cursor-pointer border-2 border-border hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 text-foreground font-semibold transition-all duration-200"
                   >
                     <AlertTriangle className="w-4 h-4" />
                     Deactivate Profile
@@ -2382,14 +2382,14 @@ export function SettingsPage() {
                     setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
                   }}
                   variant="outline"
-                  className="flex-1"
+                  className="cursor-pointer flex-1"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleChangePassword}
                   disabled={isSaving}
-                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+                  className="cursor-pointer flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   {isSaving ? "Updating..." : "Update Password"}
                 </Button>
@@ -2442,14 +2442,14 @@ export function SettingsPage() {
                     setDeactivateData({ email: "", password: "" })
                   }}
                   variant="outline"
-                  className="flex-1"
+                  className="cursor-pointer flex-1"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleDeactivateProfile}
                   disabled={isSaving}
-                  className="flex-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                  className="cursor-pointer flex-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                 >
                   {isSaving ? "Deactivating..." : "Deactivate"}
                 </Button>

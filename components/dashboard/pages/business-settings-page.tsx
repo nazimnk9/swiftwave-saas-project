@@ -1943,7 +1943,7 @@ export function BusinessSettingsPage() {
                     <Button
                       onClick={() => handleIntegrate(platform)}
                       disabled={isIntegrating || platform.is_connected}
-                      className={`gap-2 ${
+                      className={`gap-2 cursor-pointer ${
                         platform.is_connected
                           ? "bg-muted text-muted-foreground cursor-not-allowed"
                           : "bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -2090,14 +2090,14 @@ export function BusinessSettingsPage() {
                   <Button
                     onClick={handleMyNumbers}
                     variant="outline"
-                    className="gap-2 border-primary/50 text-primary hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 font-semibold transition-all duration-200"
+                    className="cursor-pointer gap-2 border-primary/50 text-primary hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 font-semibold transition-all duration-200"
                   >
                     <Phone className="w-4 h-4" />
                     My Numbers
                   </Button>
                   <Button
                     onClick={handleBuyPhoneNumber}
-                    className="gap-2 bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold transition-all duration-200"
+                    className="cursor-pointer gap-2 bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold transition-all duration-200"
                   >
                     <Plus className="w-4 h-4" />
                     Buy Phone Number

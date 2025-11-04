@@ -1120,7 +1120,7 @@ export default function SignInPage({ onSignUpClick,onForgotClick, toggleTheme, i
       {/* Theme Toggle */}
       <button
         onClick={toggleTheme}
-        className="absolute top-4 right-4 p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors"
+        className="absolute top-4 right-4 p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors cursor-pointer"
       >
         {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
       </button>
@@ -1180,7 +1180,7 @@ export default function SignInPage({ onSignUpClick,onForgotClick, toggleTheme, i
                   <button
                     type="button"
                     onClick={onForgotClick}
-                    className="text-sm text-primary hover:text-primary/50 font-medium"
+                    className="text-sm text-primary hover:text-primary/50 font-medium cursor-pointer"
                   >
                     Forgot?
                   </button>
@@ -1210,7 +1210,7 @@ export default function SignInPage({ onSignUpClick,onForgotClick, toggleTheme, i
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                    className="cursor-pointer absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -1227,7 +1227,7 @@ export default function SignInPage({ onSignUpClick,onForgotClick, toggleTheme, i
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-11 bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold text-base relative"
+                className="w-full h-11 bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold text-base relative cursor-pointer"
               >
                 {isLoading ? (
                   <>
@@ -1253,7 +1253,7 @@ export default function SignInPage({ onSignUpClick,onForgotClick, toggleTheme, i
                 variant="outline"
                 onClick={onSignUpClick}
                 disabled={isLoading}
-                className="w-full h-11 border-2 border-border hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 text-foreground font-semibold bg-transparent transition-colors"
+                className="cursor-pointer w-full h-11 border-2 border-border hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 text-foreground font-semibold bg-transparent transition-colors"
               >
                 Create Account
               </Button>

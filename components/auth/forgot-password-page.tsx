@@ -351,7 +351,7 @@ export default function ForgotPasswordPage({ onBackClick, toggleTheme, isDark }:
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="absolute top-4 right-4 p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors cursor-pointer"
         >
           {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </button>
@@ -385,7 +385,7 @@ export default function ForgotPasswordPage({ onBackClick, toggleTheme, isDark }:
 
               <Button
                 onClick={onBackClick}
-                className="w-full h-11 bg-primary hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 text-primary-foreground font-semibold text-base"
+                className="cursor-pointer w-full h-11 bg-primary hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 text-primary-foreground font-semibold text-base"
               >
                 Back to Sign In
               </Button>
@@ -416,7 +416,7 @@ export default function ForgotPasswordPage({ onBackClick, toggleTheme, isDark }:
       {/* Theme Toggle */}
       <button
         onClick={toggleTheme}
-        className="absolute top-4 right-4 p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors"
+        className="cursor-pointer absolute top-4 right-4 p-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors"
       >
         {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
       </button>
@@ -464,7 +464,7 @@ export default function ForgotPasswordPage({ onBackClick, toggleTheme, isDark }:
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-11 bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold text-base relative"
+                className="cursor-pointer w-full h-11 bg-primary/50 hover:bg-primary/70 text-primary-foreground font-semibold text-base relative"
               >
                 {isLoading ? (
                   <>
@@ -481,7 +481,7 @@ export default function ForgotPasswordPage({ onBackClick, toggleTheme, isDark }:
                 onClick={onBackClick}
                 disabled={isLoading}
                 variant="outline"
-                className="w-full h-11 border-2 border-border hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 text-foreground font-semibold bg-transparent transition-colors flex items-center justify-center gap-2"
+                className="cursor-pointer w-full h-11 border-2 border-border hover:bg-muted bg-gradient-to-r from-primary/20 to-primary/20 dark:hover:text-white/50 text-foreground font-semibold bg-transparent transition-colors flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to Sign In
@@ -492,7 +492,7 @@ export default function ForgotPasswordPage({ onBackClick, toggleTheme, isDark }:
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           Remember your password?{" "}
-          <button onClick={onBackClick} className="text-primary hover:text-primary/80 font-medium">
+          <button onClick={onBackClick} className="cursor-pointer text-primary hover:text-primary/80 font-medium">
             Sign In
           </button>
         </p>

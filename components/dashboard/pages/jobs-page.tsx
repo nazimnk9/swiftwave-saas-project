@@ -101,7 +101,7 @@ export function JobsPage() {
               className="pl-10 h-11 border-2 border-border focus:border-primary"
             />
           </div>
-          <Button variant="outline" className="border-2 border-border hover:bg-muted bg-transparent gap-2">
+          <Button variant="outline" className="cursor-pointer border-2 border-border hover:bg-muted bg-transparent gap-2">
             <Filter className="w-5 h-5" />
             Filter
           </Button>
