@@ -151,6 +151,210 @@
 // }
 
 
+// "use client"
+
+// import type React from "react"
+
+// import { useState } from "react"
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Button } from "@/components/ui/button"
+// import { Input } from "@/components/ui/input"
+// import { Mail, ArrowLeft } from "lucide-react"
+// import axios from "axios"
+// import { BASE_URL } from "@/lib/baseUrl"
+// import { LoaderOverlay } from "@/components/auth/loader-overlay"
+// import { ToastNotification } from "@/components/auth/toast-notification"
+// import Link from "next/link"
+
+// export function InviteUserPage() {
+//   const [email, setEmail] = useState("")
+//   const [role, setRole] = useState("")
+//   const [isLoading, setIsLoading] = useState(false)
+//   const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
+//   const [toast, setToast] = useState<{ title: string; description: string; variant: "default" | "destructive" } | null>(
+//     null,
+//   )
+
+//   const roleOptions = [
+//     { value: "OWNER", label: "Owner" },
+//     { value: "ADMIN", label: "Admin" },
+//     { value: "MANAGER", label: "Manager" },
+//     { value: "RECRUITER", label: "Recruiter" },
+//     { value: "VIEWER", label: "Viewer" },
+//   ]
+
+//   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     setEmail(e.target.value)
+//     // Clear error when user starts typing
+//     if (errors.email) {
+//       setErrors((prev) => {
+//         const newErrors = { ...prev }
+//         delete newErrors.email
+//         return newErrors
+//       })
+//     }
+//   }
+
+//   const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+//     setRole(e.target.value)
+//     // Clear error when user selects a role
+//     if (errors.role) {
+//       setErrors((prev) => {
+//         const newErrors = { ...prev }
+//         delete newErrors.role
+//         return newErrors
+//       })
+//     }
+//   }
+
+//   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+//     e.preventDefault()
+//     setErrors({})
+
+//     try {
+//       setIsLoading(true)
+//       const authToken = localStorage.getItem("authToken")
+
+//       if (!authToken) {
+//         setToast({ title: "Error", description: "Authentication token not found", variant: "destructive" })
+//         return
+//       }
+
+//       const response = await axios.post(
+//         `${BASE_URL}/organizations/invite/`,
+//         { email, role: role.toUpperCase() },
+//         {
+//           headers: {
+//             Authorization: `Bearer ${authToken}`,
+//           },
+//         },
+//       )
+
+//       setToast({ title: "Success", description: "Invitation sent successfully", variant: "default" })
+//       setEmail("")
+//       setRole("")
+//     } catch (error: any) {
+//       console.error("Error sending invitation:", error)
+
+//       // Handle validation errors from API response
+//       if (error.response?.data) {
+//         setErrors(error.response.data)
+//         const errorMessages = Object.entries(error.response.data)
+//           .map(([key, value]: [string, any]) => {
+//             if (Array.isArray(value)) {
+//               return value.join(", ")
+//             }
+//             return String(value)
+//           })
+//           .join("; ")
+//         setToast({ title: "Error", description: errorMessages || "Failed to send invitation", variant: "destructive" })
+//       } else {
+//         setToast({ title: "Error", description: "Failed to send invitation", variant: "destructive" })
+//       }
+//     } finally {
+//       setIsLoading(false)
+//     }
+//   }
+
+//   return (
+//     <div className="flex-1 overflow-auto relative">
+//       <LoaderOverlay isLoading={isLoading} message={isLoading ? "Sending invitation..." : "Processing..."} />
+//       {toast && (
+//         <ToastNotification
+//           title={toast.title}
+//           description={toast.description}
+//           variant={toast.variant}
+//           onClose={() => setToast(null)}
+//         />
+//       )}
+
+//       <div className="p-8 space-y-6 flex flex-col justify-center items-center">
+//         {/* Header with Back Button */}
+//         <div className="flex items-center gap-4">
+//           <Link href="/dashboard/invite-list">
+//             <Button variant="outline" size="icon" className="bg-gradient-to-r from-primary/30 to-primary/30 dark:hover:text-white/50">
+//               <ArrowLeft className="w-5 h-5" />
+//             </Button>
+//           </Link>
+//           <div>
+//             <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+//               <Mail className="w-8 h-8" />
+//               Invite User
+//             </h1>
+//             <p className="text-foreground/60 mt-1">Send an invitation to a new user</p>
+//           </div>
+//         </div>
+
+//         {/* Invite Form */}
+//         <Card className="max-w-md">
+//           <CardHeader>
+//             <CardTitle>Send Invitation</CardTitle>
+//           </CardHeader>
+//           <CardContent>
+//             <form onSubmit={handleSubmit} className="space-y-4">
+//               <div className="space-y-2">
+//                 <label htmlFor="email" className="text-sm font-medium text-foreground">
+//                   Email Address
+//                 </label>
+//                 <Input
+//                   id="email"
+//                   type="email"
+//                   placeholder="user@example.com"
+//                   value={email}
+//                   onChange={handleEmailChange}
+//                   disabled={isLoading}
+//                   className={errors.email ? "border-red-500" : ""}
+//                 />
+//                 {errors.email && (
+//                   <div className="text-sm text-red-500 space-y-1">
+//                     {errors.email.map((error, idx) => (
+//                       <p key={idx}>{error}</p>
+//                     ))}
+//                   </div>
+//                 )}
+//               </div>
+
+//               <div className="space-y-2">
+//                 <label htmlFor="role" className="text-sm font-medium text-foreground">
+//                   Role
+//                 </label>
+//                 <select
+//                   id="role"
+//                   value={role}
+//                   onChange={handleRoleChange}
+//                   disabled={isLoading}
+//                   className={`w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+//                     errors.role ? "border-red-500" : ""
+//                   }`}
+//                 >
+//                   <option value="">Select a role</option>
+//                   {roleOptions.map((option) => (
+//                     <option key={option.value} value={option.value}>
+//                       {option.label}
+//                     </option>
+//                   ))}
+//                 </select>
+//                 {errors.role && (
+//                   <div className="text-sm text-red-500 space-y-1">
+//                     {errors.role.map((error, idx) => (
+//                       <p key={idx}>{error}</p>
+//                     ))}
+//                   </div>
+//                 )}
+//               </div>
+
+//               <Button type="submit" className="w-full" disabled={isLoading || !email.trim() || !role}>
+//                 {isLoading ? "Sending..." : "Send Invitation"}
+//               </Button>
+//             </form>
+//           </CardContent>
+//         </Card>
+//       </div>
+//     </div>
+//   )
+// }
+
+
 "use client"
 
 import type React from "react"
@@ -159,7 +363,8 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Mail, ArrowLeft } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Mail, ArrowLeft, Shield, Crown, Users, UserPlus, Eye } from "lucide-react"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
 import { LoaderOverlay } from "@/components/auth/loader-overlay"
@@ -176,11 +381,41 @@ export function InviteUserPage() {
   )
 
   const roleOptions = [
-    { value: "OWNER", label: "Owner" },
-    { value: "ADMIN", label: "Admin" },
-    { value: "MANAGER", label: "Manager" },
-    { value: "RECRUITER", label: "Recruiter" },
-    { value: "VIEWER", label: "Viewer" },
+    { 
+      value: "OWNER", 
+      label: "Owner", 
+      icon: Crown, 
+      description: "Full system access and control",
+      color: "text-yellow-500"
+    },
+    { 
+      value: "ADMIN", 
+      label: "Admin", 
+      icon: Shield, 
+      description: "Administrative privileges",
+      color: "text-red-500"
+    },
+    { 
+      value: "MANAGER", 
+      label: "Manager", 
+      icon: Users, 
+      description: "Team management capabilities",
+      color: "text-blue-500"
+    },
+    { 
+      value: "RECRUITER", 
+      label: "Recruiter", 
+      icon: UserPlus, 
+      description: "Recruitment and hiring tools",
+      color: "text-green-500"
+    },
+    { 
+      value: "VIEWER", 
+      label: "Viewer", 
+      icon: Eye, 
+      description: "Read-only access",
+      color: "text-gray-500"
+    },
   ]
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -195,8 +430,8 @@ export function InviteUserPage() {
     }
   }
 
-  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setRole(e.target.value)
+  const handleRoleChange = (value: string) => {
+    setRole(value)
     // Clear error when user selects a role
     if (errors.role) {
       setErrors((prev) => {
@@ -256,6 +491,8 @@ export function InviteUserPage() {
     }
   }
 
+  const selectedRoleOption = roleOptions.find(option => option.value === role)
+
   return (
     <div className="flex-1 overflow-auto relative">
       <LoaderOverlay isLoading={isLoading} message={isLoading ? "Sending invitation..." : "Processing..."} />
@@ -268,7 +505,7 @@ export function InviteUserPage() {
         />
       )}
 
-      <div className="p-8 space-y-6">
+      <div className="p-8 space-y-6 flex flex-col justify-center items-center">
         {/* Header with Back Button */}
         <div className="flex items-center gap-4">
           <Link href="/dashboard/invite-list">
@@ -318,22 +555,43 @@ export function InviteUserPage() {
                 <label htmlFor="role" className="text-sm font-medium text-foreground">
                   Role
                 </label>
-                <select
-                  id="role"
-                  value={role}
-                  onChange={handleRoleChange}
-                  disabled={isLoading}
-                  className={`w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
-                    errors.role ? "border-red-500" : ""
-                  }`}
-                >
-                  <option value="">Select a role</option>
-                  {roleOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                <Select value={role} onValueChange={handleRoleChange} disabled={isLoading}>
+                  <SelectTrigger 
+                    className={`w-full h-12 ${errors.role ? "border-red-500" : ""}`}
+                    id="role"
+                  >
+                    <SelectValue placeholder="Select a role">
+                      {selectedRoleOption && (
+                        <div className="flex items-center gap-3">
+                          <selectedRoleOption.icon className={`w-4 h-4 ${selectedRoleOption.color}`} />
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">{selectedRoleOption.label}</span>
+                          </div>
+                        </div>
+                      )}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roleOptions.map((option) => {
+                      const IconComponent = option.icon
+                      return (
+                        <SelectItem 
+                          key={option.value} 
+                          value={option.value}
+                          className="cursor-pointer hover:bg-secondary/50 transition-colors duration-200 py-3"
+                        >
+                          <div className="flex items-center gap-3 w-full">
+                            <IconComponent className={`w-4 h-4 ${option.color} flex-shrink-0`} />
+                            <div className="flex flex-col items-start flex-1">
+                              <span className="font-medium focus:text-white dark:text-white">{option.label}</span>
+                              <span className="text-xs ffocus:text-white dark:text-white">{option.description}</span>
+                            </div>
+                          </div>
+                        </SelectItem>
+                      )
+                    })}
+                  </SelectContent>
+                </Select>
                 {errors.role && (
                   <div className="text-sm text-red-500 space-y-1">
                     {errors.role.map((error, idx) => (
