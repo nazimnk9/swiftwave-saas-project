@@ -1235,7 +1235,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     onClick={() => toggleExpand(item.id)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${
                       active
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        ? "bg-sidebar-accent text-primary/80"
                         : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     }`}
                   >
@@ -1249,7 +1249,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     onClick={handleCloseOnMobile}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${
                       active
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        ? "bg-sidebar-accent text-primary/80"
                         : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     }`}
                   >
@@ -1268,7 +1268,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         onClick={handleCloseOnMobile}
                         className={`block px-4 py-2 text-sm rounded-lg transition-colors ${
                           isActive(subitem.href)
-                            ? "text-sidebar-accent-foreground bg-sidebar-accent"
+                            ? "text-primary/80 bg-sidebar-accent"
                             : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
                         }`}
                       >
@@ -1295,7 +1295,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 onClick={handleCloseOnMobile}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   active
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    ? "bg-sidebar-accent text-primary/80"
                     : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 }`}
               >

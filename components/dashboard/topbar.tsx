@@ -898,7 +898,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 border border-border ${
             isSelectorDisabled
               ? "bg-muted/50 cursor-not-allowed opacity-60"
-              : "bg-muted hover:bg-muted/80 cursor-pointer"
+              : "bg-primary/20 hover:bg-primary/30 cursor-pointer"
           }`}
         >
           <span className="text-sm font-semibold text-foreground">{currentOrg?.name || "Select Org"}</span>
@@ -944,7 +944,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
       {/* Right Section */}
       <div className="flex items-center gap-2">
         {/* Theme Toggle */}
-        <Button variant="ghost" size="icon" onClick={toggleTheme} className="hover:bg-muted">
+        <Button variant="ghost" size="icon" onClick={toggleTheme} className="bg-primary/20 hover:bg-primary/30">
           {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </Button>
 
@@ -954,7 +954,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
             variant="ghost"
             size="icon"
             onClick={() => setShowNotifications(!showNotifications)}
-            className="hover:bg-muted relative"
+            className="bg-primary/20 hover:bg-primary/30 relative"
           >
             <Bell className="w-5 h-5" />
             <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
