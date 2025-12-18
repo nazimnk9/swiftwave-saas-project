@@ -354,10 +354,10 @@ export function MainContent() {
   }
 
   const stats = [
-    { label: "Active Jobs", value: "24", icon: Briefcase, color: "bg-blue-500" },
-    { label: "Total Candidates", value: "1,248", icon: Users, color: "bg-purple-500" },
-    { label: "Interviews Scheduled", value: "18", icon: Clock, color: "bg-orange-500" },
-    { label: "Offers Extended", value: "12", icon: CheckCircle, color: "bg-green-500" },
+    { label: "Active Jobs", value: "0", icon: Briefcase, color: "bg-blue-500" },
+    { label: "Total Candidates", value: "0", icon: Users, color: "bg-purple-500" },
+    { label: "Interviews Scheduled", value: "0", icon: Clock, color: "bg-orange-500" },
+    { label: "Offers Extended", value: "0", icon: CheckCircle, color: "bg-green-500" },
   ]
 
   const chartData = [
