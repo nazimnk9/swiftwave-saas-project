@@ -340,7 +340,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
             <div className="absolute right-0 mt-2 w-72 bg-card border border-border rounded-lg shadow-lg z-50">
               <div className="p-4 border-b border-border">
                 <p className="font-semibold text-foreground">{displayName}</p>
-                <p className="text-lg font-medium text-muted-foreground break-all">{userInfo.email}</p>
+                <p className="text-sm font-medium text-muted-foreground break-all">{userInfo.email}</p>
               </div>
               <div className="p-2 space-y-1">
                 <Link
