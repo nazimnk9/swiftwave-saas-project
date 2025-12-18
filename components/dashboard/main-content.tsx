@@ -444,7 +444,7 @@ export function MainContent() {
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Line Chart */}
-          <Card className="lg:col-span-2 border-border">
+          {/* <Card className="lg:col-span-2 border-border">
             <CardHeader>
               <CardTitle>Hiring Pipeline</CardTitle>
               <CardDescription>Applications, interviews, and offers over time</CardDescription>
@@ -473,10 +473,10 @@ export function MainContent() {
                 </ResponsiveContainer>
               )}
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Pie Chart */}
-          <Card className="border-border">
+          {/* <Card className="border-border">
             <CardHeader>
               <CardTitle>Candidate Status</CardTitle>
               <CardDescription>Distribution of candidates</CardDescription>
@@ -506,13 +506,13 @@ export function MainContent() {
                 </ResponsiveContainer>
               )}
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Recent Jobs and Candidates */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Jobs */}
-          <Card className="border-border">
+          {/* <Card className="border-border">
             <CardHeader>
               <CardTitle>Recent Job Postings</CardTitle>
               <CardDescription>Your latest job openings</CardDescription>
@@ -549,10 +549,10 @@ export function MainContent() {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Recent Candidates */}
-          <Card className="border-border">
+          {/* <Card className="border-border">
             <CardHeader>
               <CardTitle>Recent Candidates</CardTitle>
               <CardDescription>Latest candidate activities</CardDescription>
@@ -594,11 +594,11 @@ export function MainContent() {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="border-border bg-gradient-to-br from-primary/10 to-primary/5">
             <CardContent className="p-6">
               <Briefcase className="w-8 h-8 text-primary mb-3" />
@@ -629,7 +629,7 @@ export function MainContent() {
               </Button>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
       </div>
     </div>
   )
