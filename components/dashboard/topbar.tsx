@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Menu, Bell, Settings, LogOut, Moon, Sun, Search, User, ChevronDown } from "lucide-react"
+import { Menu, Bell, Settings, LogOut, Moon, Sun, Search, User, ChevronDown, PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
@@ -16,6 +16,8 @@ interface TopbarProps {
   toggleTheme: () => void
   isDark: boolean
   isMobile: boolean
+  isCollapsed?: boolean
+  onToggleCollapse?: () => void
 }
 
 interface Organization {
@@ -52,7 +54,7 @@ interface CurrentOrg {
   last_name: string
 }
 
-export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }: TopbarProps) {
+export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile, isCollapsed = false, onToggleCollapse }: TopbarProps) {
   const [showNotifications, setShowNotifications] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showOrgSelector, setShowOrgSelector] = useState(false)
@@ -209,18 +211,34 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile }:
   const displayName = userInfo.firstName && userInfo.lastName ? `${userInfo.firstName} ${userInfo.lastName}` : "User"
 
   return (
-    <div className="h-30 bg-card border-b border-border flex items-center justify-between px-4 md:px-6 gap-4">
+    <div className="h-20 bg-card border-b border-border flex items-center justify-between px-4 md:px-6 gap-4">
       {/* Left Section */}
-      <div className="flex items-center gap-4 flex-1">
+      <div className="flex items-center gap-12 flex-1">
         <Button variant="ghost" size="icon" onClick={onMenuClick} className="cursor-pointer md:hidden">
           <Menu className="w-5 h-5" />
         </Button>
 
-        {/* <div className="hidden md:flex items-center gap-2">
-          <div className="relative w-32 h-32">
-            <Image src="/logo.png" alt="SwiftWave.AI Logo" fill className="object-contain" />
-          </div>
-        </div> */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onToggleCollapse}
+          className="hidden md:flex cursor-pointer text-muted-foreground hover:text-foreground"
+        >
+          {isCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+        </Button>
+
+        <div className="hidden md:flex items-center gap-2">
+          <Link href="/dashboard">
+            <div className="cursor-pointer relative w-18 h-18 flex items-center justify-center">
+              <Image
+                src="/logo_nav.png"
+                alt="SwiftWave.AI"
+                fill
+                className="object-contain"
+              />
+            </div>
+          </Link>
+        </div>
 
         <div className="hidden md:flex flex-1 max-w-md">
           <div className="relative w-full">

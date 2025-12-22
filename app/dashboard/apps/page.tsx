@@ -1,59 +1,13 @@
-// "use client"
-
-// import { MainContent } from "@/components/dashboard/main-content"
-// import { Sidebar } from "@/components/dashboard/sidebar"
-// import { Topbar } from "@/components/dashboard/topbar"
-
-// export default function DashboardRoute() {
-//   return (
-//     <div className="flex h-screen bg-background overflow-hidden">
-//       <Sidebar isOpen={true} onClose={() => {}} />
-//       <div className="flex-1 flex flex-col overflow-hidden">
-//         <Topbar onMenuClick={() => {}} onLogout={() => {}} toggleTheme={() => {}} isDark={false} isMobile={false} />
-//         <MainContent />
-//       </div>
-//     </div>
-//   )
-// }
-
-// "use client"
-
-// import { useState } from "react"
-// import { MainContent } from "@/components/dashboard/main-content"
-// import { Sidebar } from "@/components/dashboard/sidebar"
-// import { Topbar } from "@/components/dashboard/topbar"
-
-// export default function DashboardRoute() {
-//   const [sidebarOpen, setSidebarOpen] = useState(false)
-
-//   return (
-//     <div className="flex h-screen bg-background overflow-hidden">
-//       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-//       <div className="flex-1 flex flex-col overflow-hidden">
-//         <Topbar
-//           onMenuClick={() => setSidebarOpen(!sidebarOpen)}
-//           onLogout={() => {}}
-//           toggleTheme={() => {}}
-//           isDark={false}
-//           isMobile={true}
-//         />
-//         <MainContent />
-//       </div>
-//     </div>
-//   )
-// }
-
 "use client"
 
 import { useState, useEffect } from "react"
-import { MainContent } from "@/components/dashboard/main-content"
+import AppsPage from "@/components/dashboard/pages/apps-page"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { Topbar } from "@/components/dashboard/topbar"
 import { useRouter } from "next/navigation"
 
-export default function DashboardRoute() {
+export default function AppsRoute() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isDark, setIsDark] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
@@ -100,11 +54,7 @@ export default function DashboardRoute() {
 
   return (
     <div className={`flex h-screen bg-background overflow-hidden ${isDark ? "dark" : ""}`}>
-      <Sidebar
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        isCollapsed={isSidebarCollapsed}
-      />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Topbar
           onMenuClick={() => setSidebarOpen(!sidebarOpen)}
@@ -112,10 +62,10 @@ export default function DashboardRoute() {
           toggleTheme={toggleTheme}
           isDark={isDark}
           isMobile={isMobile}
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
-        <MainContent />
+        <main className="flex-1 overflow-y-auto p-8">
+          <AppsPage />
+        </main>
       </div>
       {isMobile && sidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setSidebarOpen(false)} />
