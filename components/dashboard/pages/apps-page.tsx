@@ -49,7 +49,7 @@ const apps = [
         title: "AWR Compliance Assistant",
         description: "Stay compliant with Agency Workers Regulations across your recruitment processes.",
         logoJobAdder: "/images/jobadder.png",
-        logoBullhorn: "/bullhornconnector.png",
+        logoBullhorn: "/images/bullhornconnector.png",
         buttons: ["Purchase"],
         hasMore: true,
     },
