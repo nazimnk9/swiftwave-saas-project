@@ -13,6 +13,7 @@ interface DashboardProps {
 
 export default function Dashboard({ onLogout, toggleTheme, isDark }: DashboardProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -20,6 +21,7 @@ export default function Dashboard({ onLogout, toggleTheme, isDark }: DashboardPr
       setIsMobile(window.innerWidth < 768)
       if (window.innerWidth < 768) {
         setSidebarOpen(false)
+        setIsCollapsed(false)
       }
     }
 
@@ -31,7 +33,11 @@ export default function Dashboard({ onLogout, toggleTheme, isDark }: DashboardPr
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        isCollapsed={isCollapsed}
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -42,6 +48,8 @@ export default function Dashboard({ onLogout, toggleTheme, isDark }: DashboardPr
           toggleTheme={toggleTheme}
           isDark={isDark}
           isMobile={isMobile}
+          isCollapsed={isCollapsed}
+          onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
         />
 
         {/* Content Area - Default Dashboard */}

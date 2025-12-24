@@ -13,6 +13,7 @@ import {
   Mail,
   HelpCircle,
   Zap,
+  Grid,
   X,
 } from "lucide-react"
 import Image from "next/image"
@@ -47,18 +48,17 @@ export function Sidebar({ isOpen, onClose, isCollapsed = false }: SidebarProps) 
       icon: Home,
       href: "/dashboard",
     },
-    
+
     {
       id: "integrations",
       label: "Integrations",
       icon: Zap,
-      href: "/dashboard/integrations",
-      submenu: [{ label: "Business Settings", href: "/dashboard/business-settings" }],
+      href: "/dashboard/business-settings",
     },
     {
       id: "apps",
       label: "Apps",
-      icon: Zap,
+      icon: Grid,
       href: "/dashboard/apps",
     },
     {
@@ -177,6 +177,11 @@ export function Sidebar({ isOpen, onClose, isCollapsed = false }: SidebarProps) 
 
             return (
               <div key={item.id}>
+                {!isCollapsed && (
+                  <div className="px-4 py-2 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
+                    {item.label}
+                  </div>
+                )}
                 {hasSubmenu ? (
                   <button
                     onClick={() => toggleExpand(item.id)}
