@@ -55,6 +55,7 @@ import { useRouter } from "next/navigation"
 
 export default function BusinessSettingsRoute() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
   const [isDark, setIsDark] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
@@ -70,6 +71,7 @@ export default function BusinessSettingsRoute() {
       setIsMobile(window.innerWidth < 768)
       if (window.innerWidth < 768) {
         setSidebarOpen(false)
+        setIsCollapsed(false)
       }
     }
 
@@ -101,7 +103,11 @@ export default function BusinessSettingsRoute() {
 
   return (
     <div className={`flex h-screen bg-background overflow-hidden ${isDark ? "dark" : ""}`}>
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        isCollapsed={isCollapsed}
+      />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Topbar
           onMenuClick={() => setSidebarOpen(!sidebarOpen)}
@@ -109,6 +115,8 @@ export default function BusinessSettingsRoute() {
           toggleTheme={toggleTheme}
           isDark={isDark}
           isMobile={isMobile}
+          isCollapsed={isCollapsed}
+          onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
         />
         <BusinessSettingsPage />
       </div>

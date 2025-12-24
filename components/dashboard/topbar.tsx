@@ -350,7 +350,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile, i
         <div className="relative" ref={userRef}>
           <Button variant="ghost" size="icon" onClick={() => setShowUserMenu(!showUserMenu)} className="hover:bg-muted">
             <div className="cursor-pointer w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-              <User className="w-4 h-4 text-primary" />
+              <User className="w-4 h-4 text-primary dark:text-white" />
             </div>
           </Button>
 

@@ -61,18 +61,18 @@ export function Sidebar({ isOpen, onClose, isCollapsed = false }: SidebarProps) 
       icon: Grid,
       href: "/dashboard/apps",
     },
-    {
-      id: "jobs",
-      label: "Jobs",
-      icon: Briefcase,
-      href: "/dashboard/jobs",
-      submenu: [
-        { label: "Live Jobs", href: "/dashboard/jobs" },
-        // { label: "Draft Jobs", href: "/dashboard/jobs/draft" },
-        { label: "Closed Jobs", href: "/dashboard/jobs" },
-        // { label: "Job Templates", href: "/dashboard/jobs/templates" },
-      ],
-    },
+    // {
+    //   id: "jobs",
+    //   label: "Jobs",
+    //   icon: Briefcase,
+    //   href: "/dashboard/jobs",
+    //   submenu: [
+    //     { label: "Live Jobs", href: "/dashboard/jobs" },
+    //     // { label: "Draft Jobs", href: "/dashboard/jobs/draft" },
+    //     { label: "Closed Jobs", href: "/dashboard/jobs" },
+    //     // { label: "Job Templates", href: "/dashboard/jobs/templates" },
+    //   ],
+    // },
     // {
     //   id: "candidates",
     //   label: "Candidates",
@@ -85,17 +85,17 @@ export function Sidebar({ isOpen, onClose, isCollapsed = false }: SidebarProps) 
     //     { label: "Offers", href: "/dashboard/candidates/offers" },
     //   ],
     // },
-    {
-      id: "reports",
-      label: "Reports",
-      icon: BarChart3,
-      href: "/dashboard/reports",
-      submenu: [
-        { label: "Hiring Analytics", href: "/dashboard/reports/analytics" },
-        { label: "Performance", href: "/dashboard/reports/performance" },
-        { label: "Pipeline", href: "/dashboard/reports/pipeline" },
-      ],
-    },
+    // {
+    //   id: "reports",
+    //   label: "Reports",
+    //   icon: BarChart3,
+    //   href: "/dashboard/reports",
+    //   submenu: [
+    //     { label: "Hiring Analytics", href: "/dashboard/reports/analytics" },
+    //     { label: "Performance", href: "/dashboard/reports/performance" },
+    //     { label: "Pipeline", href: "/dashboard/reports/pipeline" },
+    //   ],
+    // },
     // {
     //   id: "documents",
     //   label: "Documents",
@@ -114,16 +114,16 @@ export function Sidebar({ isOpen, onClose, isCollapsed = false }: SidebarProps) 
     //   icon: Mail,
     //   href: "/dashboard/messages",
     // },
-    {
-      id: "organization-users",
-      label: "Organization User",
-      icon: Users,
-      href: "/dashboard/user-list",
-      submenu: [
-        { label: "User List", href: "/dashboard/user-list" },
-        { label: "Invite List", href: "/dashboard/invite-list" },
-      ],
-    },
+    // {
+    //   id: "organization-users",
+    //   label: "Organization User",
+    //   icon: Users,
+    //   href: "/dashboard/user-list",
+    //   submenu: [
+    //     { label: "User List", href: "/dashboard/user-list" },
+    //     { label: "Invite List", href: "/dashboard/invite-list" },
+    //   ],
+    // },
   ]
 
   const bottomItems = [
@@ -186,7 +186,7 @@ export function Sidebar({ isOpen, onClose, isCollapsed = false }: SidebarProps) 
                   <button
                     onClick={() => toggleExpand(item.id)}
                     className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${active
-                      ? "bg-sidebar-accent text-primary/80"
+                      ? "bg-sidebar-accent text-primary/80 dark:text-white"
                       : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                       } ${isCollapsed ? "justify-center px-2" : ""}`}
                     title={isCollapsed ? item.label : undefined}
@@ -204,7 +204,7 @@ export function Sidebar({ isOpen, onClose, isCollapsed = false }: SidebarProps) 
                     href={item.href}
                     onClick={handleCloseOnMobile}
                     className={`cursor-pointer flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${active
-                      ? "bg-sidebar-accent text-primary/80"
+                      ? "bg-sidebar-accent text-primary/80 dark:text-white"
                       : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                       } ${isCollapsed ? "justify-center px-2" : ""}`}
                     title={isCollapsed ? item.label : undefined}
@@ -223,7 +223,7 @@ export function Sidebar({ isOpen, onClose, isCollapsed = false }: SidebarProps) 
                         href={subitem.href}
                         onClick={handleCloseOnMobile}
                         className={`cursor-pointer block px-4 py-2 text-sm rounded-lg transition-colors ${isActive(subitem.href)
-                          ? "text-primary/80 bg-sidebar-accent"
+                          ? "text-primary/80 bg-sidebar-accent dark:text-white"
                           : "text-sidebar-foreground/70 hover:text-primary/80 hover:bg-sidebar-accent"
                           }`}
                       >
@@ -249,7 +249,7 @@ export function Sidebar({ isOpen, onClose, isCollapsed = false }: SidebarProps) 
                 href={item.href}
                 onClick={handleCloseOnMobile}
                 className={`cursor-pointer flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${active
-                  ? "bg-sidebar-accent text-primary/80"
+                  ? "bg-sidebar-accent text-primary/80 dark:text-white"
                   : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   } ${isCollapsed ? "justify-center px-2" : ""}`}
                 title={isCollapsed ? item.label : undefined}
