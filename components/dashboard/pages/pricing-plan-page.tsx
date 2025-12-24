@@ -2,53 +2,121 @@
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Check } from "lucide-react"
+import { useState, useEffect } from "react"
+import axios from "axios"
+import { BASE_URL } from "@/lib/baseUrl"
+import { useRouter } from "next/navigation"
 
-const pricingPlans = [
-  {
-    name: "Starter",
-    price: "$99",
-    period: "/Month",
-    interviews: "180 WhatsApp Recruit Interviews",
-    description: "For individuals or small teams just getting started with WhatsApp messaging.",
-    features: [
-      "AI sends automated WhatsApp messages to job applicants",
-      "Interview questions generated from your job ad",
-      "Fully automated WhatsApp interview process",
-      "Pre-application link sent to successful applicants",
-      "Auto change Job Application status",
-      "Attached ID & qualifications go to your CRM",
-      "Option to integrate with AI CV Formatter – saving up to 70% of recruiter admin time",
-    ],
-    buttonText: "Select Starter",
-    buttonVariant: "default" as const,
-    highlighted: false,
-  },
-  {
-    name: "Growth",
-    price: "$199",
-    period: "/Month",
-    interviews: "400 WhatsApp Recruit Interviews",
-    description: "Ideal for growing businesses that need more messaging power and automation features.",
-    features: ["All the features of Starter package, with more interviews"],
-    buttonText: "Select Growth",
-    buttonVariant: "default" as const,
-    highlighted: false,
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    period: "",
-    interviews: "",
-    description: "Built for high-volume senders that demand performance and advanced support.",
-    features: [],
-    buttonText: "Request a Call",
-    buttonVariant: "default" as const,
-    highlighted: false,
-  },
+interface PricingPlanFeature {
+  id: number
+  uid: string
+  created_at: string
+  updated_at: string
+  name: string
+  code: string
+  description: string
+  type: string
+  status: string
+}
+
+interface PricingPlan {
+  id: number
+  feature: PricingPlanFeature
+  uid: string
+  created_at: string
+  updated_at: string
+  limit: number
+  name: string
+  description: string
+  price: string
+  status: string
+}
+
+interface PricingPlanResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: PricingPlan[]
+}
+
+// Static fallback for features list since API doesn't provide them yet
+// This preserves the look of the cards even without bullet points from API
+const DEFAULT_FEATURES_LIST = [
+  // This part is tricky as we don't know what to put here dynamically.
+  // For now, we might leave it empty or generic.
 ]
 
-export default function PricingPlanPage() {
+interface PricingPlanPageProps {
+  featureUid?: string
+}
+
+export default function PricingPlanPage({ featureUid }: PricingPlanPageProps) {
+  const [plans, setPlans] = useState<PricingPlan[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [isPurchasing, setIsPurchasing] = useState(false)
+  const [error, setError] = useState("")
+  const router = useRouter()
+
+  useEffect(() => {
+    if (featureUid) {
+      fetchPlans()
+    }
+  }, [featureUid])
+
+  const fetchPlans = async () => {
+    try {
+      setIsLoading(true)
+      const authToken = localStorage.getItem("authToken")
+      // user requested: ${BASE_URL}/subscription/plan/{uid}
+      // Assuming {uid} refers to the featureUid passed in.
+      // API structure: ${BASE_URL}/subscription/plan/${featureUid}
+
+      const response = await axios.get<PricingPlanResponse>(`${BASE_URL}/subscription/plan/${featureUid}/`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      })
+
+      setPlans(response.data.results)
+      setIsLoading(false)
+    } catch (err) {
+      console.error("Error fetching plans:", err)
+      setError("Failed to load pricing plans")
+      setIsLoading(false)
+    }
+  }
+
+  const handleSelectPlan = async (planUid: string) => {
+    try {
+      setIsPurchasing(true)
+      const authToken = localStorage.getItem("authToken")
+
+      await axios.post(
+        `${BASE_URL}/subscription/`,
+        { plan_feature_uid: planUid },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        }
+      )
+
+      router.push("/dashboard/apps")
+    } catch (err) {
+      console.error("Error purchasing plan:", err)
+      setError("Failed to purchase plan. Please try again.")
+      setIsPurchasing(false)
+    }
+  }
+
+  if (featureUid && isLoading) {
+    return <div className="p-8">Loading plans...</div>
+  }
+
+  if (featureUid && error) {
+    return <div className="p-8 text-destructive">{error}</div>
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -59,52 +127,49 @@ export default function PricingPlanPage() {
 
       {/* Pricing Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {pricingPlans.map((plan, index) => (
-          <Card
-            key={index}
-            className={`p-8 flex flex-col gap-6 hover:shadow-lg transition-shadow ${
-              plan.highlighted ? "border-primary border-2" : ""
-            }`}
-          >
-            {/* Plan Name */}
-            <div>
-              <h2 className="text-2xl font-bold text-foreground mb-1">{plan.name}</h2>
-            </div>
-
-            {/* Price */}
-            <div className="flex items-baseline gap-1">
-              <span className="text-5xl font-bold text-foreground">{plan.price}</span>
-              {plan.period && <span className="text-xl text-muted-foreground">{plan.period}</span>}
-            </div>
-
-            {/* Interviews Count */}
-            {plan.interviews && <p className="text-sm text-muted-foreground">{plan.interviews}</p>}
-
-            {/* Description */}
-            <p className="text-sm text-muted-foreground leading-relaxed">{plan.description}</p>
-
-            {/* Features List */}
-            {plan.features.length > 0 && (
-              <ul className="space-y-3 flex-1">
-                {plan.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
-                    <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {/* Button */}
-            <Button
-              variant={plan.buttonVariant}
-              size="lg"
-              className="w-full bg-[#1e293b] hover:bg-[#1e293b]/90 text-white font-semibold"
+        {plans.length > 0 ? (
+          plans.map((plan, index) => (
+            <Card
+              key={plan.id}
+              className="p-8 flex flex-col gap-6 hover:shadow-lg transition-shadow"
             >
-              {plan.buttonText}
-            </Button>
-          </Card>
-        ))}
+              {/* Plan Name */}
+              <div>
+                <h2 className="text-2xl font-bold text-foreground mb-1">{plan.name}</h2>
+              </div>
+
+              {/* Price */}
+              <div className="flex items-baseline gap-1">
+                <span className="text-5xl font-bold text-foreground">${parseFloat(plan.price).toFixed(0)}</span>
+                {/* Period - API doesn't seem to have period, defaulting or omitting */}
+                {/* <span className="text-xl text-muted-foreground">/Month</span> */}
+              </div>
+
+              {/* Limit/Interviews Count */}
+              {plan.limit && <p className="text-sm text-muted-foreground">{plan.limit} Interviews</p>}
+
+              {/* Description */}
+              <p className="text-sm text-muted-foreground leading-relaxed">{plan.description}</p>
+
+              {/* Features List - API doesn't provide bullet points, rendering empty lists or standard placeholder if requested? Use empty for now to follow "do not show static data" rule strictly for fetched content */}
+
+              {/* Button */}
+              <div className="mt-auto">
+                <Button
+                  size="lg"
+                  className="w-full bg-[#1e293b] hover:bg-[#1e293b]/90 text-white font-semibold"
+                  onClick={() => handleSelectPlan(plan.uid)}
+                  disabled={isPurchasing}
+                >
+                  {isPurchasing ? "Processing..." : `Select ${plan.name}`}
+                </Button>
+              </div>
+            </Card>
+          ))
+        ) : (
+          // Fallback or empty state if no plans found
+          !isLoading && <p>No plans available for this feature.</p>
+        )}
       </div>
     </div>
   )

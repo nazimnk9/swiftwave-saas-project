@@ -6,53 +6,71 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
-import { useRouter } from "next/navigation" // Import useRouter for navigation
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import axios from "axios"
+import { BASE_URL } from "@/lib/baseUrl"
 
-const apps = [
-    {
-        id: "whatsapp-recruiter",
-        title: "AI WhatsApp Recruiter",
-        description: "Automate candidate outreach via WhatsApp messaging for faster engagement.",
-        logoJobAdder: "/images/jobadder.png",
-        logoBullhorn: "/images/bullhornconnector.png",
-        buttons: ["Purchase", "Configure", "Report"],
-        hasMore: true,
-    },
-    {
-        id: "phone-call-recruiter",
-        title: "AI Phone Call Recruiter",
-        description: "Conduct personalised phone interviews with AI-driven voice calls.",
-        logoJobAdder: "/images/jobadder.png",
-        logoBullhorn: "/images/bullhornconnector.png",
-        buttons: ["Purchase", "Configure"],
-        hasMore: true,
-    },
-    {
-        id: "cv-formatter",
-        title: "AI CV Formatter",
-        description: "Automatically format candidate CVs to match your preferred style and layout.",
-        logoBullhorn: "/images/bullhornconnector.png",
-        buttons: ["Purchase"],
-        hasMore: true,
-    },
-    {
-        id: "gdpr-compliance",
-        title: "AI GDPR Compliance Assistant",
-        description: "Ensure candidate data processing adheres to strict GDPR requirements.",
-        logoJobAdder: "/images/jobadder.png",
-        buttons: ["Purchase"],
-        hasMore: true,
-    },
-    {
-        id: "awr-compliance",
-        title: "AWR Compliance Assistant",
-        description: "Stay compliant with Agency Workers Regulations across your recruitment processes.",
-        logoJobAdder: "/images/jobadder.png",
-        logoBullhorn: "/images/bullhornconnector.png",
-        buttons: ["Purchase"],
-        hasMore: true,
-    },
+interface AppFeature {
+  id: number
+  uid: string
+  created_at: string
+  updated_at: string
+  name: string
+  code: string
+  description: string
+  type: string
+  status: string
+  is_purchased: boolean
+}
+
+interface AppFeatureResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: AppFeature[]
+}
+
+// Configuration for static assets (images, buttons) mapped by keywords in the app name
+const APP_ASSET_CONFIG = [
+  {
+    keywords: ["whatsapp"],
+    id: "whatsapp-recruiter", // ID used for modal content lookup
+    logoJobAdder: "/images/jobadder.png",
+    logoBullhorn: "/images/bullhornconnector.png",
+    buttons: ["Purchase", "Configure", "Report"],
+    hasMore: true,
+  },
+  {
+    keywords: ["phone", "call"],
+    id: "phone-call-recruiter",
+    logoJobAdder: "/images/jobadder.png",
+    logoBullhorn: "/images/bullhornconnector.png",
+    buttons: ["Purchase", "Configure", "Report"],
+    hasMore: true,
+  },
+  {
+    keywords: ["cv", "formatter"],
+    id: "cv-formatter",
+    logoBullhorn: "/images/bullhornconnector.png",
+    buttons: ["Purchase"],
+    hasMore: true,
+  },
+  {
+    keywords: ["gdpr"],
+    id: "gdpr-compliance",
+    logoJobAdder: "/images/jobadder.png",
+    buttons: ["Purchase"],
+    hasMore: true,
+  },
+  {
+    keywords: ["awr"],
+    id: "awr-compliance",
+    logoJobAdder: "/images/jobadder.png",
+    logoBullhorn: "/images/bullhornconnector.png",
+    buttons: ["Purchase"],
+    hasMore: true,
+  },
 ]
 
 const appDetails = {
@@ -124,100 +142,155 @@ const appDetails = {
 }
 
 export default function AppsPage() {
-    const [selectedApp, setSelectedApp] = useState<string | null>(null)
+  const [selectedFeature, setSelectedFeature] = useState<AppFeature | null>(null)
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false)
+  const [features, setFeatures] = useState<AppFeature[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState("")
+
   const router = useRouter()
 
-  const handlePurchaseClick = (appId: string) => {
-    setSelectedApp(appId)
+  useEffect(() => {
+    fetchFeatures()
+  }, [])
+
+  const fetchFeatures = async () => {
+    try {
+      setIsLoading(true)
+      const authToken = localStorage.getItem("authToken")
+
+      const response = await axios.get<AppFeatureResponse>(`${BASE_URL}/subscription/features/`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      })
+      setFeatures(response.data.results)
+      setIsLoading(false)
+    } catch (err) {
+      console.error("Error fetching features:", err)
+      setError("Failed to load apps")
+      setIsLoading(false)
+    }
+  }
+
+  const handlePurchaseClick = (feature: AppFeature) => {
+    setSelectedFeature(feature)
     setIsPurchaseModalOpen(true)
   }
 
-  const handleConfigureClick = () => {
-    router.push("/dashboard/configure")
+  const handleConfigureClick = (feature: AppFeature) => {
+    router.push(`/dashboard/configure/${feature.uid}`)
   }
 
   const handleClosePurchaseModal = () => {
     setIsPurchaseModalOpen(false)
-    setSelectedApp(null)
+    setSelectedFeature(null)
   }
 
   const handleContinue = () => {
-    handleClosePurchaseModal()
-    router.push("/dashboard/pricing-plan") // Navigate to pricing plan page instead of just logging
+    if (selectedFeature?.uid) {
+      handleClosePurchaseModal()
+      router.push(`/dashboard/pricing-plan/${selectedFeature.uid}`)
+    }
   }
 
-  const currentAppDetails = selectedApp ? appDetails[selectedApp as keyof typeof appDetails] : null
-    return (
-        <div className="min-h-screen bg-background">
-            {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-foreground mb-2">Apps</h1>
-                <p className="text-muted-foreground">Select an AI module to purchase or configure automation services.</p>
-            </div>
+  // Helper to find matching assets
+  const getAssetConfig = (name: string) => {
+    const normalize = (str: string) => str.toLowerCase()
+    const normalizedName = normalize(name)
 
-            {/* Apps Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {apps.map((app) => (
-                    <Card key={app.id} className="pt-4 pb-0 flex flex-col hover:shadow-lg transition-shadow">
-                        {/* Logo Section */}
-                        <div className="flex items-center gap-2 bg-background border-b-2 pb-4 pl-2">
-                            {app.logoJobAdder && (
-                                <div className="relative w-15 h-15 border rounded-md">
-                                    <Image src={app.logoJobAdder || "/placeholder.svg"} alt="JobAdder" fill className="object-contain p-1" />
-                                </div>
-                            )}
-                            {app.logoBullhorn && (
-                                <div className="relative w-15 h-15 border rounded-md">
-                                    <Image src={app.logoBullhorn || "/placeholder.svg"} alt="Bullhorn" fill className="object-contain p-1" />
-                                </div>
-                            )}
-                        </div>
+    return APP_ASSET_CONFIG.find(config =>
+      config.keywords.some(keyword => normalizedName.includes(keyword))
+    )
+  }
 
-                        {/* Content Section */}
-                        <div className="p-2 flex flex-col gap-4 flex-1">
-                            {/* Title and More Link */}
-                            <div className="flex items-start justify-between">
-                                <h3 className="text-lg font-semibold text-foreground">{app.title}</h3>
-                                {app.hasMore && (
-                                    <Link href="#" className="text-sm text-primary underline hover:underline">
-                                        More
-                                    </Link>
-                                )}
-                            </div>
+  const config = selectedFeature ? getAssetConfig(selectedFeature.name) : null
+  const staticId = config?.id
+  const currentAppDetails = staticId ? appDetails[staticId as keyof typeof appDetails] : null
 
-                            {/* Description */}
-                            <p className="text-sm text-muted-foreground flex-1">{app.description}</p>
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-foreground mb-2">Apps</h1>
+        <p className="text-muted-foreground">Select an AI module to purchase or configure automation services.</p>
+      </div>
 
-                            {/* Action Buttons */}
-                            {/* Action Buttons */}
-                            <div className={`flex gap-2 flex-wrap pb-1 ${app.buttons.length === 1 ? "justify-center" : ""}`}>
-                                {app.buttons.map((buttonLabel, idx) => (
-                                    <Button
-                                        key={idx}
-                                        variant={idx === 0 ? "default" : "outline"}
-                                        className={
-                                            idx === 0
-                                                ? `bg-primary hover:bg-primary/90 ${app.buttons.length === 1 ? "w-3/4" : ""}`
-                                                : ""
-                                        }
-                                        onClick={() => {
-                    if (buttonLabel === "Purchase") {
-                      handlePurchaseClick(app.id)
-                    } else if (buttonLabel === "Configure") {
-                      handleConfigureClick()
+      {/* Apps Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {isLoading && <p>Loading apps...</p>}
+        {error && <p className="text-destructive">{error}</p>}
+        {!isLoading && !error && features.map((feature) => {
+          const config = getAssetConfig(feature.name)
+          const staticId = config?.id // Use static ID for modal lookup and button logic
+
+          return (
+            <Card key={feature.id} className="pt-4 pb-0 flex flex-col hover:shadow-lg transition-shadow">
+              {/* Logo Section */}
+              <div className="flex items-center gap-2 bg-background border-b-2 pb-4 pl-2">
+                {config?.logoJobAdder && (
+                  <div className="relative w-15 h-15 border rounded-md">
+                    <Image src={config.logoJobAdder || "/placeholder.svg"} alt="JobAdder" fill className="object-contain p-1" />
+                  </div>
+                )}
+                {config?.logoBullhorn && (
+                  <div className="relative w-15 h-15 border rounded-md">
+                    <Image src={config.logoBullhorn || "/placeholder.svg"} alt="Bullhorn" fill className="object-contain p-1" />
+                  </div>
+                )}
+              </div>
+
+              {/* Content Section */}
+              <div className="p-2 flex flex-col gap-4 flex-1">
+                {/* Title and More Link */}
+                <div className="flex items-start justify-between">
+                  <h3 className="text-lg font-semibold text-foreground">{feature.name}</h3>
+                  {config?.hasMore && (
+                    <Link href="#" className="text-sm text-primary underline hover:underline">
+                      More
+                    </Link>
+                  )}
+                </div>
+
+                {/* Description */}
+                <p className="text-sm text-muted-foreground flex-1">{feature.description}</p>
+
+                {/* Action Buttons */}
+                <div className={`flex gap-2 flex-wrap pb-1 ${config?.buttons && config.buttons.length === 1 ? "justify-center" : ""}`}>
+                  {config?.buttons?.map((buttonLabel, idx) => {
+                    // Hide "Purchase" button if the app is already purchased
+                    if (buttonLabel === "Purchase" && feature.is_purchased) {
+                      return null
                     }
-                  }}
-                                    >
-                                        {buttonLabel}
-                                    </Button>
-                                ))}
-                            </div>
-                        </div>
-                    </Card>
-                ))}
-            </div>
-            {/* Purchase Modal */}
+
+                    return (
+                      <Button
+                        key={idx}
+                        variant={idx === 0 ? "default" : "outline"}
+                        className={
+                          idx === 0
+                            ? `bg-primary hover:bg-primary/90 ${config.buttons.length === 1 ? "w-3/4" : ""}`
+                            : ""
+                        }
+                        onClick={() => {
+                          if (buttonLabel === "Purchase") {
+                            handlePurchaseClick(feature)
+                          } else if (buttonLabel === "Configure") {
+                            handleConfigureClick(feature)
+                          }
+                        }}
+                      >
+                        {buttonLabel}
+                      </Button>
+                    )
+                  })}
+                </div>
+              </div>
+            </Card>
+          )
+        })}
+      </div>
+      {/* Purchase Modal */}
       <Dialog open={isPurchaseModalOpen} onOpenChange={setIsPurchaseModalOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] min-w-[45vw] overflow-y-auto p-0">
           {/* Custom Header with Close Button */}
@@ -270,6 +343,6 @@ export default function AppsPage() {
           </div>
         </DialogContent>
       </Dialog>
-        </div>
-    )
+    </div>
+  )
 }
