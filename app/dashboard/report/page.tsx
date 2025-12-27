@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import ConfigurePage from "@/components/dashboard/pages/configure-page"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { Topbar } from "@/components/dashboard/topbar"
+import ReportPage from "@/components/dashboard/pages/report-page"
+import { ThemeProvider } from "@/components/theme-provider"
 import { useRouter, useParams } from "next/navigation"
+import { useState, useEffect } from "react"
 
-export default function ConfigureDynamicRoute() {
+export default function ReportRoute() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [isCollapsed, setIsCollapsed] = useState(false)
     const [isDark, setIsDark] = useState(false)
@@ -71,7 +72,7 @@ export default function ConfigureDynamicRoute() {
                     onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
                 />
                 <main className="flex-1 overflow-y-auto p-8">
-                    <ConfigurePage featureUid={uid} />
+                    <ReportPage />
                 </main>
             </div>
             {isMobile && sidebarOpen && (

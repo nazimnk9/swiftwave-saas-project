@@ -12,6 +12,8 @@ import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
 import { Trash2, CheckCircle2, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useToastNotification } from "@/components/auth/toast-provider"
+import { LoaderOverlay } from "@/components/auth/loader-overlay"
 
 interface ConfigurePageProps {
   featureUid?: string
@@ -65,6 +67,8 @@ const CALLING_TIME_OPTIONS = [
 
 export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const router = useRouter()
+  const { toast } = useToastNotification()
+
   // Dropdown Data States
   const [statusOptions, setStatusOptions] = useState<InterviewStatus[]>([])
   const [platformOptions, setPlatformOptions] = useState<Platform[]>([])
@@ -177,14 +181,26 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
     const selectedStatuses = [applicationStatus, unsuccessfulStatus, successfulStatus, placedStatus].filter(Boolean)
     const uniqueStatuses = new Set(selectedStatuses)
     if (selectedStatuses.length !== uniqueStatuses.size) {
-      setError("Error: You cannot select the same status for multiple distinct outcomes.")
+      const msg = "Error: You cannot select the same status for multiple distinct outcomes."
+      setError(msg)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: msg
+      })
       return
     }
 
     // Validation: Ensure all questions are saved
     const unsavedQuestions = questions.filter(q => q.value.trim() && !q.isSaved)
     if (unsavedQuestions.length > 0) {
-      setError("Please save all your questions before saving the configuration.")
+      const msg = "Please save all your questions before saving the configuration."
+      setError(msg)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: msg
+      })
       return
     }
 
@@ -201,21 +217,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         application_status_for_calling: Number(applicationStatus),
         calling_time_after_status_update: Number(callingTime),
         status_for_unsuccessful_call: Number(unsuccessfulStatus),
-        status_for_successful_call: Number(successfulStatus), // This logic was inferred, check if user provided successful status instructions.
-        // Re-reading user request: "status_for_successful_call" was NOT explicitly in the list of dropdowns to SHOW, but it IS in the POST payload example.
-        // Wait, the user request says: Show "status_when_call_is_placed" dropdown... but in payload example it lists "status_for_successful_call": 3 AND "status_when_call_is_placed": 4.
-        // The user request descriptions for dropdowns:
-        // 1. jobad_status_for_calling
-        // 2. application_status_for_calling
-        // 3. calling_time_after_status_update
-        // 4. status_for_unsuccessful_call
-        // 5. status_when_call_is_placed
-        // 
-        // MISSING in dropdown instructions but present in payload: "status_for_successful_call".
-        // I should probably add a dropdown for "status_for_successful_call" to be safe, or maybe "Placed" status maps to one of them?
-        // Let's assume based on "status_when_call_is_placed" might be the one.
-        // Actually, let's include "Status for Successful Call" dropdown as it's critical for the payload.
-
+        status_for_successful_call: Number(successfulStatus),
         status_when_call_is_placed: Number(placedStatus),
         platform_uid: platformUid,
         phone_uid: phoneNumberUid,
@@ -223,25 +225,53 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         voice_id: voiceId
       }
 
-      await axios.post(`${BASE_URL}/interview/call/config/`, payload, {
+      const response = await axios.post(`${BASE_URL}/interview/call/config/`, payload, {
         headers: { Authorization: `Bearer ${authToken}` }
       })
 
       // Success
-      localStorage.removeItem("lastSavedQuestionUid") // cleanup if we used it
-      router.push("/dashboard/apps")
+      const successMsg = response.data?.message || "Configuration saved successfully!"
+      toast({
+        title: "Success",
+        description: successMsg
+      })
 
-    } catch (err) {
+      localStorage.removeItem("lastSavedQuestionUid") // cleanup if we used it
+
+      // Delay redirect slightly to show toast
+      setTimeout(() => {
+        router.push("/dashboard/apps")
+      }, 1000)
+
+    } catch (err: any) {
       console.error("Error saving configuration:", err)
-      setError("Failed to save configuration. Please check all fields.")
+      const errorMsg = err.response?.data?.end_call_if_primary_answer_negative || err.response?.data?.jobad_status_for_calling || err.response?.data?.application_status_for_calling || err.response?.data?.calling_time_after_status_update || err.response?.data?.status_for_unsuccessful_call || err.response?.data?.status_for_successful_call || err.response?.data?.status_when_call_is_placed || err.response?.data?.platform_uid || err.response?.data?.phone_uid || err.response?.data?.primary_question_inputs || err.response?.data?.voice_id || err.response?.data?.details || "Failed to save configuration. Please check all fields."
+      setError(errorMsg)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMsg
+      })
       setIsSaving(false)
     }
   }
 
-  if (isLoading) return <div className="p-8">Loading configuration options...</div>
+  // Handle Select Change with Clear Option
+  const handleSelectChange = (setter: (val: string) => void) => (val: string) => {
+    if (val === "_CLEAR_") {
+      setter("")
+    } else {
+      setter(val)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
+      <LoaderOverlay
+        isLoading={isLoading || isSaving}
+        message={isLoading ? "Loading configuration..." : "Saving changes..."}
+      />
+
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Configure – {featureName || "Loading..."}</h1>
@@ -266,11 +296,12 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               {/* Platform */}
               <div className="space-y-2">
                 <Label>Platform</Label>
-                <Select value={platformUid} onValueChange={setPlatformUid}>
+                <Select value={platformUid} onValueChange={handleSelectChange(setPlatformUid)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select Platform" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
                     {platformOptions.map(p => (
                       <SelectItem key={p.id} value={p.uid}>{p.platform.name}</SelectItem>
                     ))}
@@ -281,11 +312,12 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               {/* Phone Number */}
               <div className="space-y-2">
                 <Label>Select Phone Number</Label>
-                <Select value={phoneNumberUid} onValueChange={setPhoneNumberUid}>
+                <Select value={phoneNumberUid} onValueChange={handleSelectChange(setPhoneNumberUid)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select phone number" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
                     {phoneNumberOptions.map(p => (
                       <SelectItem key={p.id} value={p.uid}>
                         {p.phone_number} {p.friendly_name ? `(${p.friendly_name})` : ''}
@@ -334,11 +366,12 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               {/* Job Ad Status */}
               <div className="space-y-2">
                 <Label>Job Ad Status for Calling</Label>
-                <Select value={jobAdStatus} onValueChange={setJobAdStatus}>
+                <Select value={jobAdStatus} onValueChange={handleSelectChange(setJobAdStatus)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
                     <SelectItem value="Current">Current</SelectItem>
                     <SelectItem value="Expired">Expired</SelectItem>
                     <SelectItem value="Draft">Draft</SelectItem>
@@ -349,11 +382,12 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               {/* Application Status */}
               <div className="space-y-2">
                 <Label>Application Status for Calling</Label>
-                <Select value={applicationStatus} onValueChange={setApplicationStatus}>
+                <Select value={applicationStatus} onValueChange={handleSelectChange(setApplicationStatus)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
                     {statusOptions.map(s => (
                       <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
                     ))}
@@ -364,11 +398,12 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               {/* Calling Time */}
               <div className="space-y-2">
                 <Label>Calling Time After Status Update</Label>
-                <Select value={callingTime} onValueChange={setCallingTime}>
+                <Select value={callingTime} onValueChange={handleSelectChange(setCallingTime)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select time" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
                     {CALLING_TIME_OPTIONS.map(opt => (
                       <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
                     ))}
@@ -379,11 +414,12 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               {/* Status When Call Placed */}
               <div className="space-y-2">
                 <Label>Status When Call is Placed</Label>
-                <Select value={placedStatus} onValueChange={setPlacedStatus}>
+                <Select value={placedStatus} onValueChange={handleSelectChange(setPlacedStatus)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
                     {statusOptions.map(s => (
                       <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
                     ))}
@@ -394,11 +430,12 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               {/* Status for Successful Call */}
               <div className="space-y-2">
                 <Label>Status for Successful Call</Label>
-                <Select value={successfulStatus} onValueChange={setSuccessfulStatus}>
+                <Select value={successfulStatus} onValueChange={handleSelectChange(setSuccessfulStatus)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
                     {statusOptions.map(s => (
                       <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
                     ))}
@@ -409,11 +446,12 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               {/* Status for Unsuccessful Call */}
               <div className="space-y-2">
                 <Label>Status for Unsuccessful Call</Label>
-                <Select value={unsuccessfulStatus} onValueChange={setUnsuccessfulStatus}>
+                <Select value={unsuccessfulStatus} onValueChange={handleSelectChange(setUnsuccessfulStatus)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
                     {statusOptions.map(s => (
                       <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
                     ))}
@@ -440,11 +478,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                   onChange={(e) => handleQuestionChange(index, e.target.value)}
                   placeholder="Type a question"
                   className={`bg-background ${q.isSaved ? "border-green-500" : ""}`}
-                  disabled={q.isSaved} // Optional: disable editing after save to force users to delete? User request didn't specify. Let's keep editable but reset saved state.
-                // Actually, if we reset saved state, we lose the UID. So maybe better to assume save = done. 
-                // If they want to edit, they can delete and add new.
-                // BUT, user request just said "when create another input field then show delete icon... and also show save button".
-                // Let's allow typing, but show save button if not saved.
+                  disabled={q.isSaved}
                 />
 
                 {/* Action Buttons */}

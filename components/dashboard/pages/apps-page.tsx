@@ -182,6 +182,10 @@ export default function AppsPage() {
     router.push(`/dashboard/configure/${feature.uid}`)
   }
 
+  const handleReportClick = (feature: AppFeature) => {
+    router.push(`/dashboard/report/${feature.uid}`)
+  }
+
   const handleClosePurchaseModal = () => {
     setIsPurchaseModalOpen(false)
     setSelectedFeature(null)
@@ -277,6 +281,8 @@ export default function AppsPage() {
                             handlePurchaseClick(feature)
                           } else if (buttonLabel === "Configure") {
                             handleConfigureClick(feature)
+                          } else if (buttonLabel === "Report") {
+                            handleReportClick(feature)
                           }
                         }}
                       >
