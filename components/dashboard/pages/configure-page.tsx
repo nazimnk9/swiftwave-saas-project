@@ -46,6 +46,13 @@ interface QuestionInput {
   isSaved: boolean
 }
 
+interface SuggestedQuestion {
+  id: number
+  uid: string
+  question: string
+  status: string
+}
+
 interface AppFeature {
   uid: string
   name: string
@@ -74,6 +81,8 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const [platformOptions, setPlatformOptions] = useState<Platform[]>([])
   const [phoneNumberOptions, setPhoneNumberOptions] = useState<PhoneNumber[]>([])
   const [featureName, setFeatureName] = useState("")
+  const [isUpdateMode, setIsUpdateMode] = useState(false)
+  const [suggestedQuestions, setSuggestedQuestions] = useState<SuggestedQuestion[]>([])
 
   // Form Field States
   const [phoneNumberUid, setPhoneNumberUid] = useState("")
@@ -105,20 +114,67 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         const authToken = localStorage.getItem("authToken")
         const headers = { Authorization: `Bearer ${authToken}` }
 
-        const [statusRes, platformRes, phoneRes, featuresRes] = await Promise.all([
+        const [statusRes, platformRes, phoneRes, featuresRes, questionsRes] = await Promise.all([
           axios.get<InterviewStatus[]>(`${BASE_URL}/interview/status/`, { headers }),
           axios.get<{ results: Platform[] }>(`${BASE_URL}/organizations/platform/my_platforms`, { headers }),
           axios.get<{ results: PhoneNumber[] }>(`${BASE_URL}/phone_number/`, { headers }),
-          axios.get<{ results: AppFeature[] }>(`${BASE_URL}/subscription/features/`, { headers })
+          axios.get<{ results: AppFeature[] }>(`${BASE_URL}/subscription/features/`, { headers }),
+          axios.get<{ results: SuggestedQuestion[] }>(`${BASE_URL}/interview/call/config/primary_questions`, { headers })
         ])
 
         setStatusOptions(statusRes.data)
         setPlatformOptions(platformRes.data.results)
         setPhoneNumberOptions(phoneRes.data.results)
+        setSuggestedQuestions(questionsRes.data.results)
 
         const currentFeature = featuresRes.data.results.find(f => f.uid === featureUid)
         if (currentFeature) {
           setFeatureName(currentFeature.name)
+        }
+
+        // Try to fetch existing configuration
+        // We only attempt this for "Ai Call Interview" or non-SMS features as requested.
+        // User explicitly stated: do not show data from get api under "Ai SMS recruiter"
+        const isSmsFeature = currentFeature?.name.toLowerCase().includes("sms")
+
+        if (!isSmsFeature) {
+          try {
+            const configRes = await axios.get(`${BASE_URL}/interview/call/config/details`, { headers })
+            const configData = configRes.data
+
+            if (configData) {
+              setIsUpdateMode(true)
+
+              // Populate fields
+              setPlatformUid(configData.platform?.uid || "")
+              setPhoneNumberUid(configData.phone?.uid || "")
+              setVoiceId(configData.voice_id || "")
+              setEndCallNegative(configData.end_call_if_primary_answer_negative ? "true" : "false")
+
+              // Map statuses
+              // Note: The API returns `application_status_for_calling` etc which matches our state keys mostly
+              setJobAdStatus(configData.jobad_status_for_calling || configData.jobad_status_for_sms || "Current")
+              setApplicationStatus(String(configData.application_status_for_calling || configData.application_status_for_sms || ""))
+              setCallingTime(String(configData.calling_time_after_status_update || configData.sms_time_after_status_update || "15"))
+              setUnsuccessfulStatus(String(configData.status_for_unsuccessful_call || configData.status_for_unsuccessful_sms || ""))
+              setSuccessfulStatus(String(configData.status_for_successful_call || configData.status_for_successful_sms || ""))
+              setPlacedStatus(String(configData.status_when_call_is_placed || configData.status_when_sms_is_send || ""))
+
+              // Map Questions
+              if (configData.primary_questions && Array.isArray(configData.primary_questions)) {
+                const mappedQuestions = configData.primary_questions.map((q: any) => ({
+                  tempId: crypto.randomUUID(),
+                  uid: q.uid,
+                  value: q.question,
+                  isSaved: true
+                }))
+                setQuestions(mappedQuestions.length > 0 ? mappedQuestions : [{ tempId: crypto.randomUUID(), value: "", isSaved: false }])
+              }
+            }
+          } catch (configErr) {
+            // Ignore 404 or other errors, implies no existing config or different endpoint
+            console.log("No existing configuration found or error fetching it:", configErr)
+          }
         }
 
         setIsLoading(false)
@@ -149,6 +205,14 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
     setQuestions(newQuestions.length ? newQuestions : [{ tempId: crypto.randomUUID(), value: "", isSaved: false }])
   }
 
+  const handleSuggestionClick = (index: number, suggestion: string) => {
+    const newQuestions = [...questions]
+    newQuestions[index].value = suggestion
+    // We don't mark as saved yet because user might want to edit it or save manually
+    // But typically we treat it as an edit.
+    setQuestions(newQuestions)
+  }
+
   const handleSaveQuestion = async (index: number) => {
     const question = questions[index]
     if (!question.value.trim()) return
@@ -175,7 +239,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
     }
   }
 
-  // Final Save Handler
+  // Final Save/Update Handler
   const handleSaveConfiguration = async () => {
     setError("")
 
@@ -244,12 +308,21 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         }
       }
 
-      const response = await axios.post(`${BASE_URL}/interview/call/config/`, payload, {
-        headers: { Authorization: `Bearer ${authToken}` }
-      })
+      let response
+      if (isUpdateMode) {
+        // PATCH request for Update
+        response = await axios.patch(`${BASE_URL}/interview/call/config/details`, payload, {
+          headers: { Authorization: `Bearer ${authToken}` }
+        })
+      } else {
+        // POST request for Create
+        response = await axios.post(`${BASE_URL}/interview/call/config/`, payload, {
+          headers: { Authorization: `Bearer ${authToken}` }
+        })
+      }
 
       // Success
-      const successMsg = response.data?.message || "Configuration saved successfully!"
+      const successMsg = response.data?.message || (isUpdateMode ? "Configuration updated successfully!" : "Configuration saved successfully!")
       toast({
         title: "Success",
         description: successMsg
@@ -263,7 +336,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
       }, 1000)
 
     } catch (err: any) {
-      console.error("Error saving configuration:", err)
+      console.error("Error saving/updating configuration:", err)
 
       const smsErrors = isSms ? (err.response?.data?.application_status_for_sms || err.response?.data?.jobad_status_for_sms || err.response?.data?.sms_time_after_status_update || err.response?.data?.status_for_unsuccessful_sms || err.response?.data?.status_for_successful_sms || err.response?.data?.status_when_sms_is_send) : null
 
@@ -296,7 +369,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
     <div className="min-h-screen bg-background">
       <LoaderOverlay
         isLoading={isLoading || isSaving}
-        message={isLoading ? "Loading configuration..." : "Saving changes..."}
+        message={isLoading ? "Loading configuration..." : (isUpdateMode ? "Updating changes..." : "Saving changes...")}
       />
 
       {/* Header */}
@@ -503,43 +576,63 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
           <div className="space-y-4">
             {questions.map((q, index) => (
-              <div key={q.tempId} className="flex gap-2 items-center">
-                <Input
-                  value={q.value}
-                  onChange={(e) => handleQuestionChange(index, e.target.value)}
-                  placeholder={isSms ? "Type SMS question" : "Type a question"}
-                  className={`bg-background ${q.isSaved ? "border-green-500" : ""}`}
-                  disabled={q.isSaved}
-                />
+              <div key={q.tempId} className="space-y-1">
+                <div className="flex gap-2 items-center">
+                  <Input
+                    value={q.value}
+                    onChange={(e) => handleQuestionChange(index, e.target.value)}
+                    placeholder={isSms ? "Type SMS question" : "Type a question"}
+                    className={`bg-background ${q.isSaved ? "border-green-500" : ""}`}
+                    disabled={q.isSaved}
+                  />
 
-                {/* Action Buttons */}
-                <div className="flex gap-1 shrink-0">
-                  {!q.isSaved ? (
+                  {/* Action Buttons */}
+                  <div className="flex gap-1 shrink-0">
+                    {!q.isSaved ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleSaveQuestion(index)}
+                        className="h-10 px-3 cursor-pointer"
+                        title="Save Question"
+                      >
+                        Save
+                      </Button>
+                    ) : (
+                      <div className="h-10 w-10 flex items-center justify-center text-green-500" title="Saved">
+                        <CheckCircle2 className="h-5 w-5" />
+                      </div>
+                    )}
+
                     <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleSaveQuestion(index)}
-                      className="h-10 px-3 cursor-pointer"
-                      title="Save Question"
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleDeleteQuestion(index)}
+                      className="h-10 w-10 text-destructive hover:text-destructive/90 cursor-pointer"
+                      title="Delete"
                     >
-                      Save
+                      <Trash2 className="h-4 w-4" />
                     </Button>
-                  ) : (
-                    <div className="h-10 w-10 flex items-center justify-center text-green-500" title="Saved">
-                      <CheckCircle2 className="h-5 w-5" />
-                    </div>
-                  )}
-
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleDeleteQuestion(index)}
-                    className="h-10 w-10 text-destructive hover:text-destructive/90 cursor-pointer"
-                    title="Delete"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  </div>
                 </div>
+
+                {/* Suggested Questions - Only show if input is empty and not saved */}
+                {!q.value && !q.isSaved && suggestedQuestions.length > 0 && (
+                  <div className="border rounded-md p-2 bg-muted/20 space-y-2 mt-1">
+                    <p className="text-xs text-muted-foreground font-medium px-1">Suggested Questions:</p>
+                    <div className="flex flex-col gap-1">
+                      {suggestedQuestions.map(s => (
+                        <div
+                          key={s.id}
+                          onClick={() => handleSuggestionClick(index, s.question)}
+                          className="text-sm p-2 hover:bg-muted rounded-sm cursor-pointer transition-colors"
+                        >
+                          {s.question}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
 
@@ -562,7 +655,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           disabled={isSaving}
           className="bg-primary hover:bg-primary/90 min-w-[200px] cursor-pointer"
         >
-          {isSaving ? "Saving..." : "Save Configuration"}
+          {isSaving ? (isUpdateMode ? "Updating..." : "Saving...") : (isUpdateMode ? "Update Configure" : "Save Configure")}
         </Button>
 
         <Button

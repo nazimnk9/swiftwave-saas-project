@@ -245,7 +245,7 @@ export default function AppsPage() {
       {/* Apps Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading && (
-          Array.from({ length: 1 }).map((_, index) => ( // Increased to 9 to look better on large screens
+          Array.from({ length: 2 }).map((_, index) => ( // Increased to 9 to look better on large screens
             <Card key={index} className="pt-4 pb-0 flex flex-col">
               <div className="flex items-center gap-2 bg-background border-b-2 pb-4 pl-2">
                 <Skeleton className="h-15 w-15 rounded-md" />
