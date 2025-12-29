@@ -43,6 +43,14 @@ const APP_ASSET_CONFIG = [
     hasMore: true,
   },
   {
+    keywords: ["sms"],
+    id: "ai-sms-recruiter", // ID used for modal content lookup
+    logoJobAdder: "/images/JobAdder.jpg",
+    logoBullhorn: "/images/Bullhornconnector.jpg",
+    buttons: ["Purchase", "Configure", "Report"],
+    hasMore: true,
+  },
+  {
     keywords: ["phone", "call"],
     id: "phone-call-recruiter",
     logoJobAdder: "/images/JobAdder.jpg",
@@ -77,6 +85,19 @@ const APP_ASSET_CONFIG = [
 const appDetails = {
   "whatsapp-recruiter": {
     title: "AI WhatsApp Recruiter",
+    about: [
+      "This app can automate recruitment process on JobAdder.",
+      "This App will check new live job applications, place a phone call to the applicant's phone or mobile number to start questionnaires by having automated call conversations. The interview questions will be build based on the job post details.",
+      "You will choose common mandatory questions which will be asked in every interview at first. Answers to these questions must be positive to continue the interview.",
+    ],
+    setup: [
+      "Purchase a phone number from our platform or choose a phone number from the purchased phone number list.",
+      "Configure to edit the settings of this App automation.",
+      "Finally your AI WhatsApp Recruiter app is live!",
+    ],
+  },
+  "ai-sms-recruiter": {
+    title: "Ai SMS recruiter",
     about: [
       "This app can automate recruitment process on JobAdder.",
       "This App will check new live job applications, place a phone call to the applicant's phone or mobile number to start questionnaires by having automated call conversations. The interview questions will be build based on the job post details.",
