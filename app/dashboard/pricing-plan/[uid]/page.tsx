@@ -8,6 +8,7 @@ import { useRouter, useParams } from "next/navigation"
 
 export default function PricingPlanDynamicRoute() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
+     const [isCollapsed, setIsCollapsed] = useState(false)
     const [isDark, setIsDark] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
     const router = useRouter()
@@ -56,7 +57,11 @@ export default function PricingPlanDynamicRoute() {
 
     return (
         <div className={`flex h-screen bg-background overflow-hidden ${isDark ? "dark" : ""}`}>
-            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            <Sidebar
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
+                isCollapsed={isCollapsed}
+            />
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Topbar
                     onMenuClick={() => setSidebarOpen(!sidebarOpen)}
@@ -64,6 +69,8 @@ export default function PricingPlanDynamicRoute() {
                     toggleTheme={toggleTheme}
                     isDark={isDark}
                     isMobile={isMobile}
+                    isCollapsed={isCollapsed}
+                    onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
                 />
                 <main className="flex-1 overflow-y-auto p-6">
                     <PricingPlanPage featureUid={uid} />
