@@ -60,7 +60,7 @@ export default function PaymentPage({ planUid }: PaymentPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] py-12 px-4">
+    <div className="min-h-screen py-12 px-4">
       <div className="max-w-xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[#1e293b] mb-2">Payment Details</h1>
