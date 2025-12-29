@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useState, useEffect } from "react"
+import { X, ArrowLeft } from "lucide-react"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
 import { useRouter } from "next/navigation"
@@ -172,6 +173,14 @@ export default function PricingPlanPage({ featureUid }: PricingPlanPageProps) {
           !isLoading && <p>No plans available for this feature.</p>
         )}
       </div>
+      <Button
+        variant="ghost"
+        className="text-primary bg-primary/30 hover:bg-black hover:text-white mt-12 cursor-pointer"
+        onClick={() => router.back()}
+      >
+        <ArrowLeft className="h-5 w-5 mr-2" />
+        Back
+      </Button>
     </div>
   )
 }

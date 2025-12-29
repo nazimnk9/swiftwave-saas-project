@@ -4,10 +4,11 @@ import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { X } from "lucide-react"
+import { X, ArrowLeft } from "lucide-react"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
 import { LoaderOverlay } from "@/components/auth/loader-overlay"
+import { useRouter } from "next/navigation"
 
 // Interfaces based on user provided JSON structure
 interface ChatMessage {
@@ -66,6 +67,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
     const [loading, setLoading] = useState(true)
     const [featureName, setFeatureName] = useState("WhatsApp Recruiter Report") // Default or loaded
     const [selectedInterview, setSelectedInterview] = useState<InterviewData | null>(null)
+    const router = useRouter()
 
     useEffect(() => {
         const fetchData = async () => {
@@ -126,7 +128,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
             </div>
 
             {/* Report Table */}
-            <div className="border rounded-lg bg-card overflow-hidden">
+            <div className="border rounded-lg bg-card overflow-hidden mb-8">
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-muted/50">
@@ -176,6 +178,15 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                     </TableBody>
                 </Table>
             </div>
+
+            <Button
+                variant="ghost"
+                className="text-primary bg-primary/30 hover:bg-black hover:text-white mt-4 cursor-pointer"
+                onClick={() => router.back()}
+            >
+                <ArrowLeft className="h-5 w-5 mr-2" />
+                Back
+            </Button>
 
             {/* Chat History Modal */}
             <Dialog open={isChatModalOpen} onOpenChange={setIsChatModalOpen}>

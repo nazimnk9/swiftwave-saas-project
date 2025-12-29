@@ -8,6 +8,7 @@ import { useState } from "react"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
 import { useRouter } from "next/navigation"
+import { X, ArrowLeft } from "lucide-react"
 
 interface PaymentPageProps {
   planUid?: string
@@ -155,13 +156,23 @@ export default function PaymentPage({ planUid }: PaymentPageProps) {
               />
             </div>
 
-            <Button
-              type="submit"
-              className="w-full h-12 bg-[#0f172a] hover:bg-[#1e293b] text-white font-semibold text-base mt-4 transition-colors cursor-pointer"
-              disabled={loading}
-            >
-              {loading ? "Processing..." : "Purchase Now"}
-            </Button>
+            <div className="flex flex-row gap-4 ">
+              <Button
+                type="submit"
+                className="w-1/2 h-12 bg-[#0f172a] hover:bg-[#1e293b] text-white font-semibold text-base mt-4 transition-colors cursor-pointer"
+                disabled={loading}
+              >
+                {loading ? "Processing..." : "Purchase Now"}
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-60 h-12 text-primary bg-primary/30 hover:bg-black hover:text-white mt-4 cursor-pointer"
+                onClick={() => router.back()}
+              >
+                {/* <ArrowLeft className="h-5 w-5 mr-2" /> */}
+                Back
+              </Button>
+            </div>
           </form>
         </Card>
       </div>
