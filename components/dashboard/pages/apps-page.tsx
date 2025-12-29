@@ -231,8 +231,9 @@ export default function AppsPage() {
                 <Skeleton className="h-15 w-15 rounded-md" />
               </div>
               <div className="p-2 flex flex-col gap-4 flex-1">
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-2">
                   <Skeleton className="h-6 w-1/2" />
+                  <Skeleton className="h-6 w-10" />
                 </div>
                 <Skeleton className="h-20 w-full" />
                 <div className="flex gap-2">
