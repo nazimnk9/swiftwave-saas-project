@@ -60,6 +60,7 @@ interface AppFeature {
 
 // Fixed dropdown options for calling time
 const CALLING_TIME_OPTIONS = [
+  { label: "10 min", value: 10 },
   { label: "15 min", value: 15 },
   { label: "20 min", value: 20 },
   { label: "25 min", value: 25 },
@@ -93,7 +94,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   // Status Assignments
   const [jobAdStatus, setJobAdStatus] = useState("Current") // "Current", "Expired", "Draft"
   const [applicationStatus, setApplicationStatus] = useState<string>("")
-  const [callingTime, setCallingTime] = useState<string>("15")
+  const [callingTime, setCallingTime] = useState<string>("10")
   const [unsuccessfulStatus, setUnsuccessfulStatus] = useState<string>("")
   const [successfulStatus, setSuccessfulStatus] = useState<string>("")
   const [placedStatus, setPlacedStatus] = useState<string>("") // status_when_call_is_placed or status_when_sms_is_send
