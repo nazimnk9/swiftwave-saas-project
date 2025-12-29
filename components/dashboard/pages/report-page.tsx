@@ -184,7 +184,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                         <h2 className="text-xl font-semibold text-foreground">Chat History</h2>
                         <button
                             onClick={() => setIsChatModalOpen(false)}
-                            className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none"
+                            className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none cursor-pointer"
                         >
                             <X className="h-5 w-5" />
                             <span className="sr-only">Close</span>

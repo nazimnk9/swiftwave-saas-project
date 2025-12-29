@@ -338,7 +338,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile, i
                 ))}
               </div>
               <div className="p-3 border-t border-border text-center">
-                <button className="text-sm text-primary hover:text-primary/80 font-medium">
+                <button className="text-sm text-primary hover:text-primary/80 dark:text-white font-medium">
                   View all notifications
                 </button>
               </div>
