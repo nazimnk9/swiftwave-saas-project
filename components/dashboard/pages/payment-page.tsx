@@ -64,14 +64,14 @@ export default function PaymentPage({ planUid }: PaymentPageProps) {
     <div className="min-h-screen py-12 px-4">
       <div className="max-w-xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#1e293b] mb-2">Payment Details</h1>
+          <h1 className="text-3xl font-bold text-[#1e293b] dark:text-white mb-2">Payment Details</h1>
           <p className="text-muted-foreground">Enter your payment information to complete the purchase.</p>
         </div>
 
         <Card className="p-8 shadow-sm border-none rounded-xl">
           <form className="space-y-6" onSubmit={handlePurchase}>
             <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-sm font-medium text-[#1e293b]">
+              <Label htmlFor="fullName" className="text-sm font-medium text-[#1e293b] dark:text-white">
                 Full Name
               </Label>
               <Input
@@ -85,7 +85,7 @@ export default function PaymentPage({ planUid }: PaymentPageProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-[#1e293b]">
+              <Label htmlFor="email" className="text-sm font-medium text-[#1e293b] dark:text-white">
                 Email
               </Label>
               <Input
@@ -100,7 +100,7 @@ export default function PaymentPage({ planUid }: PaymentPageProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cardNumber" className="text-sm font-medium text-[#1e293b]">
+              <Label htmlFor="cardNumber" className="text-sm font-medium text-[#1e293b] dark:text-white">
                 Card Number
               </Label>
               <Input
@@ -115,7 +115,7 @@ export default function PaymentPage({ planUid }: PaymentPageProps) {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="expiry" className="text-sm font-medium text-[#1e293b]">
+                <Label htmlFor="expiry" className="text-sm font-medium text-[#1e293b] dark:text-white">
                   Expiry
                 </Label>
                 <Input
@@ -128,7 +128,7 @@ export default function PaymentPage({ planUid }: PaymentPageProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="cvv" className="text-sm font-medium text-[#1e293b]">
+                <Label htmlFor="cvv" className="text-sm font-medium text-[#1e293b] dark:text-white">
                   CVV
                 </Label>
                 <Input
@@ -143,7 +143,7 @@ export default function PaymentPage({ planUid }: PaymentPageProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="billingAddress" className="text-sm font-medium text-[#1e293b]">
+              <Label htmlFor="billingAddress" className="text-sm font-medium text-[#1e293b] dark:text-white">
                 Billing Address
               </Label>
               <Input
