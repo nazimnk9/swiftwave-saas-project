@@ -10,6 +10,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface AppFeature {
   id: number
@@ -222,7 +223,26 @@ export default function AppsPage() {
 
       {/* Apps Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {isLoading && <p>Loading apps...</p>}
+        {isLoading && (
+          Array.from({ length: 1 }).map((_, index) => ( // Increased to 9 to look better on large screens
+            <Card key={index} className="pt-4 pb-0 flex flex-col">
+              <div className="flex items-center gap-2 bg-background border-b-2 pb-4 pl-2">
+                <Skeleton className="h-15 w-15 rounded-md" />
+                <Skeleton className="h-15 w-15 rounded-md" />
+              </div>
+              <div className="p-2 flex flex-col gap-4 flex-1">
+                <div className="flex items-start justify-between">
+                  <Skeleton className="h-6 w-1/2" />
+                </div>
+                <Skeleton className="h-20 w-full" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-10 w-24" />
+                  <Skeleton className="h-10 w-24" />
+                </div>
+              </div>
+            </Card>
+          ))
+        )}
         {error && <p className="text-destructive">{error}</p>}
         {!isLoading && !error && features.map((feature) => {
           const config = getAssetConfig(feature.name)
@@ -269,7 +289,7 @@ export default function AppsPage() {
 
                     return (
                       <Button
-                      style={{cursor: "pointer"}}
+                        style={{ cursor: "pointer" }}
                         key={idx}
                         variant={idx === 0 ? "default" : "outline"}
                         className={
