@@ -157,8 +157,9 @@ export default function PricingPlanPage({ featureUid }: PricingPlanPageProps) {
               <div className="mt-auto">
                 <Button
                   size="lg"
-                  className="w-full bg-[#1e293b] hover:bg-[#1e293b]/90 text-white font-semibold"
-                  onClick={() => handleSelectPlan(plan.uid)}
+                  className="w-full bg-[#1e293b] hover:bg-[#1e293b]/90 text-white font-semibold cursor-pointer"
+                  // onClick={() => handleSelectPlan(plan.uid)}
+                  onClick={() => router.push(`/dashboard/payment/${plan.uid}`)}
                   disabled={isPurchasing}
                 >
                   {isPurchasing ? "Processing..." : `Select ${plan.name}`}

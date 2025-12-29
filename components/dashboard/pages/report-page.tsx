@@ -164,7 +164,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                                     <TableCell className="text-sm">
                                         <Button
                                             variant="link"
-                                            className="text-primary hover:underline p-0 h-auto"
+                                            className="text-primary hover:underline p-0 h-auto cursor-pointer"
                                             onClick={() => handleViewChat(row.interview_data)}
                                         >
                                             View

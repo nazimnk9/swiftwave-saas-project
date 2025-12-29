@@ -269,6 +269,7 @@ export default function AppsPage() {
 
                     return (
                       <Button
+                      style={{cursor: "pointer"}}
                         key={idx}
                         variant={idx === 0 ? "default" : "outline"}
                         className={
@@ -306,7 +307,7 @@ export default function AppsPage() {
               onClick={handleClosePurchaseModal}
               className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none"
             >
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5 cursor-pointer" />
               <span className="sr-only">Close</span>
             </button>
           </div>
@@ -340,10 +341,10 @@ export default function AppsPage() {
 
           {/* Modal Footer */}
           <div className="flex items-center justify-end gap-3 p-6 pt-4 border-t">
-            <Button variant="outline" onClick={handleClosePurchaseModal}>
+            <Button variant="outline" onClick={handleClosePurchaseModal} className="cursor-pointer">
               Close
             </Button>
-            <Button onClick={handleContinue} className="bg-primary hover:bg-primary/90">
+            <Button onClick={handleContinue} className="bg-primary hover:bg-primary/90 cursor-pointer">
               Continue
             </Button>
           </div>

@@ -488,7 +488,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                       size="sm"
                       variant="outline"
                       onClick={() => handleSaveQuestion(index)}
-                      className="h-10 px-3"
+                      className="h-10 px-3 cursor-pointer"
                       title="Save Question"
                     >
                       Save
@@ -503,7 +503,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                     size="icon"
                     variant="ghost"
                     onClick={() => handleDeleteQuestion(index)}
-                    className="h-10 w-10 text-destructive hover:text-destructive/90"
+                    className="h-10 w-10 text-destructive hover:text-destructive/90 cursor-pointer"
                     title="Delete"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -515,7 +515,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
             <Button
               onClick={handleAddQuestion}
               variant="default"
-              className="bg-[#1e293b] hover:bg-[#1e293b]/90 text-white inline-block mt-4"
+              className="bg-[#1e293b] hover:bg-[#1e293b]/90 text-white inline-block mt-4 cursor-pointer"
             >
               Add More Question
             </Button>
@@ -529,7 +529,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           size="lg"
           onClick={handleSaveConfiguration}
           disabled={isSaving}
-          className="bg-primary hover:bg-primary/90 min-w-[200px]"
+          className="bg-primary hover:bg-primary/90 min-w-[200px] cursor-pointer"
         >
           {isSaving ? "Saving..." : "Save Configuration"}
         </Button>
@@ -538,7 +538,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           size="lg"
           variant="outline"
           onClick={() => router.back()}
-          className="min-w-[100px]"
+          className="min-w-[100px] cursor-pointer"
         >
           Back
         </Button>
