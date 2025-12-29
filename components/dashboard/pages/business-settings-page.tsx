@@ -1925,11 +1925,11 @@ export function BusinessSettingsPage() {
                               `Connect your ${platform.name} account to enable automation features.`}
                           </CardDescription>
                           <div className="mt-3 flex items-center gap-2 flex-wrap">
-                            <span className="inline-block px-2.5 py-1 bg-green-500 rounded-full text-xs font-medium text-black-500">
+                            <span className="inline-block px-2.5 py-1 bg-green-500/70 rounded-full text-xs font-medium text-black-500">
                               Status: {platform.status}
                             </span>
                             {platform.is_connected && (
-                              <span className="inline-block px-2.5 py-1 bg-green-500/20 text-green-700 dark:text-green-400 rounded-full flex items-center gap-1.5 text-xs font-medium">
+                              <span className="px-2.5 py-1 bg-green-500/20 text-green-700 dark:text-green-400 rounded-full flex items-center gap-1.5 text-xs font-medium">
                                 <Check className="w-3.5 h-3.5" />
                                 Connected
                               </span>
@@ -1945,7 +1945,7 @@ export function BusinessSettingsPage() {
                       disabled={isIntegrating || platform.is_connected}
                       className={`gap-2 cursor-pointer ${
                         platform.is_connected
-                          ? "bg-muted text-muted-foreground cursor-not-allowed"
+                          ? "bg-green-500/50 text-black cursor-not-allowed"
                           : "bg-primary hover:bg-primary/90 text-primary-foreground"
                       } font-semibold transition-all duration-200`}
                     >
