@@ -170,7 +170,7 @@ export default function AppsPage() {
   const [features, setFeatures] = useState<AppFeature[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
-  const [skeletonCount, setSkeletonCount] = useState(3)
+  const [skeletonCount, setSkeletonCount] = useState(4)
 
   const router = useRouter()
 
