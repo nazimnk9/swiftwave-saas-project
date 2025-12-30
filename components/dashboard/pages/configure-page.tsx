@@ -619,9 +619,9 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                     <Label>Enabled Sections</Label>
                     <div className="flex flex-wrap gap-2 mb-2">
                       {cvEnabledSections.map((section) => (
-                        <div key={section} className="bg-primary/10 text-primary text-sm px-3 py-1 rounded-full flex items-center gap-1 border border-primary/20">
+                        <div key={section} className="bg-primary/10 text-primary dark:text-white dark:border border-white text-sm px-3 py-1 rounded-full flex items-center gap-1 border border-primary/20">
                           {section}
-                          <X className="h-3 w-3 cursor-pointer hover:text-primary/70" onClick={() => handleSectionRemove(section)} />
+                          <X className="h-3 w-3 cursor-pointer hover:text-primary/70 dark:hover:text-white/70" onClick={() => handleSectionRemove(section)} />
                         </div>
                       ))}
                     </div>
@@ -646,11 +646,11 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                     <Label>Upload with logo?</Label>
                     <RadioGroup value={cvUploadWithLogo} onValueChange={setCvUploadWithLogo} className="flex gap-4">
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="true" id="uwl-yes" />
+                        <RadioGroupItem value="true" id="uwl-yes" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white " />
                         <Label htmlFor="uwl-yes">Yes</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="false" id="uwl-no" />
+                        <RadioGroupItem value="false" id="uwl-no" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" />
                         <Label htmlFor="uwl-no">No</Label>
                       </div>
                     </RadioGroup>
@@ -661,11 +661,11 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                     <Label>Upload without logo?</Label>
                     <RadioGroup value={cvUploadWithoutLogo} onValueChange={setCvUploadWithoutLogo} className="flex gap-4">
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="true" id="uwtl-yes" />
+                        <RadioGroupItem value="true" id="uwtl-yes" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" />
                         <Label htmlFor="uwtl-yes">Yes</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="false" id="uwtl-no" />
+                        <RadioGroupItem value="false" id="uwtl-no" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" />
                         <Label htmlFor="uwtl-no">No</Label>
                       </div>
                     </RadioGroup>
