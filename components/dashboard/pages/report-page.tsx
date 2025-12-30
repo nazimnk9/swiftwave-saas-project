@@ -22,34 +22,64 @@ interface InterviewData {
     uid: string
     created_at: string
     updated_at: string
-    call_sid: string
+    call_sid?: string // Optional as it might not be in SMS
     application_id: number
     candidate_id: number
     candidate_name: string
     candidate_email: string
     candidate_phone: string
-    job_id: number
-    conversation_text: string
+    job_id?: number // Optional
+    jobad_id?: number // From SMS payload
+    conversation_text?: string // Optional
     conversation_json: ChatMessage[]
     message_count: number
-    started_at: string | null
-    ended_at: string | null
+    started_at?: string | null // Optional
+    ended_at?: string | null // Optional
     organization: number
-    interview: number
+    interview?: number
+    type?: string // Added to distinguish
 }
 
 interface ReportItem {
     id: number
-    interview_data: InterviewData
+    interview_data?: InterviewData // For call reports structure if nested
+    // The SMS payload returns the interview object directly in results?
+    // User provided: "results": [ { "id": 1, "uid": ..., "conversation_json": ... } ]
+    // But Call report likely has "results": [ { "interview_data": { ... } } ] based on previous code.
+    // I need to handle both structures.
+    // Based on previous code: `reports.map((row) => row.interview_data.uid)`
+    // So existing structure wraps data in `interview_data`.
+    // SMS structure provided seems flat. I will normalize this in fetch.
+
+    // Union for state simplicity, but I'll normalize to a common shape in state
+    uid?: string
+    candidate_name?: string
+    candidate_email?: string
+    candidate_phone?: string
+    conversation_json?: any[]
     status: string
-    organization: number
+    updated_at: string
+}
+
+// Internal normalized interface for display
+interface DisplayReportItem {
+    id: number
+    uid: string
+    candidate_id: number
+    candidate_name: string
+    candidate_email: string
+    candidate_phone: string
+    started_at: string | null
+    status: string
+    updated_at: string
+    conversation_json: ChatMessage[]
 }
 
 interface ReportResponse {
     count: number
     next: string | null
     previous: string | null
-    results: ReportItem[]
+    results: any[] // generic to handle both
 }
 
 interface AppFeature {
@@ -63,10 +93,10 @@ interface ReportPageProps {
 
 export default function ReportPage({ featureUid }: ReportPageProps) {
     const [isChatModalOpen, setIsChatModalOpen] = useState(false)
-    const [reports, setReports] = useState<ReportItem[]>([])
+    const [reports, setReports] = useState<DisplayReportItem[]>([])
     const [loading, setLoading] = useState(true)
     const [featureName, setFeatureName] = useState("WhatsApp Recruiter Report") // Default or loaded
-    const [selectedInterview, setSelectedInterview] = useState<InterviewData | null>(null)
+    const [selectedInterview, setSelectedInterview] = useState<DisplayReportItem | null>(null)
     const router = useRouter()
 
     useEffect(() => {
@@ -76,20 +106,65 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                 const authToken = localStorage.getItem("authToken")
                 const headers = { Authorization: `Bearer ${authToken}` }
 
+                let currentFeatureName = ""
+
                 // Fetch Feature Name if UID is provided
                 if (featureUid) {
                     const featuresRes = await axios.get<{ results: AppFeature[] }>(`${BASE_URL}/subscription/features/`, { headers })
                     const currentFeature = featuresRes.data.results.find(f => f.uid === featureUid)
                     if (currentFeature) {
                         setFeatureName(currentFeature.name)
+                        currentFeatureName = currentFeature.name
                     }
                 }
 
-                // Fetch Reports
-                // The user said "table data show from get api "BASE_URL}/interview/" in "app/report/[uid]/page.tsx" page"
-                // and structure matches ReportResponse
-                const reportsRes = await axios.get<ReportResponse>(`${BASE_URL}/interview/`, { headers })
-                setReports(reportsRes.data.results)
+                const isSms = currentFeatureName.toLowerCase().includes("sms")
+
+                if (isSms) {
+                    // SMS Report Fetch
+                    const reportsRes = await axios.get<ReportResponse>(`${BASE_URL}/interview/message/report`, { headers })
+
+                    // Normalize SMS data to display structure
+                    // SMS Payload: { results: [ { id, uid, candidate_phone, conversation_json: [{sender, message, timestamp}], ... } ] }
+                    const normalized = reportsRes.data.results.map((item: any) => ({
+                        id: item.id,
+                        uid: item.uid,
+                        candidate_id: item.candidate_id,
+                        candidate_name: item.candidate_name,
+                        candidate_email: item.candidate_email,
+                        candidate_phone: item.candidate_phone,
+                        started_at: item.created_at, // Use created_at as start time proxy if started_at missing
+                        status: item.status,
+                        updated_at: item.updated_at,
+                        conversation_json: item.conversation_json ? item.conversation_json.map((msg: any) => ({
+                            role: msg.sender === "ai" ? "assistant" : "user", // or "candidate" -> "user" to match UI style
+                            content: msg.message,
+                            timestamp: msg.timestamp
+                        })) : []
+                    }))
+                    setReports(normalized)
+
+                } else {
+                    // Call Report Fetch (Previous Logic)
+                    const reportsRes = await axios.get<ReportResponse>(`${BASE_URL}/interview/`, { headers })
+
+                    // Normalize Call data (assuming previous structure was { results: [ { interview_data: {...}, status: ... } ] })
+                    // Wait, previous code accessed: row.interview_data.uid
+                    // So item is wrapper.
+                    const normalized = reportsRes.data.results.map((item: any) => ({
+                        id: item.id,
+                        uid: item.interview_data.uid,
+                        candidate_id: item.interview_data.candidate_id,
+                        candidate_name: item.interview_data.candidate_name,
+                        candidate_email: item.interview_data.candidate_email,
+                        candidate_phone: item.interview_data.candidate_phone,
+                        started_at: item.interview_data.started_at,
+                        status: item.status,
+                        updated_at: item.interview_data.updated_at,
+                        conversation_json: item.interview_data.conversation_json || []
+                    }))
+                    setReports(normalized)
+                }
 
             } catch (error) {
                 console.error("Error fetching data:", error)
@@ -101,7 +176,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
         fetchData()
     }, [featureUid])
 
-    const handleViewChat = (interview: InterviewData) => {
+    const handleViewChat = (interview: DisplayReportItem) => {
         setSelectedInterview(interview)
         setIsChatModalOpen(true)
     }
@@ -155,19 +230,19 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                         ) : (
                             reports.map((row) => (
                                 <TableRow key={row.id} className="hover:bg-muted/30">
-                                    <TableCell className="text-sm">{row.interview_data.uid}</TableCell>
-                                    <TableCell className="text-sm">{row.interview_data.candidate_id}</TableCell>
-                                    <TableCell className="text-sm">{row.interview_data.candidate_name}</TableCell>
-                                    <TableCell className="text-sm">{row.interview_data.candidate_email}</TableCell>
-                                    <TableCell className="text-sm">{row.interview_data.candidate_phone}</TableCell>
-                                    <TableCell className="text-sm">{formatDate(row.interview_data.started_at)}</TableCell>
+                                    <TableCell className="text-sm">{row.uid}</TableCell>
+                                    <TableCell className="text-sm">{row.candidate_id}</TableCell>
+                                    <TableCell className="text-sm">{row.candidate_name}</TableCell>
+                                    <TableCell className="text-sm">{row.candidate_email}</TableCell>
+                                    <TableCell className="text-sm">{row.candidate_phone}</TableCell>
+                                    <TableCell className="text-sm">{formatDate(row.started_at)}</TableCell>
                                     <TableCell className="text-sm">{row.status}</TableCell>
-                                    <TableCell className="text-sm">{formatDate(row.interview_data.updated_at)}</TableCell>
+                                    <TableCell className="text-sm">{formatDate(row.updated_at)}</TableCell>
                                     <TableCell className="text-sm">
                                         <Button
                                             variant="link"
                                             className="text-primary hover:underline p-0 h-auto cursor-pointer"
-                                            onClick={() => handleViewChat(row.interview_data)}
+                                            onClick={() => handleViewChat(row)}
                                         >
                                             View
                                         </Button>

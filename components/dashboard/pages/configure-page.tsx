@@ -134,32 +134,28 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         }
 
         // Try to fetch existing configuration
-        // We only attempt this for "Ai Call Interview" or non-SMS features as requested.
-        // User explicitly stated: do not show data from get api under "Ai SMS recruiter"
         const isSmsFeature = currentFeature?.name.toLowerCase().includes("sms")
 
-        if (!isSmsFeature) {
+        if (isSmsFeature) {
           try {
-            const configRes = await axios.get(`${BASE_URL}/interview/call/config/details`, { headers })
+            const configRes = await axios.get(`${BASE_URL}/interview/message/config/details`, { headers })
             const configData = configRes.data
 
             if (configData) {
               setIsUpdateMode(true)
 
-              // Populate fields
+              // Populate fields for SMS
               setPlatformUid(configData.platform?.uid || "")
               setPhoneNumberUid(configData.phone?.uid || "")
-              setVoiceId(configData.voice_id || "")
-              setEndCallNegative(configData.end_call_if_primary_answer_negative ? "true" : "false")
+              // No voiceId or endCallNegative for SMS
 
               // Map statuses
-              // Note: The API returns `application_status_for_calling` etc which matches our state keys mostly
-              setJobAdStatus(configData.jobad_status_for_calling || configData.jobad_status_for_sms || "Current")
-              setApplicationStatus(String(configData.application_status_for_calling || configData.application_status_for_sms || ""))
-              setCallingTime(String(configData.calling_time_after_status_update || configData.sms_time_after_status_update || "15"))
-              setUnsuccessfulStatus(String(configData.status_for_unsuccessful_call || configData.status_for_unsuccessful_sms || ""))
-              setSuccessfulStatus(String(configData.status_for_successful_call || configData.status_for_successful_sms || ""))
-              setPlacedStatus(String(configData.status_when_call_is_placed || configData.status_when_sms_is_send || ""))
+              setJobAdStatus(configData.jobad_status_for_sms || "Current")
+              setApplicationStatus(String(configData.application_status_for_sms || ""))
+              setCallingTime(String(configData.sms_time_after_status_update || "10"))
+              setUnsuccessfulStatus(String(configData.status_for_unsuccessful_sms || ""))
+              setSuccessfulStatus(String(configData.status_for_successful_sms || ""))
+              setPlacedStatus(String(configData.status_when_sms_is_send || ""))
 
               // Map Questions
               if (configData.primary_questions && Array.isArray(configData.primary_questions)) {
@@ -173,8 +169,44 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               }
             }
           } catch (configErr) {
-            // Ignore 404 or other errors, implies no existing config or different endpoint
-            console.log("No existing configuration found or error fetching it:", configErr)
+            // Ignore 404 or other errors, implies no existing config
+            // console.log("No existing configuration found or error fetching it:", configErr)
+          }
+        } else {
+          try {
+            const configRes = await axios.get(`${BASE_URL}/interview/call/config/details`, { headers })
+            const configData = configRes.data
+
+            if (configData) {
+              setIsUpdateMode(true)
+
+              // Populate fields for Call
+              setPlatformUid(configData.platform?.uid || "")
+              setPhoneNumberUid(configData.phone?.uid || "")
+              setVoiceId(configData.voice_id || "")
+              setEndCallNegative(configData.end_call_if_primary_answer_negative ? "true" : "false")
+
+              // Map statuses
+              setJobAdStatus(configData.jobad_status_for_calling || "Current")
+              setApplicationStatus(String(configData.application_status_for_calling || ""))
+              setCallingTime(String(configData.calling_time_after_status_update || "15"))
+              setUnsuccessfulStatus(String(configData.status_for_unsuccessful_call || ""))
+              setSuccessfulStatus(String(configData.status_for_successful_call || ""))
+              setPlacedStatus(String(configData.status_when_call_is_placed || ""))
+
+              // Map Questions
+              if (configData.primary_questions && Array.isArray(configData.primary_questions)) {
+                const mappedQuestions = configData.primary_questions.map((q: any) => ({
+                  tempId: crypto.randomUUID(),
+                  uid: q.uid,
+                  value: q.question,
+                  isSaved: true
+                }))
+                setQuestions(mappedQuestions.length > 0 ? mappedQuestions : [{ tempId: crypto.randomUUID(), value: "", isSaved: false }])
+              }
+            }
+          } catch (configErr) {
+            // Ignore 404 or other errors
           }
         }
 
@@ -230,9 +262,6 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
       newQuestions[index].uid = response.data.uid
       newQuestions[index].isSaved = true
       setQuestions(newQuestions)
-
-      // Store in localStorage as requested (though strictly speaking we have it in state now)
-      // localStorage.setItem("lastSavedQuestionUid", response.data.uid) 
 
     } catch (err) {
       console.error("Error saving question:", err)
@@ -312,14 +341,26 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
       let response
       if (isUpdateMode) {
         // PATCH request for Update
-        response = await axios.patch(`${BASE_URL}/interview/call/config/details`, payload, {
-          headers: { Authorization: `Bearer ${authToken}` }
-        })
+        if (isSms) {
+          response = await axios.patch(`${BASE_URL}/interview/message/config/details`, payload, {
+            headers: { Authorization: `Bearer ${authToken}` }
+          })
+        } else {
+          response = await axios.patch(`${BASE_URL}/interview/call/config/details`, payload, {
+            headers: { Authorization: `Bearer ${authToken}` }
+          })
+        }
       } else {
         // POST request for Create
-        response = await axios.post(`${BASE_URL}/interview/call/config/`, payload, {
-          headers: { Authorization: `Bearer ${authToken}` }
-        })
+        if (isSms) {
+          response = await axios.post(`${BASE_URL}/interview/message/config/`, payload, {
+            headers: { Authorization: `Bearer ${authToken}` }
+          })
+        } else {
+          response = await axios.post(`${BASE_URL}/interview/call/config/`, payload, {
+            headers: { Authorization: `Bearer ${authToken}` }
+          })
+        }
       }
 
       // Success
