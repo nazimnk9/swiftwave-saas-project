@@ -169,6 +169,7 @@ export default function AppsPage() {
   const [features, setFeatures] = useState<AppFeature[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
+  const [skeletonCount, setSkeletonCount] = useState(3)
 
   const router = useRouter()
 
@@ -186,6 +187,9 @@ export default function AppsPage() {
           Authorization: `Bearer ${authToken}`
         }
       })
+      if (response.data.count) {
+        setSkeletonCount(response.data.count)
+      }
       setFeatures(response.data.results)
       setIsLoading(false)
     } catch (err) {
@@ -245,7 +249,7 @@ export default function AppsPage() {
       {/* Apps Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading && (
-          Array.from({ length: 2 }).map((_, index) => ( // Increased to 9 to look better on large screens
+          Array.from({ length: skeletonCount }).map((_, index) => ( // Dynamic from API count
             <Card key={index} className="pt-4 pb-0 flex flex-col">
               <div className="flex items-center gap-2 bg-background border-b-2 pb-4 pl-2">
                 <Skeleton className="h-15 w-15 rounded-md" />
