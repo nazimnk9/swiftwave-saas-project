@@ -57,7 +57,7 @@ interface ReportItem {
     candidate_email?: string
     candidate_phone?: string
     conversation_json?: any[]
-    status: string
+    ai_decision: string
     updated_at: string
 }
 
@@ -70,7 +70,7 @@ interface DisplayReportItem {
     candidate_email: string
     candidate_phone: string
     started_at: string | null
-    status: string
+    ai_decision: string
     updated_at: string
     conversation_json: ChatMessage[]
 }
@@ -134,7 +134,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                         candidate_email: item.candidate_email,
                         candidate_phone: item.candidate_phone,
                         started_at: item.created_at, // Use created_at as start time proxy if started_at missing
-                        status: item.status,
+                        ai_decision: item.ai_decision,
                         updated_at: item.updated_at,
                         conversation_json: item.conversation_json ? item.conversation_json.map((msg: any) => ({
                             role: msg.sender === "ai" ? "assistant" : "user", // or "candidate" -> "user" to match UI style
@@ -153,14 +153,14 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                     // So item is wrapper.
                     const normalized = reportsRes.data.results.map((item: any) => ({
                         id: item.id,
-                        uid: item.interview_data.uid,
-                        candidate_id: item.interview_data.candidate_id,
-                        candidate_name: item.interview_data.candidate_name,
-                        candidate_email: item.interview_data.candidate_email,
-                        candidate_phone: item.interview_data.candidate_phone,
-                        started_at: item.interview_data.started_at,
-                        status: item.status,
-                        updated_at: item.interview_data.updated_at,
+                        uid: item.uid,
+                        candidate_id: item.candidate_id,
+                        candidate_name: item.candidate_name,
+                        candidate_email: item.candidate_email,
+                        candidate_phone: item.candidate_phone,
+                        started_at: item.started_at,
+                        ai_decision: item.ai_decision,
+                        updated_at: item.updated_at,
                         conversation_json: item.interview_data.conversation_json || []
                     }))
                     setReports(normalized)
@@ -236,7 +236,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                                     <TableCell className="text-sm">{row.candidate_email}</TableCell>
                                     <TableCell className="text-sm">{row.candidate_phone}</TableCell>
                                     <TableCell className="text-sm">{formatDate(row.started_at)}</TableCell>
-                                    <TableCell className="text-sm">{row.status}</TableCell>
+                                    <TableCell className="text-sm">{row.ai_decision}</TableCell>
                                     <TableCell className="text-sm">{formatDate(row.updated_at)}</TableCell>
                                     <TableCell className="text-sm">
                                         <Button
