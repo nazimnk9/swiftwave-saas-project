@@ -61,8 +61,9 @@ const APP_ASSET_CONFIG = [
   {
     keywords: ["cv", "formatter"],
     id: "cv-formatter",
+    logoJobAdder: "/images/JobAdder.jpg",
     logoBullhorn: "/images/Bullhornconnector.jpg",
-    buttons: ["Purchase"],
+    buttons: ["Purchase", "Configure", "Report"],
     hasMore: true,
   },
   {

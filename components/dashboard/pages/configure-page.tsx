@@ -7,13 +7,14 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
-import { Trash2, CheckCircle2, AlertCircle } from "lucide-react"
+import { Trash2, CheckCircle2, AlertCircle, X, Upload, Image as ImageIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToastNotification } from "@/components/auth/toast-provider"
 import { LoaderOverlay } from "@/components/auth/loader-overlay"
+import Image from "next/image"
 
 interface ConfigurePageProps {
   featureUid?: string
@@ -40,8 +41,8 @@ interface PhoneNumber {
 }
 
 interface QuestionInput {
-  tempId: string // Used for key when unsaved
-  uid?: string // Present if saved
+  tempId: string
+  uid?: string
   value: string
   isSaved: boolean
 }
@@ -61,6 +62,7 @@ interface AppFeature {
 // Fixed dropdown options for calling time
 const CALLING_TIME_OPTIONS = [
   { label: "10 min", value: 10 },
+  // ... others
   { label: "15 min", value: 15 },
   { label: "20 min", value: 20 },
   { label: "25 min", value: 25 },
@@ -71,6 +73,22 @@ const CALLING_TIME_OPTIONS = [
   { label: "50 min", value: 50 },
   { label: "55 min", value: 55 },
   { label: "60 min", value: 60 },
+]
+
+// CV Formatter Constants
+const CV_ENABLED_SECTIONS_OPTIONS = [
+  "Full Name",
+  "Email Address",
+  "Phone Number",
+  "Address",
+  "Professional Summary",
+  "Professional Experience",
+  "Education",
+  "Skills",
+  "Certifications",
+  "Languages",
+  "Areas of Expertise",
+  "Areas for improvement & recommendations"
 ]
 
 export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
@@ -89,15 +107,23 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const [phoneNumberUid, setPhoneNumberUid] = useState("")
   const [platformUid, setPlatformUid] = useState("")
   const [voiceId, setVoiceId] = useState("")
-  const [endCallNegative, setEndCallNegative] = useState("false") // "true" or "false" string for radio
+  const [endCallNegative, setEndCallNegative] = useState("false")
 
   // Status Assignments
-  const [jobAdStatus, setJobAdStatus] = useState("Current") // "Current", "Expired", "Draft"
+  const [jobAdStatus, setJobAdStatus] = useState("Current")
   const [applicationStatus, setApplicationStatus] = useState<string>("")
   const [callingTime, setCallingTime] = useState<string>("10")
   const [unsuccessfulStatus, setUnsuccessfulStatus] = useState<string>("")
   const [successfulStatus, setSuccessfulStatus] = useState<string>("")
-  const [placedStatus, setPlacedStatus] = useState<string>("") // status_when_call_is_placed or status_when_sms_is_send
+  const [placedStatus, setPlacedStatus] = useState<string>("")
+
+  // CV Formatter Specific States
+  const [cvJobStatus, setCvJobStatus] = useState("")
+  const [cvEnabledSections, setCvEnabledSections] = useState<string[]>([])
+  const [cvUploadWithLogo, setCvUploadWithLogo] = useState("true")
+  const [cvUploadWithoutLogo, setCvUploadWithoutLogo] = useState("true")
+  const [cvLogo, setCvLogo] = useState<File | null>(null)
+  const [cvLogoPreview, setCvLogoPreview] = useState<string | null>(null)
 
   // Dynamic Questions
   const [questions, setQuestions] = useState<QuestionInput[]>([{ tempId: crypto.randomUUID(), value: "", isSaved: false }])
@@ -111,6 +137,11 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const isSms = featureName.toLowerCase().includes("sms")
   const isWhatsApp = featureName.toLowerCase().includes("what's app") || featureName.toLowerCase().includes("whatsapp")
   const isMessage = isSms || isWhatsApp
+
+  const isCvFormatter = featureName.toLowerCase().includes("cv") && featureName.toLowerCase().includes("formatter")
+
+  // Logo File Input Ref
+  const logoInputRef = useRef<HTMLInputElement>(null)
 
   const getMessageType = () => {
     if (isWhatsApp) return "AI_WHATSAPP"
@@ -142,14 +173,40 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           setFeatureName(currentFeature.name)
         }
 
-        // Feature Type Detection (Logic duplicated for ensuring we work with latest data in fetch)
+        // Feature Logic Detection
         const name = currentFeature?.name.toLowerCase() || ""
+        const currentIsCv = name.includes("cv") && name.includes("formatter")
         const currentIsSms = name.includes("sms")
         const currentIsWhatsApp = name.includes("what's app") || name.includes("whatsapp")
         const currentIsMessage = currentIsSms || currentIsWhatsApp
         const currentType = currentIsWhatsApp ? "AI_WHATSAPP" : (currentIsSms ? "AI_SMS" : null)
 
-        if (currentIsMessage && currentType) {
+        if (currentIsCv) {
+          // Fetch CV Config
+          try {
+            const configRes = await axios.get(`${BASE_URL}/cv_formatter/config/details`, { headers })
+            const configData = configRes.data
+
+            if (configData) {
+              setIsUpdateMode(true)
+              setPlatformUid(configData.platform?.uid || "")
+              setCvJobStatus(String(configData.job_status_for_formatting || ""))
+              setCvEnabledSections(Array.isArray(configData.enabled_sections) ? configData.enabled_sections : [])
+              setCvUploadWithLogo(configData.upload_with_logo ? "true" : "false")
+              setCvUploadWithoutLogo(configData.upload_without_logo ? "true" : "false")
+              if (configData.logo) {
+                setCvLogoPreview(configData.logo) // Assuming URL is returned
+              }
+            } else {
+              // Default values for new config
+              // Per user request: "all data selected in Enabled Sections" initially
+              setCvEnabledSections([...CV_ENABLED_SECTIONS_OPTIONS])
+            }
+          } catch (err) {
+            // No config yet, set defaults
+            setCvEnabledSections([...CV_ENABLED_SECTIONS_OPTIONS])
+          }
+        } else if (currentIsMessage && currentType) {
           try {
             const configRes = await axios.get(`${BASE_URL}/interview/message/config/details`, {
               headers,
@@ -160,12 +217,9 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
             if (configData) {
               setIsUpdateMode(true)
 
-              // Populate fields for SMS/WhatsApp
               setPlatformUid(configData.platform?.uid || "")
               setPhoneNumberUid(configData.phone?.uid || "")
-              // No voiceId or endCallNegative for Message apps
 
-              // Map statuses
               setJobAdStatus(configData.jobad_status_for_sms || "Current")
               setApplicationStatus(String(configData.application_status_for_sms || ""))
               setCallingTime(String(configData.sms_time_after_status_update || "10"))
@@ -173,7 +227,6 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               setSuccessfulStatus(String(configData.status_for_successful_sms || ""))
               setPlacedStatus(String(configData.status_when_sms_is_send || ""))
 
-              // Map Questions
               if (configData.primary_questions && Array.isArray(configData.primary_questions)) {
                 const mappedQuestions = configData.primary_questions.map((q: any) => ({
                   tempId: crypto.randomUUID(),
@@ -185,8 +238,6 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               }
             }
           } catch (configErr) {
-            // Ignore 404 or other errors, implies no existing config
-            // console.log("No existing configuration found or error fetching it:", configErr)
           }
         } else {
           try {
@@ -196,13 +247,11 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
             if (configData) {
               setIsUpdateMode(true)
 
-              // Populate fields for Call
               setPlatformUid(configData.platform?.uid || "")
               setPhoneNumberUid(configData.phone?.uid || "")
               setVoiceId(configData.voice_id || "")
               setEndCallNegative(configData.end_call_if_primary_answer_negative ? "true" : "false")
 
-              // Map statuses
               setJobAdStatus(configData.jobad_status_for_calling || "Current")
               setApplicationStatus(String(configData.application_status_for_calling || ""))
               setCallingTime(String(configData.calling_time_after_status_update || "15"))
@@ -210,7 +259,6 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               setSuccessfulStatus(String(configData.status_for_successful_call || ""))
               setPlacedStatus(String(configData.status_when_call_is_placed || ""))
 
-              // Map Questions
               if (configData.primary_questions && Array.isArray(configData.primary_questions)) {
                 const mappedQuestions = configData.primary_questions.map((q: any) => ({
                   tempId: crypto.randomUUID(),
@@ -222,7 +270,6 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               }
             }
           } catch (configErr) {
-            // Ignore 404 or other errors
           }
         }
 
@@ -237,7 +284,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
     fetchData()
   }, [])
 
-  // Question Handlers
+  // ... (Previous Question Handlers - Kept Helper Functions)
   const handleAddQuestion = () => {
     setQuestions([...questions, { tempId: crypto.randomUUID(), value: "", isSaved: false }])
   }
@@ -245,7 +292,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const handleQuestionChange = (index: number, value: string) => {
     const newQuestions = [...questions]
     newQuestions[index].value = value
-    newQuestions[index].isSaved = false // Reset saved state on edit
+    newQuestions[index].isSaved = false
     setQuestions(newQuestions)
   }
 
@@ -257,8 +304,6 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const handleSuggestionClick = (index: number, suggestion: string) => {
     const newQuestions = [...questions]
     newQuestions[index].value = suggestion
-    // We don't mark as saved yet because user might want to edit it or save manually
-    // But typically we treat it as an edit.
     setQuestions(newQuestions)
   }
 
@@ -281,105 +326,160 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
     } catch (err) {
       console.error("Error saving question:", err)
-      // Ideally show a toast or error for this specific action
     }
   }
+
+  // --- CV Formatter Handlers ---
+  const handleSectionSelect = (value: string) => {
+    if (!cvEnabledSections.includes(value)) {
+      setCvEnabledSections([...cvEnabledSections, value])
+    }
+  }
+
+  const handleSectionRemove = (value: string) => {
+    setCvEnabledSections(cvEnabledSections.filter(s => s !== value))
+  }
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      setCvLogo(file)
+      const objectUrl = URL.createObjectURL(file)
+      setCvLogoPreview(objectUrl)
+    }
+  }
+
+  const handleRemoveLogo = () => {
+    setCvLogo(null)
+    setCvLogoPreview(null)
+    if (logoInputRef.current) logoInputRef.current.value = ""
+  }
+
 
   // Final Save/Update Handler
   const handleSaveConfiguration = async () => {
     setError("")
 
-    // Validation: Check for status overlaps
-    const selectedStatuses = [applicationStatus, unsuccessfulStatus, successfulStatus, placedStatus].filter(Boolean)
-    const uniqueStatuses = new Set(selectedStatuses)
-    if (selectedStatuses.length !== uniqueStatuses.size) {
-      const msg = "Error: You cannot select the same status for multiple distinct outcomes."
-      setError(msg)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: msg
-      })
-      return
-    }
+    if (!isCvFormatter) {
+      // Validation for Interview/Message apps
+      const selectedStatuses = [applicationStatus, unsuccessfulStatus, successfulStatus, placedStatus].filter(Boolean)
+      const uniqueStatuses = new Set(selectedStatuses)
+      if (selectedStatuses.length !== uniqueStatuses.size) {
+        const msg = "Error: You cannot select the same status for multiple distinct outcomes."
+        setError(msg)
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: msg
+        })
+        return
+      }
 
-    // Validation: Ensure all questions are saved
-    const unsavedQuestions = questions.filter(q => q.value.trim() && !q.isSaved)
-    if (unsavedQuestions.length > 0) {
-      const msg = "Please save all your questions before saving the configuration."
-      setError(msg)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: msg
-      })
-      return
+      const unsavedQuestions = questions.filter(q => q.value.trim() && !q.isSaved)
+      if (unsavedQuestions.length > 0) {
+        const msg = "Please save all your questions before saving the configuration."
+        setError(msg)
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: msg
+        })
+        return
+      }
     }
-
-    // Filter out valid question UIDs
-    const questionUids = questions.filter(q => q.uid).map(q => q.uid)
 
     try {
       setIsSaving(true)
       const authToken = localStorage.getItem("authToken")
-
-      let payload: any = {}
-
-      if (isMessage) {
-        payload = {
-          application_status_for_sms: Number(applicationStatus),
-          jobad_status_for_sms: jobAdStatus,
-          sms_time_after_status_update: Number(callingTime),
-          status_for_unsuccessful_sms: Number(unsuccessfulStatus),
-          status_for_successful_sms: Number(successfulStatus),
-          status_when_sms_is_send: Number(placedStatus),
-          platform_uid: platformUid,
-          phone_uid: phoneNumberUid,
-          primary_question_inputs: questionUids,
-          type: getMessageType()
-        }
-      } else {
-        payload = {
-          end_call_if_primary_answer_negative: endCallNegative === "true", // Note: kept as boolean based on previous impl
-          jobad_status_for_calling: jobAdStatus,
-          application_status_for_calling: Number(applicationStatus),
-          calling_time_after_status_update: Number(callingTime),
-          status_for_unsuccessful_call: Number(unsuccessfulStatus),
-          status_for_successful_call: Number(successfulStatus),
-          status_when_call_is_placed: Number(placedStatus),
-          platform_uid: platformUid,
-          phone_uid: phoneNumberUid,
-          primary_question_inputs: questionUids,
-          voice_id: voiceId
-        }
-      }
-
       let response
-      if (isUpdateMode) {
-        // PATCH request for Update
-        if (isMessage) {
-          response = await axios.patch(`${BASE_URL}/interview/message/config/details`, payload, {
-            headers: { Authorization: `Bearer ${authToken}` },
-            params: { type: getMessageType() }
+
+      if (isCvFormatter) {
+        // CV Formatter Save Logic (FormData)
+        const formData = new FormData()
+        formData.append("platform_uid", platformUid)
+        formData.append("job_status_for_formatting", cvJobStatus)
+        formData.append("upload_with_logo", cvUploadWithLogo)
+        formData.append("upload_without_logo", cvUploadWithoutLogo)
+
+        cvEnabledSections.forEach(section => {
+          formData.append("enabled_sections", section)
+        })
+
+        if (cvLogo) {
+          formData.append("logo", cvLogo)
+        }
+
+        if (isUpdateMode) {
+          response = await axios.patch(`${BASE_URL}/cv_formatter/config/details`, formData, {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              "Content-Type": "multipart/form-data"
+            }
           })
         } else {
-          // Call
-          // Fix logic: payload for call uses booleans for some fields if needed, previously string "true"/"false" converted
-          // Re-checking payload: end_call_if_primary_answer_negative is boolean in line above.
-          response = await axios.patch(`${BASE_URL}/interview/call/config/details`, payload, {
-            headers: { Authorization: `Bearer ${authToken}` }
+          response = await axios.post(`${BASE_URL}/cv_formatter/config/`, formData, {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              "Content-Type": "multipart/form-data"
+            }
           })
         }
+
       } else {
-        // POST request for Create
+        // Message & Call Logic
+        const questionUids = questions.filter(q => q.uid).map(q => q.uid)
+        let payload: any = {}
+
         if (isMessage) {
-          response = await axios.post(`${BASE_URL}/interview/message/config/`, payload, {
-            headers: { Authorization: `Bearer ${authToken}` }
-          })
+          payload = {
+            application_status_for_sms: Number(applicationStatus),
+            jobad_status_for_sms: jobAdStatus,
+            sms_time_after_status_update: Number(callingTime),
+            status_for_unsuccessful_sms: Number(unsuccessfulStatus),
+            status_for_successful_sms: Number(successfulStatus),
+            status_when_sms_is_send: Number(placedStatus),
+            platform_uid: platformUid,
+            phone_uid: phoneNumberUid,
+            primary_question_inputs: questionUids,
+            type: getMessageType()
+          }
         } else {
-          response = await axios.post(`${BASE_URL}/interview/call/config/`, payload, {
-            headers: { Authorization: `Bearer ${authToken}` }
-          })
+          payload = {
+            end_call_if_primary_answer_negative: endCallNegative === "true",
+            jobad_status_for_calling: jobAdStatus,
+            application_status_for_calling: Number(applicationStatus),
+            calling_time_after_status_update: Number(callingTime),
+            status_for_unsuccessful_call: Number(unsuccessfulStatus),
+            status_for_successful_call: Number(successfulStatus),
+            status_when_call_is_placed: Number(placedStatus),
+            platform_uid: platformUid,
+            phone_uid: phoneNumberUid,
+            primary_question_inputs: questionUids,
+            voice_id: voiceId
+          }
+        }
+
+        if (isUpdateMode) {
+          if (isMessage) {
+            response = await axios.patch(`${BASE_URL}/interview/message/config/details`, payload, {
+              headers: { Authorization: `Bearer ${authToken}` },
+              params: { type: getMessageType() }
+            })
+          } else {
+            response = await axios.patch(`${BASE_URL}/interview/call/config/details`, payload, {
+              headers: { Authorization: `Bearer ${authToken}` }
+            })
+          }
+        } else {
+          if (isMessage) {
+            response = await axios.post(`${BASE_URL}/interview/message/config/`, payload, {
+              headers: { Authorization: `Bearer ${authToken}` }
+            })
+          } else {
+            response = await axios.post(`${BASE_URL}/interview/call/config/`, payload, {
+              headers: { Authorization: `Bearer ${authToken}` }
+            })
+          }
         }
       }
 
@@ -390,24 +490,15 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         description: successMsg
       })
 
-      localStorage.removeItem("lastSavedQuestionUid") // cleanup if we used it
+      localStorage.removeItem("lastSavedQuestionUid")
 
-      // Delay redirect slightly to show toast
       setTimeout(() => {
         router.push("/dashboard/apps")
       }, 1000)
 
     } catch (err: any) {
       console.error("Error saving/updating configuration:", err)
-
-      const smsErrors = isMessage ? (err.response?.data?.application_status_for_sms || err.response?.data?.jobad_status_for_sms || err.response?.data?.sms_time_after_status_update || err.response?.data?.status_for_unsuccessful_sms || err.response?.data?.status_for_successful_sms || err.response?.data?.status_when_sms_is_send) : null
-
-      const callErrors = !isMessage ? (err.response?.data?.end_call_if_primary_answer_negative || err.response?.data?.jobad_status_for_calling || err.response?.data?.application_status_for_calling || err.response?.data?.calling_time_after_status_update || err.response?.data?.status_for_unsuccessful_call || err.response?.data?.status_for_successful_call || err.response?.data?.status_when_call_is_placed || err.response?.data?.voice_id) : null
-
-      const commonErrors = err.response?.data?.platform_uid || err.response?.data?.phone_uid || err.response?.data?.primary_question_inputs || err.response?.data?.details || "Failed to save configuration. Please check all fields."
-
-      const errorMsg = smsErrors || callErrors || commonErrors
-
+      const errorMsg = err.response?.data?.details || "Failed to save configuration. Please check all fields."
       setError(errorMsg)
       toast({
         variant: "destructive",
@@ -418,7 +509,6 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
     }
   }
 
-  // Handle Select Change with Clear Option
   const handleSelectChange = (setter: (val: string) => void) => (val: string) => {
     if (val === "_CLEAR_") {
       setter("")
@@ -428,7 +518,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-10">
       <LoaderOverlay
         isLoading={isLoading || isSaving}
         message={isLoading ? "Loading configuration..." : (isUpdateMode ? "Updating changes..." : "Saving changes...")}
@@ -437,7 +527,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Configure – {featureName || "Loading..."}</h1>
-        <p className="text-muted-foreground">Complete your setup and configure {isMessage ? "messaging" : "interview"} settings.</p>
+        <p className="text-muted-foreground">Complete your setup and configure {isCvFormatter ? "CV Formatting" : (isMessage ? "messaging" : "interview")} settings.</p>
       </div>
 
       {error && (
@@ -449,13 +539,14 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left Column - General & Status Settings */}
+
+        {/* Left Column */}
         <div className="space-y-8">
           <Card className="p-6">
             <h2 className="text-xl font-semibold text-foreground mb-4">General Settings</h2>
             <div className="space-y-6">
 
-              {/* Platform */}
+              {/* Platform (Common) */}
               <div className="space-y-2">
                 <Label>Platform</Label>
                 <Select value={platformUid} onValueChange={handleSelectChange(setPlatformUid)}>
@@ -471,242 +562,294 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                 </Select>
               </div>
 
-              {/* Phone Number */}
-              <div className="space-y-2">
-                <Label>Select Phone Number</Label>
-                <Select value={phoneNumberUid} onValueChange={handleSelectChange(setPhoneNumberUid)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select phone number" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
-                    {phoneNumberOptions.map(p => (
-                      <SelectItem key={p.id} value={p.uid}>
-                        {p.phone_number} {p.friendly_name ? `(${p.friendly_name})` : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Need another number? <Link href="/dashboard/phone-number-buy" className="text-primary hover:underline">Buy New Number</Link>
-                </p>
-              </div>
-
-              {/* Voice ID - Hidden for Message Apps */}
-              {!isMessage && (
+              {/* Phone Number (Hide for CV Formatter) */}
+              {!isCvFormatter && (
                 <div className="space-y-2">
-                  <Label>ElevenLabs Voice ID (Optional)</Label>
-                  <Input
-                    value={voiceId}
-                    onChange={(e) => setVoiceId(e.target.value)}
-                    placeholder="Enter Voice ID"
-                    className="bg-background"
-                  />
+                  <Label>Select Phone Number</Label>
+                  <Select value={phoneNumberUid} onValueChange={handleSelectChange(setPhoneNumberUid)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select phone number" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                      {phoneNumberOptions.map(p => (
+                        <SelectItem key={p.id} value={p.uid}>
+                          {p.phone_number} {p.friendly_name ? `(${p.friendly_name})` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Need another number? <Link href="/dashboard/phone-number-buy" className="text-primary hover:underline">Buy New Number</Link>
+                  </p>
                 </div>
               )}
 
-              {/* End Call Negative Radio - Hidden for Message Apps */}
-              {!isMessage && (
-                <div className="space-y-3 pt-2">
-                  <Label>End call if primary answer is negative?</Label>
-                  <RadioGroup value={endCallNegative} onValueChange={setEndCallNegative} className="flex gap-4">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="true" id="ec-yes" />
-                      <Label htmlFor="ec-yes">Yes</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="false" id="ec-no" />
-                      <Label htmlFor="ec-no">No</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-              )}
-
-            </div>
-          </Card>
-
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-4">Automation Logic</h2>
-            <div className="space-y-6">
-
-              {/* Job Ad Status */}
-              <div className="space-y-2">
-                <Label>{isMessage ? "Job Ad Status for Message" : "Job Ad Status for Calling"}</Label>
-                <Select value={jobAdStatus} onValueChange={handleSelectChange(setJobAdStatus)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
-                    <SelectItem value="Current">Current</SelectItem>
-                    <SelectItem value="Expired">Expired</SelectItem>
-                    <SelectItem value="Draft">Draft</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Application Status */}
-              <div className="space-y-2">
-                <Label>{isMessage ? "Application Status for Message" : "Application Status for Calling"}</Label>
-                <Select value={applicationStatus} onValueChange={handleSelectChange(setApplicationStatus)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
-                    {statusOptions.map(s => (
-                      <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Calling/SMS Time */}
-              <div className="space-y-2">
-                <Label>{isMessage ? "Message Time After Status Update" : "Calling Time After Status Update"}</Label>
-                <Select value={callingTime} onValueChange={handleSelectChange(setCallingTime)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
-                    {CALLING_TIME_OPTIONS.map(opt => (
-                      <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Status When Call Placed / SMS Sent */}
-              <div className="space-y-2">
-                <Label>{isMessage ? "Status When Message is send" : "Status When Call is Placed"}</Label>
-                <Select value={placedStatus} onValueChange={handleSelectChange(setPlacedStatus)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
-                    {statusOptions.map(s => (
-                      <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Status for Successful */}
-              <div className="space-y-2">
-                <Label>{isMessage ? "Status for Successful Message" : "Status for Successful Call"}</Label>
-                <Select value={successfulStatus} onValueChange={handleSelectChange(setSuccessfulStatus)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
-                    {statusOptions.map(s => (
-                      <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Status for Unsuccessful */}
-              <div className="space-y-2">
-                <Label>{isMessage ? "Status for Unsuccessful Message" : "Status for Unsuccessful Call"}</Label>
-                <Select value={unsuccessfulStatus} onValueChange={handleSelectChange(setUnsuccessfulStatus)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
-                    {statusOptions.map(s => (
-                      <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-            </div>
-          </Card>
-        </div>
-
-        {/* Right Column - Questions */}
-        <Card className="p-6 h-fit">
-          <h2 className="text-xl font-semibold text-foreground mb-4">Interview Questions</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Add primary questions for the {isMessage ? "message" : "interview"}. Save each question before saving the full configuration.
-          </p>
-
-          <div className="space-y-4">
-            {questions.map((q, index) => (
-              <div key={q.tempId} className="space-y-1">
-                <div className="flex gap-2 items-center">
-                  <Input
-                    value={q.value}
-                    onChange={(e) => handleQuestionChange(index, e.target.value)}
-                    placeholder={isMessage ? "Type message question" : "Type a question"}
-                    className={`bg-background ${q.isSaved ? "border-green-500" : ""}`}
-                    disabled={q.isSaved}
-                  />
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-1 shrink-0">
-                    {!q.isSaved ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleSaveQuestion(index)}
-                        className="h-10 px-3 cursor-pointer"
-                        title="Save Question"
-                      >
-                        Save
-                      </Button>
-                    ) : (
-                      <div className="h-10 w-10 flex items-center justify-center text-green-500" title="Saved">
-                        <CheckCircle2 className="h-5 w-5" />
-                      </div>
-                    )}
-
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleDeleteQuestion(index)}
-                      className="h-10 w-10 text-destructive hover:text-destructive/90 cursor-pointer"
-                      title="Delete"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+              {/* CV Formatter Specific Fields */}
+              {isCvFormatter && (
+                <>
+                  {/* Application Status for Formatting */}
+                  <div className="space-y-2">
+                    <Label>Application Status for Formatting</Label>
+                    <Select value={cvJobStatus} onValueChange={handleSelectChange(setCvJobStatus)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                        {statusOptions.map(s => (
+                          <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                </div>
 
-                {/* Suggested Questions - Only show if input is empty and not saved */}
-                {!q.value && !q.isSaved && suggestedQuestions.length > 0 && (
-                  <div className="border rounded-md p-2 bg-muted/20 space-y-2 mt-1">
-                    <p className="text-xs text-muted-foreground font-medium px-1">Suggested Questions:</p>
-                    <div className="flex flex-col gap-1">
-                      {suggestedQuestions.map(s => (
-                        <div
-                          key={s.id}
-                          onClick={() => handleSuggestionClick(index, s.question)}
-                          className="text-sm p-2 hover:bg-muted rounded-sm cursor-pointer transition-colors"
-                        >
-                          {s.question}
+                  {/* Enabled Sections Multi-Select */}
+                  <div className="space-y-2">
+                    <Label>Enabled Sections</Label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {cvEnabledSections.map((section) => (
+                        <div key={section} className="bg-primary/10 text-primary text-sm px-3 py-1 rounded-full flex items-center gap-1 border border-primary/20">
+                          {section}
+                          <X className="h-3 w-3 cursor-pointer hover:text-primary/70" onClick={() => handleSectionRemove(section)} />
                         </div>
                       ))}
                     </div>
+                    <Select onValueChange={handleSectionSelect} value="">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select section to add" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CV_ENABLED_SECTIONS_OPTIONS.filter(opt => !cvEnabledSections.includes(opt)).length > 0 ? (
+                          CV_ENABLED_SECTIONS_OPTIONS.filter(opt => !cvEnabledSections.includes(opt)).map(opt => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))
+                        ) : (
+                          <div className="p-2 text-sm text-muted-foreground text-center">All sections selected</div>
+                        )}
+                      </SelectContent>
+                    </Select>
                   </div>
-                )}
-              </div>
-            ))}
 
-            <Button
-              onClick={handleAddQuestion}
-              variant="default"
-              className="bg-[#1e293b] hover:bg-[#1e293b]/90 text-white inline-block mt-4 cursor-pointer"
-            >
-              Add More Question
-            </Button>
-          </div>
-        </Card>
+                  {/* Upload With Logo Radio */}
+                  <div className="space-y-3 pt-2">
+                    <Label>Upload with logo?</Label>
+                    <RadioGroup value={cvUploadWithLogo} onValueChange={setCvUploadWithLogo} className="flex gap-4">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="true" id="uwl-yes" />
+                        <Label htmlFor="uwl-yes">Yes</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="false" id="uwl-no" />
+                        <Label htmlFor="uwl-no">No</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Upload Without Logo Radio */}
+                  <div className="space-y-3 pt-2">
+                    <Label>Upload without logo?</Label>
+                    <RadioGroup value={cvUploadWithoutLogo} onValueChange={setCvUploadWithoutLogo} className="flex gap-4">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="true" id="uwtl-yes" />
+                        <Label htmlFor="uwtl-yes">Yes</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="false" id="uwtl-no" />
+                        <Label htmlFor="uwtl-no">No</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </>
+              )}
+
+              {/* Existing Interview Fields (Calls, Voice ID) - Hide if CV Formatter or Message */}
+              {!isCvFormatter && !isMessage && (
+                <>
+                  <div className="space-y-2">
+                    <Label>ElevenLabs Voice ID (Optional)</Label>
+                    <Input value={voiceId} onChange={(e) => setVoiceId(e.target.value)} placeholder="Enter Voice ID" className="bg-background" />
+                  </div>
+                  <div className="space-y-3 pt-2">
+                    <Label>End call if primary answer is negative?</Label>
+                    <RadioGroup value={endCallNegative} onValueChange={setEndCallNegative} className="flex gap-4">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="ec-yes" /><Label htmlFor="ec-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="ec-no" /><Label htmlFor="ec-no">No</Label></div>
+                    </RadioGroup>
+                  </div>
+                </>
+              )}
+
+            </div>
+          </Card>
+
+          {/* Automation Logic Card - Hide for CV Formatter */}
+          {!isCvFormatter && (
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold text-foreground mb-4">Automation Logic</h2>
+              <div className="space-y-6">
+                {/* Job Ad Status */}
+                <div className="space-y-2">
+                  <Label>{isMessage ? "Job Ad Status for Message" : "Job Ad Status for Calling"}</Label>
+                  <Select value={jobAdStatus} onValueChange={handleSelectChange(setJobAdStatus)}>
+                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                      <SelectItem value="Current">Current</SelectItem>
+                      <SelectItem value="Expired">Expired</SelectItem>
+                      <SelectItem value="Draft">Draft</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {/* Other existing automation fields... */}
+                <div className="space-y-2">
+                  <Label>{isMessage ? "Application Status for Message" : "Application Status for Calling"}</Label>
+                  <Select value={applicationStatus} onValueChange={handleSelectChange(setApplicationStatus)}>
+                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                      {statusOptions.map(s => (<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {/* ... Calling/SMS Time, Statuses ... */}
+                <div className="space-y-2">
+                  <Label>{isMessage ? "Message Time After Status Update" : "Calling Time After Status Update"}</Label>
+                  <Select value={callingTime} onValueChange={handleSelectChange(setCallingTime)}>
+                    <SelectTrigger><SelectValue placeholder="Select time" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                      {CALLING_TIME_OPTIONS.map(opt => (<SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>{isMessage ? "Status When Message is send" : "Status When Call is Placed"}</Label>
+                  <Select value={placedStatus} onValueChange={handleSelectChange(setPlacedStatus)}>
+                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                      {statusOptions.map(s => (<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>{isMessage ? "Status for Successful Message" : "Status for Successful Call"}</Label>
+                  <Select value={successfulStatus} onValueChange={handleSelectChange(setSuccessfulStatus)}>
+                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                      {statusOptions.map(s => (<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>{isMessage ? "Status for Unsuccessful Message" : "Status for Unsuccessful Call"}</Label>
+                  <Select value={unsuccessfulStatus} onValueChange={handleSelectChange(setUnsuccessfulStatus)}>
+                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                      {statusOptions.map(s => (<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </Card>
+          )}
+
+        </div>
+
+        {/* Right Column */}
+        {isCvFormatter ? (
+          // CV Formatter Logic - Logo Upload
+          <Card className="p-6 h-fit">
+            <h2 className="text-xl font-semibold text-foreground mb-4">Branding</h2>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label>Logo</Label>
+                <div className="border-2 border-dashed border-input rounded-lg p-6 flex flex-col items-center justify-center gap-4 hover:bg-muted/50 transition-colors">
+                  {cvLogoPreview ? (
+                    <div className="relative w-full aspect-video max-h-[200px] bg-muted rounded-md overflow-hidden flex items-center justify-center">
+                      <img src={cvLogoPreview} alt="Logo Preview" className="max-w-full max-h-full object-contain" />
+                      <Button
+                        size="icon"
+                        variant="destructive"
+                        className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-md"
+                        onClick={handleRemoveLogo}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="text-center space-y-2">
+                      <div className="bg-primary/10 p-4 rounded-full inline-block">
+                        <ImageIcon className="h-8 w-8 text-primary" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">Click to upload logo</p>
+                        <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <Input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoChange}
+                    className={cvLogoPreview ? "hidden" : "cursor-pointer"}
+                  />
+                </div>
+              </div>
+            </div>
+          </Card>
+        ) : (
+          // Existing Question Logic
+          <Card className="p-6 h-fit">
+            <h2 className="text-xl font-semibold text-foreground mb-4">Interview Questions</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Add primary questions for the {isMessage ? "message" : "interview"}. Save each question before saving the full configuration.
+            </p>
+
+            <div className="space-y-4">
+              {questions.map((q, index) => (
+                <div key={q.tempId} className="space-y-1">
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      value={q.value}
+                      onChange={(e) => handleQuestionChange(index, e.target.value)}
+                      placeholder={isMessage ? "Type message question" : "Type a question"}
+                      className={`bg-background ${q.isSaved ? "border-green-500" : ""}`}
+                      disabled={q.isSaved}
+                    />
+                    <div className="flex gap-1 shrink-0">
+                      {!q.isSaved ? (
+                        <Button size="sm" variant="outline" onClick={() => handleSaveQuestion(index)} className="h-10 px-3 cursor-pointer" title="Save Question" >Save</Button>
+                      ) : (
+                        <div className="h-10 w-10 flex items-center justify-center text-green-500" title="Saved"><CheckCircle2 className="h-5 w-5" /></div>
+                      )}
+                      <Button size="icon" variant="ghost" onClick={() => handleDeleteQuestion(index)} className="h-10 w-10 text-destructive hover:text-destructive/90 cursor-pointer" title="Delete"><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  </div>
+                  {!q.value && !q.isSaved && suggestedQuestions.length > 0 && (
+                    <div className="border rounded-md p-2 bg-muted/20 space-y-2 mt-1">
+                      <p className="text-xs text-muted-foreground font-medium px-1">Suggested Questions:</p>
+                      <div className="flex flex-col gap-1">
+                        {suggestedQuestions.map(s => (
+                          <div key={s.id} onClick={() => handleSuggestionClick(index, s.question)} className="text-sm p-2 hover:bg-muted rounded-sm cursor-pointer transition-colors">{s.question}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+              <Button onClick={handleAddQuestion} variant="default" className="bg-[#1e293b] hover:bg-[#1e293b]/90 text-white inline-block mt-4 cursor-pointer">Add More Question</Button>
+            </div>
+          </Card>
+        )}
       </div>
 
       {/* Bottom Save Bar */}
