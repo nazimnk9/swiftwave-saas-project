@@ -107,7 +107,16 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState("")
 
+  // Determine App Type
   const isSms = featureName.toLowerCase().includes("sms")
+  const isWhatsApp = featureName.toLowerCase().includes("what's app") || featureName.toLowerCase().includes("whatsapp")
+  const isMessage = isSms || isWhatsApp
+
+  const getMessageType = () => {
+    if (isWhatsApp) return "AI_WHATSAPP"
+    if (isSms) return "AI_SMS"
+    return null
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -133,21 +142,28 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           setFeatureName(currentFeature.name)
         }
 
-        // Try to fetch existing configuration
-        const isSmsFeature = currentFeature?.name.toLowerCase().includes("sms")
+        // Feature Type Detection (Logic duplicated for ensuring we work with latest data in fetch)
+        const name = currentFeature?.name.toLowerCase() || ""
+        const currentIsSms = name.includes("sms")
+        const currentIsWhatsApp = name.includes("what's app") || name.includes("whatsapp")
+        const currentIsMessage = currentIsSms || currentIsWhatsApp
+        const currentType = currentIsWhatsApp ? "AI_WHATSAPP" : (currentIsSms ? "AI_SMS" : null)
 
-        if (isSmsFeature) {
+        if (currentIsMessage && currentType) {
           try {
-            const configRes = await axios.get(`${BASE_URL}/interview/message/config/details`, { headers })
+            const configRes = await axios.get(`${BASE_URL}/interview/message/config/details`, {
+              headers,
+              params: { type: currentType }
+            })
             const configData = configRes.data
 
             if (configData) {
               setIsUpdateMode(true)
 
-              // Populate fields for SMS
+              // Populate fields for SMS/WhatsApp
               setPlatformUid(configData.platform?.uid || "")
               setPhoneNumberUid(configData.phone?.uid || "")
-              // No voiceId or endCallNegative for SMS
+              // No voiceId or endCallNegative for Message apps
 
               // Map statuses
               setJobAdStatus(configData.jobad_status_for_sms || "Current")
@@ -309,7 +325,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
       let payload: any = {}
 
-      if (isSms) {
+      if (isMessage) {
         payload = {
           application_status_for_sms: Number(applicationStatus),
           jobad_status_for_sms: jobAdStatus,
@@ -320,11 +336,11 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           platform_uid: platformUid,
           phone_uid: phoneNumberUid,
           primary_question_inputs: questionUids,
-          type: "AI_SMS"
+          type: getMessageType()
         }
       } else {
         payload = {
-          end_call_if_primary_answer_negative: endCallNegative === "true",
+          end_call_if_primary_answer_negative: endCallNegative === "true", // Note: kept as boolean based on previous impl
           jobad_status_for_calling: jobAdStatus,
           application_status_for_calling: Number(applicationStatus),
           calling_time_after_status_update: Number(callingTime),
@@ -341,18 +357,22 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
       let response
       if (isUpdateMode) {
         // PATCH request for Update
-        if (isSms) {
+        if (isMessage) {
           response = await axios.patch(`${BASE_URL}/interview/message/config/details`, payload, {
-            headers: { Authorization: `Bearer ${authToken}` }
+            headers: { Authorization: `Bearer ${authToken}` },
+            params: { type: getMessageType() }
           })
         } else {
+          // Call
+          // Fix logic: payload for call uses booleans for some fields if needed, previously string "true"/"false" converted
+          // Re-checking payload: end_call_if_primary_answer_negative is boolean in line above.
           response = await axios.patch(`${BASE_URL}/interview/call/config/details`, payload, {
             headers: { Authorization: `Bearer ${authToken}` }
           })
         }
       } else {
         // POST request for Create
-        if (isSms) {
+        if (isMessage) {
           response = await axios.post(`${BASE_URL}/interview/message/config/`, payload, {
             headers: { Authorization: `Bearer ${authToken}` }
           })
@@ -380,9 +400,9 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
     } catch (err: any) {
       console.error("Error saving/updating configuration:", err)
 
-      const smsErrors = isSms ? (err.response?.data?.application_status_for_sms || err.response?.data?.jobad_status_for_sms || err.response?.data?.sms_time_after_status_update || err.response?.data?.status_for_unsuccessful_sms || err.response?.data?.status_for_successful_sms || err.response?.data?.status_when_sms_is_send) : null
+      const smsErrors = isMessage ? (err.response?.data?.application_status_for_sms || err.response?.data?.jobad_status_for_sms || err.response?.data?.sms_time_after_status_update || err.response?.data?.status_for_unsuccessful_sms || err.response?.data?.status_for_successful_sms || err.response?.data?.status_when_sms_is_send) : null
 
-      const callErrors = !isSms ? (err.response?.data?.end_call_if_primary_answer_negative || err.response?.data?.jobad_status_for_calling || err.response?.data?.application_status_for_calling || err.response?.data?.calling_time_after_status_update || err.response?.data?.status_for_unsuccessful_call || err.response?.data?.status_for_successful_call || err.response?.data?.status_when_call_is_placed || err.response?.data?.voice_id) : null
+      const callErrors = !isMessage ? (err.response?.data?.end_call_if_primary_answer_negative || err.response?.data?.jobad_status_for_calling || err.response?.data?.application_status_for_calling || err.response?.data?.calling_time_after_status_update || err.response?.data?.status_for_unsuccessful_call || err.response?.data?.status_for_successful_call || err.response?.data?.status_when_call_is_placed || err.response?.data?.voice_id) : null
 
       const commonErrors = err.response?.data?.platform_uid || err.response?.data?.phone_uid || err.response?.data?.primary_question_inputs || err.response?.data?.details || "Failed to save configuration. Please check all fields."
 
@@ -417,7 +437,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Configure – {featureName || "Loading..."}</h1>
-        <p className="text-muted-foreground">Complete your setup and configure {isSms ? "SMS" : "interview"} settings.</p>
+        <p className="text-muted-foreground">Complete your setup and configure {isMessage ? "messaging" : "interview"} settings.</p>
       </div>
 
       {error && (
@@ -472,8 +492,8 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                 </p>
               </div>
 
-              {/* Voice ID - Hidden for SMS */}
-              {!isSms && (
+              {/* Voice ID - Hidden for Message Apps */}
+              {!isMessage && (
                 <div className="space-y-2">
                   <Label>ElevenLabs Voice ID (Optional)</Label>
                   <Input
@@ -485,8 +505,8 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                 </div>
               )}
 
-              {/* End Call Negative Radio - Hidden for SMS */}
-              {!isSms && (
+              {/* End Call Negative Radio - Hidden for Message Apps */}
+              {!isMessage && (
                 <div className="space-y-3 pt-2">
                   <Label>End call if primary answer is negative?</Label>
                   <RadioGroup value={endCallNegative} onValueChange={setEndCallNegative} className="flex gap-4">
@@ -511,7 +531,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
               {/* Job Ad Status */}
               <div className="space-y-2">
-                <Label>{isSms ? "Job Ad Status for SMS" : "Job Ad Status for Calling"}</Label>
+                <Label>{isMessage ? "Job Ad Status for Message" : "Job Ad Status for Calling"}</Label>
                 <Select value={jobAdStatus} onValueChange={handleSelectChange(setJobAdStatus)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
@@ -527,7 +547,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
               {/* Application Status */}
               <div className="space-y-2">
-                <Label>{isSms ? "Application Status for SMS" : "Application Status for Calling"}</Label>
+                <Label>{isMessage ? "Application Status for Message" : "Application Status for Calling"}</Label>
                 <Select value={applicationStatus} onValueChange={handleSelectChange(setApplicationStatus)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
@@ -543,7 +563,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
               {/* Calling/SMS Time */}
               <div className="space-y-2">
-                <Label>{isSms ? "SMS Time After Status Update" : "Calling Time After Status Update"}</Label>
+                <Label>{isMessage ? "Message Time After Status Update" : "Calling Time After Status Update"}</Label>
                 <Select value={callingTime} onValueChange={handleSelectChange(setCallingTime)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select time" />
@@ -559,7 +579,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
               {/* Status When Call Placed / SMS Sent */}
               <div className="space-y-2">
-                <Label>{isSms ? "Status When SMS is send" : "Status When Call is Placed"}</Label>
+                <Label>{isMessage ? "Status When Message is send" : "Status When Call is Placed"}</Label>
                 <Select value={placedStatus} onValueChange={handleSelectChange(setPlacedStatus)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
@@ -575,7 +595,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
               {/* Status for Successful */}
               <div className="space-y-2">
-                <Label>{isSms ? "Status for Successful SMS" : "Status for Successful Call"}</Label>
+                <Label>{isMessage ? "Status for Successful Message" : "Status for Successful Call"}</Label>
                 <Select value={successfulStatus} onValueChange={handleSelectChange(setSuccessfulStatus)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
@@ -591,7 +611,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
               {/* Status for Unsuccessful */}
               <div className="space-y-2">
-                <Label>{isSms ? "Status for Unsuccessful SMS" : "Status for Unsuccessful Call"}</Label>
+                <Label>{isMessage ? "Status for Unsuccessful Message" : "Status for Unsuccessful Call"}</Label>
                 <Select value={unsuccessfulStatus} onValueChange={handleSelectChange(setUnsuccessfulStatus)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
@@ -613,7 +633,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         <Card className="p-6 h-fit">
           <h2 className="text-xl font-semibold text-foreground mb-4">Interview Questions</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Add primary questions for the {isSms ? "SMS" : "interview"}. Save each question before saving the full configuration.
+            Add primary questions for the {isMessage ? "message" : "interview"}. Save each question before saving the full configuration.
           </p>
 
           <div className="space-y-4">
@@ -623,7 +643,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                   <Input
                     value={q.value}
                     onChange={(e) => handleQuestionChange(index, e.target.value)}
-                    placeholder={isSms ? "Type SMS question" : "Type a question"}
+                    placeholder={isMessage ? "Type message question" : "Type a question"}
                     className={`bg-background ${q.isSaved ? "border-green-500" : ""}`}
                     disabled={q.isSaved}
                   />

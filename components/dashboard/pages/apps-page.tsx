@@ -35,8 +35,8 @@ interface AppFeatureResponse {
 // Configuration for static assets (images, buttons) mapped by keywords in the app name
 const APP_ASSET_CONFIG = [
   {
-    keywords: ["whatsapp"],
-    id: "whatsapp-recruiter", // ID used for modal content lookup
+    keywords: ["whatsapp", "what's app"],
+    id: "ai-what's-app-recruiter", // ID used for modal content lookup
     logoJobAdder: "/images/JobAdder.jpg",
     logoBullhorn: "/images/Bullhornconnector.jpg",
     buttons: ["Purchase", "Configure", "Report"],
@@ -83,8 +83,8 @@ const APP_ASSET_CONFIG = [
 ]
 
 const appDetails = {
-  "whatsapp-recruiter": {
-    title: "AI WhatsApp Recruiter",
+  "ai-what's-app-recruiter": {
+    title: "Ai What's app recruiter",
     about: [
       "This app can automate recruitment process on JobAdder.",
       "This App will check new live job applications, place a phone call to the applicant's phone or mobile number to start questionnaires by having automated call conversations. The interview questions will be build based on the job post details.",

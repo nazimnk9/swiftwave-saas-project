@@ -43,20 +43,13 @@ interface InterviewData {
 interface ReportItem {
     id: number
     interview_data?: InterviewData // For call reports structure if nested
-    // The SMS payload returns the interview object directly in results?
-    // User provided: "results": [ { "id": 1, "uid": ..., "conversation_json": ... } ]
-    // But Call report likely has "results": [ { "interview_data": { ... } } ] based on previous code.
-    // I need to handle both structures.
-    // Based on previous code: `reports.map((row) => row.interview_data.uid)`
-    // So existing structure wraps data in `interview_data`.
-    // SMS structure provided seems flat. I will normalize this in fetch.
-
     // Union for state simplicity, but I'll normalize to a common shape in state
     uid?: string
     candidate_name?: string
     candidate_email?: string
     candidate_phone?: string
     conversation_json?: any[]
+    status: string
     ai_decision: string
     updated_at: string
 }
@@ -71,6 +64,7 @@ interface DisplayReportItem {
     candidate_phone: string
     started_at: string | null
     ai_decision: string
+    status: string
     updated_at: string
     conversation_json: ChatMessage[]
 }
@@ -96,6 +90,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
     const [reports, setReports] = useState<DisplayReportItem[]>([])
     const [loading, setLoading] = useState(true)
     const [featureName, setFeatureName] = useState("WhatsApp Recruiter Report") // Default or loaded
+    const [loadingFeature, setLoadingFeature] = useState(true) // New state to wait for feature name
     const [selectedInterview, setSelectedInterview] = useState<DisplayReportItem | null>(null)
     const router = useRouter()
 
@@ -118,14 +113,22 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                     }
                 }
 
-                const isSms = currentFeatureName.toLowerCase().includes("sms")
+                const nameLower = currentFeatureName.toLowerCase()
+                const isSms = nameLower.includes("sms")
+                const isWhatsApp = nameLower.includes("what's app") || nameLower.includes("whatsapp")
+                const isMessage = isSms || isWhatsApp
 
-                if (isSms) {
-                    // SMS Report Fetch
-                    const reportsRes = await axios.get<ReportResponse>(`${BASE_URL}/interview/message/report`, { headers })
+                if (isMessage) {
+                    // Message Report Fetch (SMS or WhatsApp)
+                    const typeParam = isWhatsApp ? "AI_WHATSAPP" : "AI_SMS"
 
-                    // Normalize SMS data to display structure
-                    // SMS Payload: { results: [ { id, uid, candidate_phone, conversation_json: [{sender, message, timestamp}], ... } ] }
+                    const reportsRes = await axios.get<ReportResponse>(`${BASE_URL}/interview/message/report`, {
+                        headers,
+                        params: { type: typeParam }
+                    })
+
+                    // Normalize Message data to display structure
+                    // Payload: { results: [ { id, uid, candidate_phone, conversation_json: [{sender, message, timestamp}], ... } ] }
                     const normalized = reportsRes.data.results.map((item: any) => ({
                         id: item.id,
                         uid: item.uid,
@@ -134,6 +137,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                         candidate_email: item.candidate_email,
                         candidate_phone: item.candidate_phone,
                         started_at: item.created_at, // Use created_at as start time proxy if started_at missing
+                        status: item.status,
                         ai_decision: item.ai_decision,
                         updated_at: item.updated_at,
                         conversation_json: item.conversation_json ? item.conversation_json.map((msg: any) => ({
@@ -148,19 +152,19 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                     // Call Report Fetch (Previous Logic)
                     const reportsRes = await axios.get<ReportResponse>(`${BASE_URL}/interview/`, { headers })
 
-                    // Normalize Call data (assuming previous structure was { results: [ { interview_data: {...}, status: ... } ] })
-                    // Wait, previous code accessed: row.interview_data.uid
-                    // So item is wrapper.
+                    // Normalize Call data
+                    // Previous code assumed results wrapped in interview_data based on mapping
                     const normalized = reportsRes.data.results.map((item: any) => ({
                         id: item.id,
-                        uid: item.uid,
-                        candidate_id: item.candidate_id,
-                        candidate_name: item.candidate_name,
-                        candidate_email: item.candidate_email,
-                        candidate_phone: item.candidate_phone,
-                        started_at: item.started_at,
+                        uid: item.interview_data.uid,
+                        candidate_id: item.interview_data.candidate_id,
+                        candidate_name: item.interview_data.candidate_name,
+                        candidate_email: item.interview_data.candidate_email,
+                        candidate_phone: item.interview_data.candidate_phone,
+                        started_at: item.interview_data.started_at,
+                        status: item.status,
                         ai_decision: item.ai_decision,
-                        updated_at: item.updated_at,
+                        updated_at: item.interview_data.updated_at,
                         conversation_json: item.interview_data.conversation_json || []
                     }))
                     setReports(normalized)
@@ -170,6 +174,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                 console.error("Error fetching data:", error)
             } finally {
                 setLoading(false)
+                setLoadingFeature(false)
             }
         }
 
@@ -214,6 +219,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                             <TableHead className="font-semibold text-foreground">Candidate Mobile</TableHead>
                             <TableHead className="font-semibold text-foreground">First Message Sent At</TableHead>
                             <TableHead className="font-semibold text-foreground">Status</TableHead>
+                            <TableHead className="font-semibold text-foreground">Ai Decision</TableHead>
                             <TableHead className="font-semibold text-foreground">Updated At</TableHead>
                             <TableHead className="font-semibold text-foreground">Chat History</TableHead>
                         </TableRow>
@@ -221,11 +227,11 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center h-24">Loading records...</TableCell>
+                                <TableCell colSpan={10} className="text-center h-24">Loading records...</TableCell>
                             </TableRow>
                         ) : reports.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center h-24">No records found.</TableCell>
+                                <TableCell colSpan={10} className="text-center h-24">No records found.</TableCell>
                             </TableRow>
                         ) : (
                             reports.map((row) => (
@@ -236,6 +242,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                                     <TableCell className="text-sm">{row.candidate_email}</TableCell>
                                     <TableCell className="text-sm">{row.candidate_phone}</TableCell>
                                     <TableCell className="text-sm">{formatDate(row.started_at)}</TableCell>
+                                    <TableCell className="text-sm">{row.status}</TableCell>
                                     <TableCell className="text-sm">{row.ai_decision}</TableCell>
                                     <TableCell className="text-sm">{formatDate(row.updated_at)}</TableCell>
                                     <TableCell className="text-sm">
