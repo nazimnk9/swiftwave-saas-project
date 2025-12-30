@@ -340,9 +340,19 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
     setCvEnabledSections(cvEnabledSections.filter(s => s !== value))
   }
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
+      let file = e.target.files[0]
+
+      // Auto-compress if > 999KB
+      if (file.size > 999 * 1024) {
+        try {
+          file = await compressImage(file)
+        } catch (err) {
+          console.error("Image compression failed:", err)
+        }
+      }
+
       setCvLogo(file)
       const objectUrl = URL.createObjectURL(file)
       setCvLogoPreview(objectUrl)
@@ -790,7 +800,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm font-medium">Click to upload logo</p>
-                        <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p>
+                        {/* <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p> */}
                       </div>
                     </div>
                   )}
@@ -875,4 +885,67 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
     </div>
   )
+}
+
+// Client-side image compression helper
+const compressImage = (file: File): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image()
+    const src = URL.createObjectURL(file)
+    img.src = src
+
+    img.onload = () => {
+      URL.revokeObjectURL(src)
+      const canvas = document.createElement("canvas")
+      const ctx = canvas.getContext("2d")
+
+      if (!ctx) {
+        reject(new Error("Canvas context failed"))
+        return
+      }
+
+      // Resize logic: Cap dimensions to 1024px
+      const MAX_DIMENSION = 1024
+      let width = img.width
+      let height = img.height
+
+      if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+        if (width > height) {
+          height = (height * MAX_DIMENSION) / width
+          width = MAX_DIMENSION
+        } else {
+          width = (width * MAX_DIMENSION) / height
+          height = MAX_DIMENSION
+        }
+      }
+
+      canvas.width = width
+      canvas.height = height
+
+      ctx.drawImage(img, 0, 0, width, height)
+
+      const type = file.type
+      const quality = 0.7
+      const finalType = type === "image/jpeg" ? "image/jpeg" : "image/png"
+
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          reject(new Error("Canvas toBlob failed"))
+          return
+        }
+
+        const compressedFile = new File([blob], file.name, {
+          type: finalType,
+          lastModified: Date.now(),
+        })
+
+        resolve(compressedFile)
+      }, finalType, quality)
+    }
+
+    img.onerror = (err) => {
+      URL.revokeObjectURL(src)
+      reject(err)
+    }
+  })
 }
