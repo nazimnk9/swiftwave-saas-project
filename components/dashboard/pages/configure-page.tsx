@@ -61,6 +61,7 @@ interface AppFeature {
 
 // Fixed dropdown options for calling time
 const CALLING_TIME_OPTIONS = [
+  { label: "5 min", value: 5 },
   { label: "10 min", value: 10 },
   // ... others
   { label: "15 min", value: 15 },
@@ -120,7 +121,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   // Status Assignments
   const [jobAdStatus, setJobAdStatus] = useState("Current")
   const [applicationStatus, setApplicationStatus] = useState<string>("")
-  const [callingTime, setCallingTime] = useState<string>("10")
+  const [callingTime, setCallingTime] = useState<string>("5")
   const [unsuccessfulStatus, setUnsuccessfulStatus] = useState<string>("")
   const [successfulStatus, setSuccessfulStatus] = useState<string>("")
   const [placedStatus, setPlacedStatus] = useState<string>("")
@@ -985,7 +986,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           size="lg"
           onClick={handleSaveConfiguration}
           disabled={isSaving}
-          className="bg-primary hover:bg-primary/90 min-w-[200px] cursor-pointer"
+          className="bg-primary hover:bg-primary/90 min-w-[200px] cursor-pointer dark:border-white"
         >
           {isSaving ? (isUpdateMode ? "Updating..." : "Saving...") : (isUpdateMode ? "Update Configure" : "Save Configure")}
         </Button>
@@ -994,7 +995,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           size="lg"
           variant="outline"
           onClick={() => router.back()}
-          className="min-w-[100px] cursor-pointer"
+          className="min-w-[100px] cursor-pointer dark:border-white"
         >
           Back
         </Button>

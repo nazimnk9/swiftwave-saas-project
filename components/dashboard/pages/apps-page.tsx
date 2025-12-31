@@ -281,12 +281,12 @@ export default function AppsPage() {
               {/* Logo Section */}
               <div className="flex items-center gap-2 bg-background border-b-2 pb-4 pl-2">
                 {config?.logoJobAdder && (
-                  <div className="relative w-15 h-15 border rounded-md">
+                  <div className="relative w-15 h-15 border rounded-md dark:border-white">
                     <Image src={config.logoJobAdder || "/placeholder.svg"} alt="JobAdder" fill className="object-contain p-1" />
                   </div>
                 )}
                 {config?.logoBullhorn && (
-                  <div className="relative w-15 h-15 border rounded-md">
+                  <div className="relative w-15 h-15 border rounded-md dark:border-white">
                     <Image src={config.logoBullhorn || "/placeholder.svg"} alt="Bullhorn" fill className="object-contain p-1" />
                   </div>
                 )}

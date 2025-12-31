@@ -241,7 +241,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile, i
         </div>
 
         <div className="hidden md:flex flex-1 max-w-md">
-          <div className="relative w-full">
+          <div className="relative w-full dark:border dark:border-white dark:rounded-md">
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
             <Input placeholder="Search jobs, candidates..." className="pl-10 h-10 border-border focus:border-primary" />
           </div>
@@ -253,7 +253,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile, i
         <button
           onClick={() => !isSelectorDisabled && setShowOrgSelector(!showOrgSelector)}
           disabled={isSelectorDisabled}
-          className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 border border-border ${isSelectorDisabled
+          className={`dark:border dark:border-white cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 border border-border ${isSelectorDisabled
             ? "bg-muted/50 cursor-not-allowed opacity-60"
             : "bg-primary/20 hover:bg-primary/30 cursor-pointer"
             }`}
@@ -266,8 +266,8 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile, i
         </button>
 
         {showOrgSelector && !isSelectorDisabled && (
-          <div className="absolute top-full mt-2 left-0 w-64 bg-card border border-border rounded-lg shadow-lg z-50">
-            <div className="p-3 border-b border-border">
+          <div className="absolute top-full mt-2 left-0 w-64 bg-card border border-border rounded-lg shadow-lg z-50 dark:border dark:border-white">
+            <div className="p-3 border-b border-border dark:border-white">
               <p className="text-xs font-semibold text-muted-foreground uppercase">Switch Organization</p>
             </div>
             <div className="max-h-64 overflow-y-auto">
@@ -286,7 +286,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile, i
                     className={`cursor-pointer w-full px-4 py-3 text-left text-sm hover:bg-muted transition-colors border-b border-border last:border-b-0 ${currentOrg?.name === org.organization.name ? "bg-primary/10 font-semibold text-primary" : ""
                       }`}
                   >
-                    <p className="font-medium">{org.organization.name}</p>
+                    <p className="font-medium dark:text-white">{org.organization.name}</p>
                     <p className="text-xs text-muted-foreground mt-1">{org.role}</p>
                   </button>
                 ))
@@ -355,8 +355,8 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile, i
           </Button>
 
           {showUserMenu && (
-            <div className="absolute right-0 mt-2 w-72 bg-card border border-border rounded-lg shadow-lg z-50">
-              <div className="p-4 border-b border-border">
+            <div className="absolute right-0 mt-2 w-72 bg-card border border-border dark:border-white rounded-lg shadow-lg z-50">
+              <div className="p-4 border-b border-border dark:border-white">
                 <p className="font-semibold text-foreground">{displayName}</p>
                 <p className="text-sm font-medium text-muted-foreground break-all">{userInfo.email}</p>
               </div>
@@ -377,7 +377,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile, i
                   <Settings className="w-4 h-4" />
                   Settings
                 </Link>
-                <div className="border-t border-border my-1" />
+                <div className="border-t border-border dark:border-white my-1" />
                 <button
                   onClick={() => {
                     setShowUserMenu(false)

@@ -386,7 +386,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
 
             <Button
                 variant="ghost"
-                className="text-primary bg-primary/30 hover:bg-black hover:text-white dark:border dark:border-white mt-4 cursor-pointer"
+                className="text-primary bg-primary/30 hover:bg-black hover:text-white mt-4 cursor-pointer"
                 onClick={() => router.back()}
             >
                 <ArrowLeft className="h-5 w-5 mr-2" />

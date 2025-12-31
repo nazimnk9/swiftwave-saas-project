@@ -1915,8 +1915,8 @@ export function BusinessSettingsPage() {
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
-                        <div className="p-2.5 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg group-hover:from-primary/30 group-hover:to-primary/20 transition-colors">
-                          <Zap className="w-6 h-6 text-primary" />
+                        <div className="p-2.5 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg group-hover:from-primary/30 group-hover:to-primary/20 transition-colors dark:border dark:border-white">
+                          <Zap className="w-6 h-6 text-primary dark:text-white" />
                         </div>
                         <div className="flex-1">
                           <CardTitle className="text-lg">{platform.name} Integration</CardTitle>
@@ -2074,8 +2074,8 @@ export function BusinessSettingsPage() {
             <Card className="border-2 border-border hover:shadow-lg hover:border-primary/50 transition-all duration-300 h-full">
               <CardHeader>
                 <div className="flex items-start gap-3">
-                  <div className="p-2.5 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg">
-                    <Phone className="w-6 h-6 text-primary" />
+                  <div className="p-2.5 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg dark:border dark:border-white">
+                    <Phone className="w-6 h-6 text-primary dark:text-white" />
                   </div>
                   <div className="flex-1">
                     <CardTitle className="text-lg">Manage Phone Numbers</CardTitle>
