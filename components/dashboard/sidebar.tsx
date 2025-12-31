@@ -156,11 +156,25 @@ export function Sidebar({ isOpen, onClose, isCollapsed = false }: SidebarProps) 
           }`}
       >
         {/* Logo and Close Button */}
-        <div className={`px-4 border-b border-sidebar-border flex items-center ${isCollapsed ? "justify-center" : "justify-between"} h-20`}>
+        <div className="relative px-4 border-b border-sidebar-border flex items-center justify-center h-20">
+
+          <Link href="/dashboard" className="flex items-center gap-2 justify-center">
+            <div className="relative w-12 h-12 flex items-center justify-center">
+              <Image
+                src="/logo_nav.png"
+                alt="SwiftWave.AI"
+                fill
+                className="object-contain"
+              />
+            </div>
+            {/* {!isCollapsed && (
+              <span className="text-xl font-bold text-sidebar-foreground">SwiftWave</span>
+            )} */}
+          </Link>
 
           <button
             onClick={onClose}
-            className="cursor-pointer md:hidden p-2 hover:bg-sidebar-accent rounded-lg transition-colors"
+            className="absolute right-4 cursor-pointer md:hidden p-2 hover:bg-sidebar-accent rounded-lg transition-colors"
             aria-label="Close sidebar"
           >
             <X className="w-5 h-5 text-sidebar-foreground" />
@@ -169,98 +183,102 @@ export function Sidebar({ isOpen, onClose, isCollapsed = false }: SidebarProps) 
 
         {/* Menu Items */}
         <nav className="flex-1 overflow-y-auto p-4 space-y-2">
-          {menuItems.map((item) => {
-            const Icon = item.icon
-            const hasSubmenu = item.submenu && item.submenu.length > 0
-            const isExpanded = expandedItems.includes(item.id) || shouldExpand(item)
-            const active = isActive(item.href) || (hasSubmenu && isSubmenuActive(item.submenu))
+          {
+            menuItems.map((item) => {
+              const Icon = item.icon
+              const hasSubmenu = item.submenu && item.submenu.length > 0
+              const isExpanded = expandedItems.includes(item.id) || shouldExpand(item)
+              const active = isActive(item.href) || (hasSubmenu && isSubmenuActive(item.submenu))
 
-            return (
-              <div key={item.id}>
-                {!isCollapsed && (
-                  <div className="px-4 py-2 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
-                    {item.label}
-                  </div>
-                )}
-                {hasSubmenu ? (
-                  <button
-                    onClick={() => toggleExpand(item.id)}
-                    className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${active
-                      ? "bg-sidebar-accent text-primary/80 dark:text-white"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                      } ${isCollapsed ? "justify-center px-2" : ""}`}
-                    title={isCollapsed ? item.label : undefined}
-                  >
-                    <Icon className="w-5 h-5" />
-                    {!isCollapsed && (
-                      <>
-                        <span className="flex-1 text-left font-medium">{item.label}</span>
-                        <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                      </>
-                    )}
-                  </button>
-                ) : (
-                  <Link
-                    href={item.href}
-                    onClick={handleCloseOnMobile}
-                    className={`cursor-pointer flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${active
-                      ? "bg-sidebar-accent text-primary/80 dark:text-white"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                      } ${isCollapsed ? "justify-center px-2" : ""}`}
-                    title={isCollapsed ? item.label : undefined}
-                  >
-                    <Icon className="w-5 h-5" />
-                    {!isCollapsed && <span className="flex-1 text-left font-medium">{item.label}</span>}
-                  </Link>
-                )}
+              return (
+                <div key={item.id}>
+                  {!isCollapsed && (
+                    <div className="px-4 py-2 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
+                      {item.label}
+                    </div>
+                  )}
+                  {hasSubmenu ? (
+                    <button
+                      onClick={() => toggleExpand(item.id)}
+                      className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${active
+                        ? "bg-sidebar-accent text-primary/80 dark:text-white"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        } ${isCollapsed ? "justify-center px-2" : ""}`}
+                      title={isCollapsed ? item.label : undefined}
+                    >
+                      <Icon className="w-5 h-5" />
+                      {!isCollapsed && (
+                        <>
+                          <span className="flex-1 text-left font-medium">{item.label}</span>
+                          <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      onClick={handleCloseOnMobile}
+                      className={`cursor-pointer flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${active
+                        ? "bg-sidebar-accent text-primary/80 dark:text-white"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        } ${isCollapsed ? "justify-center px-2" : ""}`}
+                      title={isCollapsed ? item.label : undefined}
+                    >
+                      <Icon className="w-5 h-5" />
+                      {!isCollapsed && <span className="flex-1 text-left font-medium">{item.label}</span>}
+                    </Link>
+                  )}
 
-                {/* Submenu */}
-                {hasSubmenu && isExpanded && !isCollapsed && (
-                  <div className="ml-4 space-y-1 mt-1">
-                    {item.submenu.map((subitem, idx) => (
-                      <Link
-                        key={idx}
-                        href={subitem.href}
-                        onClick={handleCloseOnMobile}
-                        className={`cursor-pointer block px-4 py-2 text-sm rounded-lg transition-colors ${isActive(subitem.href)
-                          ? "text-primary/80 bg-sidebar-accent dark:text-white"
-                          : "text-sidebar-foreground/70 hover:text-primary/80 hover:bg-sidebar-accent"
-                          }`}
-                      >
-                        {subitem.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </nav>
+                  {/* Submenu */}
+                  {hasSubmenu && isExpanded && !isCollapsed && (
+                    <div className="ml-4 space-y-1 mt-1">
+                      {item.submenu.map((subitem, idx) => (
+                        <Link
+                          key={idx}
+                          href={subitem.href}
+                          onClick={handleCloseOnMobile}
+                          className={`cursor-pointer block px-4 py-2 text-sm rounded-lg transition-colors ${isActive(subitem.href)
+                            ? "text-primary/80 bg-sidebar-accent dark:text-white"
+                            : "text-sidebar-foreground/70 hover:text-primary/80 hover:bg-sidebar-accent"
+                            }`}
+                        >
+                          {subitem.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })
+          }
+        </nav >
 
         {/* Bottom Menu */}
-        <div className="border-t border-sidebar-border p-4 space-y-2">
-          {bottomItems.map((item) => {
-            const Icon = item.icon
-            const active = isActive(item.href)
+        < div className="border-t border-sidebar-border p-4 space-y-2" >
+          {
+            bottomItems.map((item) => {
+              const Icon = item.icon
+              const active = isActive(item.href)
 
-            return (
-              <Link
-                key={item.id}
-                href={item.href}
-                onClick={handleCloseOnMobile}
-                className={`cursor-pointer flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${active
-                  ? "bg-sidebar-accent text-primary/80 dark:text-white"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                  } ${isCollapsed ? "justify-center px-2" : ""}`}
-                title={isCollapsed ? item.label : undefined}
-              >
-                <Icon className="w-5 h-5" />
-                {!isCollapsed && <span className="font-medium">{item.label}</span>}
-              </Link>
-            )
-          })}
-        </div>
-      </div>
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  onClick={handleCloseOnMobile}
+                  className={`cursor-pointer flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${active
+                    ? "bg-sidebar-accent text-primary/80 dark:text-white"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    } ${isCollapsed ? "justify-center px-2" : ""}`}
+                  title={isCollapsed ? item.label : undefined}
+                >
+                  <Icon className="w-5 h-5" />
+                  {!isCollapsed && <span className="font-medium">{item.label}</span>}
+                </Link>
+              )
+            })
+          }
+        </div >
+      </div >
     </>
   )
 }

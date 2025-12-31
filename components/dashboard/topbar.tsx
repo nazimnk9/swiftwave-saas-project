@@ -218,27 +218,16 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile, i
           <Menu className="w-5 h-5" />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon"
+        <button
+          //variant="ghost"
+          //size="icon-lg"
           onClick={onToggleCollapse}
-          className="hidden md:flex cursor-pointer text-muted-foreground hover:text-foreground"
+          className="hidden md:flex cursor-pointer text-black dark:text-white hover:text-blue"
         >
-          {isCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
-        </Button>
+          {isCollapsed ? <PanelLeftOpen className="w-8 h-8" /> : <PanelLeftClose className="w-8 h-8" />}
+        </button>
 
-        <div className="hidden md:flex items-center gap-2">
-          <Link href="/dashboard">
-            <div className="cursor-pointer relative w-18 h-18 flex items-center justify-center">
-              <Image
-                src="/logo_nav.png"
-                alt="SwiftWave.AI"
-                fill
-                className="object-contain"
-              />
-            </div>
-          </Link>
-        </div>
+
 
         <div className="hidden md:flex flex-1 max-w-md">
           <div className="relative w-full dark:border dark:border-white dark:rounded-md">

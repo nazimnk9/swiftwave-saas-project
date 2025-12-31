@@ -252,12 +252,12 @@ export default function AppsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading && (
           Array.from({ length: skeletonCount }).map((_, index) => ( // Dynamic from API count
-            <Card key={index} className="pt-4 pb-0 flex flex-col">
-              <div className="flex items-center gap-2 bg-background border-b-2 pb-4 pl-2">
+            <Card key={index} className="pt-4 pb-0 flex flex-col border-2">
+              <div className="flex items-center gap-2 bg-background border-b-2 pb-4 pl-6">
                 <Skeleton className="h-15 w-15 rounded-md" />
                 <Skeleton className="h-15 w-15 rounded-md" />
               </div>
-              <div className="p-2 flex flex-col gap-4 flex-1">
+              <div className="p-2 px-6 py-4 flex flex-col gap-4 flex-1">
                 <div className="flex items-start justify-between gap-2">
                   <Skeleton className="h-6 w-1/2" />
                   <Skeleton className="h-6 w-10" />
@@ -277,9 +277,9 @@ export default function AppsPage() {
           const staticId = config?.id // Use static ID for modal lookup and button logic
 
           return (
-            <Card key={feature.id} className="pt-4 pb-0 flex flex-col hover:shadow-lg transition-shadow">
+            <Card key={feature.id} className="pt-4 pb-0 flex flex-col hover:shadow-lg hover:scale-105 transition-all duration-300 border-2">
               {/* Logo Section */}
-              <div className="flex items-center gap-2 bg-background border-b-2 pb-4 pl-2">
+              <div className="flex items-center gap-2 bg-background border-b-2 pb-4 pl-6">
                 {config?.logoJobAdder && (
                   <div className="relative w-15 h-15 border rounded-md dark:border-white">
                     <Image src={config.logoJobAdder || "/placeholder.svg"} alt="JobAdder" fill className="object-contain p-1" />
@@ -293,7 +293,7 @@ export default function AppsPage() {
               </div>
 
               {/* Content Section */}
-              <div className="p-2 flex flex-col gap-4 flex-1">
+              <div className="px-6 py-4 flex flex-col gap-4 flex-1">
                 {/* Title and More Link */}
                 <div className="flex items-start justify-between">
                   <h3 className="text-lg font-semibold text-foreground">{feature.name}</h3>
