@@ -854,7 +854,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                     )}
                   </div>
                 ))}
-                <Button onClick={handleAddQuestion} variant="default" className="bg-[#1e293b] hover:bg-[#1e293b]/90 text-white inline-block mt-4 cursor-pointer">Add More Question</Button>
+                <Button onClick={handleAddQuestion} variant="default" className="bg-white border border-black text-black inline-block mt-4 pb-7 cursor-pointer">Add More Question</Button>
               </div>
             </Card>
           )}
