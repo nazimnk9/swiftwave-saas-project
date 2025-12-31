@@ -99,6 +99,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
 
     const nameLower = featureName ? featureName.toLowerCase() : ""
     const isCvFormatter = nameLower.includes("cv") && nameLower.includes("formatter")
+    const isGdpr = nameLower.includes("gdpr")
     const isSms = nameLower.includes("sms")
     const isWhatsApp = nameLower.includes("what's app") || nameLower.includes("whatsapp")
     const isMessage = isSms || isWhatsApp
@@ -145,6 +146,30 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                         status: "-",
                         updated_at: "", // or item.created_at if available
                         conversation_json: []
+                    }))
+                    setReports(normalized)
+
+                } else if (name.includes("gdpr")) {
+                    // GDPR Report Fetch
+                    const reportsRes = await axios.get<ReportResponse>(`${BASE_URL}/gdpr/reports/`, { headers })
+
+                    const normalized = reportsRes.data.results.map((item: any) => ({
+                        id: item.id,
+                        uid: item.uid || "",
+                        candidate_id: item.candidate_id,
+                        candidate_email: item.email, // Mapping 'email' from API to 'candidate_email'
+                        status: item.status,
+                        updated_at: item.updated_at,
+                        // Defaulting others
+                        candidate_name: "-",
+                        candidate_phone: "-",
+                        started_at: item.created_at,
+                        ai_decision: item.ai_dicision || "-", // Typo in API response "ai_dicision" handled
+                        conversation_json: item.conversation_json ? item.conversation_json.map((msg: any) => ({
+                            role: msg.sender === "ai" ? "assistant" : "user",
+                            content: msg.message,
+                            timestamp: "" // Timestamp not provided in example JSON
+                        })) : []
                     }))
                     setReports(normalized)
 
@@ -251,6 +276,13 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                                     <TableHead className="font-semibold text-foreground">PDF File With Logo</TableHead>
                                     <TableHead className="font-semibold text-foreground">PDF File Without Logo</TableHead>
                                 </>
+                            ) : isGdpr ? (
+                                <>
+                                    <TableHead className="font-semibold text-foreground">Candidate Email</TableHead>
+                                    <TableHead className="font-semibold text-foreground">Candidate Id</TableHead>
+                                    <TableHead className="font-semibold text-foreground">Status</TableHead>
+                                    <TableHead className="font-semibold text-foreground">Chat History</TableHead>
+                                </>
                             ) : (
                                 <>
                                     <TableHead className="font-semibold text-foreground">Interview ID</TableHead>
@@ -270,11 +302,11 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={isCvFormatter ? 4 : 10} className="text-center h-24">Loading records...</TableCell>
+                                <TableCell colSpan={isCvFormatter || isGdpr ? 4 : 10} className="text-center h-24">Loading records...</TableCell>
                             </TableRow>
                         ) : reports.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={isCvFormatter ? 4 : 10} className="text-center h-24">No records found.</TableCell>
+                                <TableCell colSpan={isCvFormatter || isGdpr ? 4 : 10} className="text-center h-24">No records found.</TableCell>
                             </TableRow>
                         ) : (
                             reports.map((row) => (
@@ -306,6 +338,21 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                                                         <FileText className="h-4 w-4" /> View
                                                     </Button>
                                                 ) : "-"}
+                                            </TableCell>
+                                        </>
+                                    ) : isGdpr ? (
+                                        <>
+                                            <TableCell className="text-sm">{row.candidate_email}</TableCell>
+                                            <TableCell className="text-sm">{row.candidate_id}</TableCell>
+                                            <TableCell className="text-sm">{row.status}</TableCell>
+                                            <TableCell className="text-sm">
+                                                <Button
+                                                    variant="link"
+                                                    className="text-primary hover:underline p-0 h-auto cursor-pointer"
+                                                    onClick={() => handleViewChat(row)}
+                                                >
+                                                    View
+                                                </Button>
                                             </TableCell>
                                         </>
                                     ) : (
@@ -347,40 +394,42 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
             </Button>
 
             {/* Chat History Modal - Only for Non-CV features */}
-            {!isCvFormatter && (
-                <Dialog open={isChatModalOpen} onOpenChange={setIsChatModalOpen}>
-                    <DialogContent className="max-w-xl p-0 overflow-hidden">
-                        <div className="flex items-center justify-between p-4 border-b">
-                            <h2 className="text-xl font-semibold text-foreground">Chat History</h2>
-                            <button
-                                onClick={() => setIsChatModalOpen(false)}
-                                className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none cursor-pointer"
-                            >
-                                <X className="h-5 w-5" />
-                                <span className="sr-only">Close</span>
-                            </button>
-                        </div>
-                        <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
-                            {selectedInterview?.conversation_json && selectedInterview.conversation_json.length > 0 ? (
-                                selectedInterview.conversation_json.map((msg, idx) => (
-                                    <div key={idx} className={`flex ${msg.role === "assistant" ? "justify-start" : "justify-end"}`}>
-                                        <div
-                                            className={`max-w-[80%] p-3 rounded-xl text-sm leading-relaxed shadow-sm ${msg.role === "assistant"
-                                                ? "bg-[#ebf0f5] text-foreground rounded-tl-none border border-slate-200"
-                                                : "bg-[#5fa0d6] text-white rounded-tr-none"
-                                                }`}
-                                        >
-                                            {msg.content}
+            {
+                !isCvFormatter && (
+                    <Dialog open={isChatModalOpen} onOpenChange={setIsChatModalOpen}>
+                        <DialogContent className="max-w-xl p-0 overflow-hidden">
+                            <div className="flex items-center justify-between p-4 border-b">
+                                <h2 className="text-xl font-semibold text-foreground">Chat History</h2>
+                                <button
+                                    onClick={() => setIsChatModalOpen(false)}
+                                    className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none cursor-pointer"
+                                >
+                                    <X className="h-5 w-5" />
+                                    <span className="sr-only">Close</span>
+                                </button>
+                            </div>
+                            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+                                {selectedInterview?.conversation_json && selectedInterview.conversation_json.length > 0 ? (
+                                    selectedInterview.conversation_json.map((msg, idx) => (
+                                        <div key={idx} className={`flex ${msg.role === "assistant" ? "justify-start" : "justify-end"}`}>
+                                            <div
+                                                className={`max-w-[80%] p-3 rounded-xl text-sm leading-relaxed shadow-sm ${msg.role === "assistant"
+                                                    ? "bg-[#ebf0f5] text-foreground rounded-tl-none border border-slate-200"
+                                                    : "bg-[#5fa0d6] text-white rounded-tr-none"
+                                                    }`}
+                                            >
+                                                {msg.content}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-center text-muted-foreground">No chat history available.</p>
-                            )}
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            )}
-        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-center text-muted-foreground">No chat history available.</p>
+                                )}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                )
+            }
+        </div >
     )
 }

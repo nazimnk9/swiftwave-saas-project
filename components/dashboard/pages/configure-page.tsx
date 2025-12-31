@@ -91,6 +91,14 @@ const CV_ENABLED_SECTIONS_OPTIONS = [
   "Areas for improvement & recommendations"
 ]
 
+const GDPR_INTERVAL_OPTIONS = [
+  { label: "6 Months", value: "6_MONTH" },
+  { label: "12 Months", value: "12_MONTH" },
+  { label: "24 Months", value: "24_MONTH" },
+  { label: "36 Months", value: "36_MONTH" },
+  { label: "48 Months", value: "48_MONTH" },
+]
+
 export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const router = useRouter()
   const { toast } = useToastNotification()
@@ -125,6 +133,14 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const [cvLogo, setCvLogo] = useState<File | null>(null)
   const [cvLogoPreview, setCvLogoPreview] = useState<string | null>(null)
 
+  // GDPR Specific States
+  const [gdprShouldUseLastApplicationDate, setGdprShouldUseLastApplicationDate] = useState("true")
+  const [gdprShouldUseLastPlacementDate, setGdprShouldUseLastPlacementDate] = useState("true")
+  const [gdprShouldUseLastNoteCreatationDate, setGdprShouldUseLastNoteCreatationDate] = useState("true")
+  const [gdprShouldUseActivityCreationDate, setGdprShouldUseActivityCreationDate] = useState("true")
+  const [gdprShouldUseCandidateUpdateDate, setGdprShouldUseCandidateUpdateDate] = useState("true")
+  const [gdprIntervalFromLastAction, setGdprIntervalFromLastAction] = useState("6_MONTH")
+
   // Dynamic Questions
   const [questions, setQuestions] = useState<QuestionInput[]>([{ tempId: crypto.randomUUID(), value: "", isSaved: false }])
 
@@ -139,6 +155,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const isMessage = isSms || isWhatsApp
 
   const isCvFormatter = featureName.toLowerCase().includes("cv") && featureName.toLowerCase().includes("formatter")
+  const isGdpr = featureName.toLowerCase().includes("gdpr")
 
   // Logo File Input Ref
   const logoInputRef = useRef<HTMLInputElement>(null)
@@ -176,12 +193,31 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         // Feature Logic Detection
         const name = currentFeature?.name.toLowerCase() || ""
         const currentIsCv = name.includes("cv") && name.includes("formatter")
+        const currentIsGdpr = name.includes("gdpr")
         const currentIsSms = name.includes("sms")
         const currentIsWhatsApp = name.includes("what's app") || name.includes("whatsapp")
         const currentIsMessage = currentIsSms || currentIsWhatsApp
         const currentType = currentIsWhatsApp ? "AI_WHATSAPP" : (currentIsSms ? "AI_SMS" : null)
 
-        if (currentIsCv) {
+        if (currentIsGdpr) {
+          try {
+            const configRes = await axios.get(`${BASE_URL}/gdpr/config/details`, { headers })
+            const configData = configRes.data
+
+            if (configData) {
+              setIsUpdateMode(true)
+              setPlatformUid(configData.platform?.uid || "")
+              setGdprShouldUseLastApplicationDate(configData.should_use_last_application_date ? "true" : "false")
+              setGdprShouldUseLastPlacementDate(configData.should_use_last_placement_date ? "true" : "false")
+              setGdprShouldUseLastNoteCreatationDate(configData.should_use_last_note_creatation_date ? "true" : "false")
+              setGdprShouldUseActivityCreationDate(configData.should_use_activity_creation_date ? "true" : "false")
+              setGdprShouldUseCandidateUpdateDate(configData.should_use_candidate_update_date ? "true" : "false")
+              setGdprIntervalFromLastAction(configData.interval_from_last_action || "6_MONTH")
+            }
+          } catch (err) {
+            // No config yet
+          }
+        } else if (currentIsCv) {
           // Fetch CV Config
           try {
             const configRes = await axios.get(`${BASE_URL}/cv_formatter/config/details`, { headers })
@@ -370,7 +406,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const handleSaveConfiguration = async () => {
     setError("")
 
-    if (!isCvFormatter) {
+    if (!isCvFormatter && !isGdpr) {
       // Validation for Interview/Message apps
       const selectedStatuses = [applicationStatus, unsuccessfulStatus, successfulStatus, placedStatus].filter(Boolean)
       const uniqueStatuses = new Set(selectedStatuses)
@@ -403,7 +439,28 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
       const authToken = localStorage.getItem("authToken")
       let response
 
-      if (isCvFormatter) {
+      if (isGdpr) {
+        const payload = {
+          platform_uid: platformUid,
+          should_use_last_application_date: gdprShouldUseLastApplicationDate === "true",
+          should_use_last_placement_date: gdprShouldUseLastPlacementDate === "true",
+          should_use_last_note_creatation_date: gdprShouldUseLastNoteCreatationDate === "true",
+          should_use_activity_creation_date: gdprShouldUseActivityCreationDate === "true",
+          should_use_candidate_update_date: gdprShouldUseCandidateUpdateDate === "true",
+          interval_from_last_action: gdprIntervalFromLastAction
+        }
+
+        if (isUpdateMode) {
+          response = await axios.patch(`${BASE_URL}/gdpr/config/details`, payload, {
+            headers: { Authorization: `Bearer ${authToken}` }
+          })
+        } else {
+          response = await axios.post(`${BASE_URL}/gdpr/config/`, payload, {
+            headers: { Authorization: `Bearer ${authToken}` }
+          })
+        }
+
+      } else if (isCvFormatter) {
         // CV Formatter Save Logic (FormData)
         const formData = new FormData()
         formData.append("platform_uid", platformUid)
@@ -537,7 +594,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Configure – {featureName || "Loading..."}</h1>
-        <p className="text-muted-foreground">Complete your setup and configure {isCvFormatter ? "CV Formatting" : (isMessage ? "messaging" : "interview")} settings.</p>
+        <p className="text-muted-foreground">Complete your setup and configure {isCvFormatter ? "CV Formatting" : (isGdpr ? "GDPR Compliance" : (isMessage ? "messaging" : "interview"))} settings.</p>
       </div>
 
       {error && (
@@ -572,8 +629,8 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                 </Select>
               </div>
 
-              {/* Phone Number (Hide for CV Formatter) */}
-              {!isCvFormatter && (
+              {/* Phone Number (Hide for CV Formatter & GDPR) */}
+              {!isCvFormatter && !isGdpr && (
                 <div className="space-y-2">
                   <Label>Select Phone Number</Label>
                   <Select value={phoneNumberUid} onValueChange={handleSelectChange(setPhoneNumberUid)}>
@@ -673,8 +730,65 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                 </>
               )}
 
-              {/* Existing Interview Fields (Calls, Voice ID) - Hide if CV Formatter or Message */}
-              {!isCvFormatter && !isMessage && (
+              {/* GDPR Specific Fields */}
+              {isGdpr && (
+                <>
+                  <div className="space-y-3 pt-2">
+                    <Label>Should use last application date</Label>
+                    <RadioGroup value={gdprShouldUseLastApplicationDate} onValueChange={setGdprShouldUseLastApplicationDate} className="flex gap-4">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="app-yes" /><Label htmlFor="app-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="app-no" /><Label htmlFor="app-no">No</Label></div>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="space-y-3 pt-2">
+                    <Label>Should use last placement date</Label>
+                    <RadioGroup value={gdprShouldUseLastPlacementDate} onValueChange={setGdprShouldUseLastPlacementDate} className="flex gap-4">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="place-yes" /><Label htmlFor="place-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="place-no" /><Label htmlFor="place-no">No</Label></div>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="space-y-3 pt-2">
+                    <Label>Should use last note creatation date</Label>
+                    <RadioGroup value={gdprShouldUseLastNoteCreatationDate} onValueChange={setGdprShouldUseLastNoteCreatationDate} className="flex gap-4">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="note-yes" /><Label htmlFor="note-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="note-no" /><Label htmlFor="note-no">No</Label></div>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="space-y-3 pt-2">
+                    <Label>Should use activity creation date</Label>
+                    <RadioGroup value={gdprShouldUseActivityCreationDate} onValueChange={setGdprShouldUseActivityCreationDate} className="flex gap-4">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="act-yes" /><Label htmlFor="act-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="act-no" /><Label htmlFor="act-no">No</Label></div>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="space-y-3 pt-2">
+                    <Label>Should use candidate update date</Label>
+                    <RadioGroup value={gdprShouldUseCandidateUpdateDate} onValueChange={setGdprShouldUseCandidateUpdateDate} className="flex gap-4">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="cand-yes" /><Label htmlFor="cand-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="cand-no" /><Label htmlFor="cand-no">No</Label></div>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="space-y-2 pt-2">
+                    <Label>Interval from last action</Label>
+                    <Select value={gdprIntervalFromLastAction} onValueChange={setGdprIntervalFromLastAction}>
+                      <SelectTrigger><SelectValue placeholder="Select interval" /></SelectTrigger>
+                      <SelectContent>
+                        {GDPR_INTERVAL_OPTIONS.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+
+              {/* Existing Interview Fields (Calls, Voice ID) - Hide if CV Formatter or Message or GDPR */}
+              {!isCvFormatter && !isMessage && !isGdpr && (
                 <>
                   <div className="space-y-2">
                     <Label>ElevenLabs Voice ID (Optional)</Label>
@@ -693,8 +807,8 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
             </div>
           </Card>
 
-          {/* Automation Logic Card - Hide for CV Formatter */}
-          {!isCvFormatter && (
+          {/* Automation Logic Card - Hide for CV Formatter & GDPR */}
+          {!isCvFormatter && !isGdpr && (
             <Card className="p-6">
               <h2 className="text-xl font-semibold text-foreground mb-4">Automation Logic</h2>
               <div className="space-y-6">
@@ -816,6 +930,9 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               </div>
             </div>
           </Card>
+        ) : isGdpr ? (
+          // GDPR - Empty Right Column (or we can add instructions/branding if needed)
+          null
         ) : (
           // Existing Question Logic
           <Card className="p-6 h-fit">
@@ -883,7 +1000,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         </Button>
       </div>
 
-    </div>
+    </div >
   )
 }
 

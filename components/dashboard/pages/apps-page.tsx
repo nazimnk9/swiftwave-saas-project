@@ -70,7 +70,8 @@ const APP_ASSET_CONFIG = [
     keywords: ["gdpr"],
     id: "gdpr-compliance",
     logoJobAdder: "/images/JobAdder.jpg",
-    buttons: ["Purchase"],
+    logoBullhorn: "/images/Bullhornconnector.jpg",
+    buttons: ["Purchase", "Configure", "Report"],
     hasMore: true,
   },
   {
@@ -170,7 +171,7 @@ export default function AppsPage() {
   const [features, setFeatures] = useState<AppFeature[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
-  const [skeletonCount, setSkeletonCount] = useState(4)
+  const [skeletonCount, setSkeletonCount] = useState(5)
 
   const router = useRouter()
 
