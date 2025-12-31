@@ -277,7 +277,7 @@ export default function AppsPage() {
           const staticId = config?.id // Use static ID for modal lookup and button logic
 
           return (
-            <Card key={feature.id} className="pt-4 pb-0 flex flex-col hover:shadow-lg hover:scale-105 transition-all duration-300 border-2">
+            <Card key={feature.id} className="pt-4 pb-0 flex flex-col shadow-lg hover:shadow-lg hover:scale-105 transition-all duration-300 border-2">
               {/* Logo Section */}
               <div className="flex items-center gap-2 bg-background border-b-2 pb-4 pl-6">
                 {config?.logoJobAdder && (

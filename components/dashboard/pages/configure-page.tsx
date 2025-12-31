@@ -10,7 +10,7 @@ import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
-import { Trash2, CheckCircle2, AlertCircle, X, Upload, Image as ImageIcon } from "lucide-react"
+import { Trash2, CheckCircle2, AlertCircle, X, Upload, Image as ImageIcon, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToastNotification } from "@/components/auth/toast-provider"
 import { LoaderOverlay } from "@/components/auth/loader-overlay"
@@ -594,7 +594,12 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Configure – {featureName || "Loading..."}</h1>
+        <div className="flex items-center gap-2 mb-2">
+          <Button variant="default" size="icon" onClick={() => router.back()} className="h-8 w-8 -ml-2 cursor-pointer">
+            <ArrowLeft className="h-6 w-6" />
+          </Button>
+          <h1 className="text-3xl font-bold text-foreground">Configure – {featureName || "Loading..."}</h1>
+        </div>
         <p className="text-muted-foreground">Complete your setup and configure {isCvFormatter ? "CV Formatting" : (isGdpr ? "GDPR Compliance" : (isMessage ? "messaging" : "interview"))} settings.</p>
       </div>
 
@@ -809,78 +814,47 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           </Card>
 
           {/* Automation Logic Card - Hide for CV Formatter & GDPR */}
+          {/* Interview Questions - Moved to Left Column */}
           {!isCvFormatter && !isGdpr && (
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold text-foreground mb-4">Automation Logic</h2>
-              <div className="space-y-6">
-                {/* Job Ad Status */}
-                <div className="space-y-2">
-                  <Label>{isMessage ? "Job Ad Status for Message" : "Job Ad Status for Calling"}</Label>
-                  <Select value={jobAdStatus} onValueChange={handleSelectChange(setJobAdStatus)}>
-                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
-                      <SelectItem value="Current">Current</SelectItem>
-                      <SelectItem value="Expired">Expired</SelectItem>
-                      <SelectItem value="Draft">Draft</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                {/* Other existing automation fields... */}
-                <div className="space-y-2">
-                  <Label>{isMessage ? "Application Status for Message" : "Application Status for Calling"}</Label>
-                  <Select value={applicationStatus} onValueChange={handleSelectChange(setApplicationStatus)}>
-                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
-                      {statusOptions.map(s => (<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {/* ... Calling/SMS Time, Statuses ... */}
-                <div className="space-y-2">
-                  <Label>{isMessage ? "Message Time After Status Update" : "Calling Time After Status Update"}</Label>
-                  <Select value={callingTime} onValueChange={handleSelectChange(setCallingTime)}>
-                    <SelectTrigger><SelectValue placeholder="Select time" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
-                      {CALLING_TIME_OPTIONS.map(opt => (<SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            <Card className="p-6 h-fit">
+              <h2 className="text-xl font-semibold text-foreground mb-4">Interview Questions</h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Add primary questions for the {isMessage ? "message" : "interview"}. Save each question before saving the full configuration.
+              </p>
 
-                <div className="space-y-2">
-                  <Label>{isMessage ? "Status When Message is send" : "Status When Call is Placed"}</Label>
-                  <Select value={placedStatus} onValueChange={handleSelectChange(setPlacedStatus)}>
-                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
-                      {statusOptions.map(s => (<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>{isMessage ? "Status for Successful Message" : "Status for Successful Call"}</Label>
-                  <Select value={successfulStatus} onValueChange={handleSelectChange(setSuccessfulStatus)}>
-                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
-                      {statusOptions.map(s => (<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>{isMessage ? "Status for Unsuccessful Message" : "Status for Unsuccessful Call"}</Label>
-                  <Select value={unsuccessfulStatus} onValueChange={handleSelectChange(setUnsuccessfulStatus)}>
-                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
-                      {statusOptions.map(s => (<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-4">
+                {questions.map((q, index) => (
+                  <div key={q.tempId} className="space-y-1">
+                    <div className="flex gap-2 items-center">
+                      <Input
+                        value={q.value}
+                        onChange={(e) => handleQuestionChange(index, e.target.value)}
+                        placeholder={isMessage ? "Type message question" : "Type a question"}
+                        className={`bg-background ${q.isSaved ? "border-green-500" : ""}`}
+                        disabled={q.isSaved}
+                      />
+                      <div className="flex gap-1 shrink-0">
+                        {!q.isSaved ? (
+                          <Button size="sm" variant="outline" onClick={() => handleSaveQuestion(index)} className="h-10 px-3 cursor-pointer" title="Save Question" >Save</Button>
+                        ) : (
+                          <div className="h-10 w-10 flex items-center justify-center text-green-500" title="Saved"><CheckCircle2 className="h-5 w-5" /></div>
+                        )}
+                        <Button size="icon" variant="ghost" onClick={() => handleDeleteQuestion(index)} className="h-10 w-10 text-destructive hover:text-destructive/90 cursor-pointer" title="Delete"><Trash2 className="h-4 w-4" /></Button>
+                      </div>
+                    </div>
+                    {!q.value && !q.isSaved && suggestedQuestions.length > 0 && (
+                      <div className="border rounded-md p-2 bg-muted/20 space-y-2 mt-1">
+                        <p className="text-xs text-muted-foreground font-medium px-1">Suggested Questions:</p>
+                        <div className="flex flex-col gap-1">
+                          {suggestedQuestions.map(s => (
+                            <div key={s.id} onClick={() => handleSuggestionClick(index, s.question)} className="text-sm p-2 hover:bg-muted rounded-sm cursor-pointer transition-colors">{s.question}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <Button onClick={handleAddQuestion} variant="default" className="bg-[#1e293b] hover:bg-[#1e293b]/90 text-white inline-block mt-4 cursor-pointer">Add More Question</Button>
               </div>
             </Card>
           )}
@@ -935,53 +909,85 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           // GDPR - Empty Right Column (or we can add instructions/branding if needed)
           null
         ) : (
-          // Existing Question Logic
-          <Card className="p-6 h-fit">
-            <h2 className="text-xl font-semibold text-foreground mb-4">Interview Questions</h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              Add primary questions for the {isMessage ? "message" : "interview"}. Save each question before saving the full configuration.
-            </p>
+          /* Automation Logic - Moved to Right Column */
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold text-foreground mb-4">Automation Logic</h2>
+            <div className="space-y-6">
+              {/* Job Ad Status */}
+              <div className="space-y-2">
+                <Label>{isMessage ? "Job Ad Status for Message" : "Job Ad Status for Calling"}</Label>
+                <Select value={jobAdStatus} onValueChange={handleSelectChange(setJobAdStatus)}>
+                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                    <SelectItem value="Current">Current</SelectItem>
+                    <SelectItem value="Expired">Expired</SelectItem>
+                    <SelectItem value="Draft">Draft</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Other existing automation fields... */}
+              <div className="space-y-2">
+                <Label>{isMessage ? "Application Status for Message" : "Application Status for Calling"}</Label>
+                <Select value={applicationStatus} onValueChange={handleSelectChange(setApplicationStatus)}>
+                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                    {statusOptions.map(s => (<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* ... Calling/SMS Time, Statuses ... */}
+              <div className="space-y-2">
+                <Label>{isMessage ? "Message Time After Status Update" : "Calling Time After Status Update"}</Label>
+                <Select value={callingTime} onValueChange={handleSelectChange(setCallingTime)}>
+                  <SelectTrigger><SelectValue placeholder="Select time" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                    {CALLING_TIME_OPTIONS.map(opt => (<SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-4">
-              {questions.map((q, index) => (
-                <div key={q.tempId} className="space-y-1">
-                  <div className="flex gap-2 items-center">
-                    <Input
-                      value={q.value}
-                      onChange={(e) => handleQuestionChange(index, e.target.value)}
-                      placeholder={isMessage ? "Type message question" : "Type a question"}
-                      className={`bg-background ${q.isSaved ? "border-green-500" : ""}`}
-                      disabled={q.isSaved}
-                    />
-                    <div className="flex gap-1 shrink-0">
-                      {!q.isSaved ? (
-                        <Button size="sm" variant="outline" onClick={() => handleSaveQuestion(index)} className="h-10 px-3 cursor-pointer" title="Save Question" >Save</Button>
-                      ) : (
-                        <div className="h-10 w-10 flex items-center justify-center text-green-500" title="Saved"><CheckCircle2 className="h-5 w-5" /></div>
-                      )}
-                      <Button size="icon" variant="ghost" onClick={() => handleDeleteQuestion(index)} className="h-10 w-10 text-destructive hover:text-destructive/90 cursor-pointer" title="Delete"><Trash2 className="h-4 w-4" /></Button>
-                    </div>
-                  </div>
-                  {!q.value && !q.isSaved && suggestedQuestions.length > 0 && (
-                    <div className="border rounded-md p-2 bg-muted/20 space-y-2 mt-1">
-                      <p className="text-xs text-muted-foreground font-medium px-1">Suggested Questions:</p>
-                      <div className="flex flex-col gap-1">
-                        {suggestedQuestions.map(s => (
-                          <div key={s.id} onClick={() => handleSuggestionClick(index, s.question)} className="text-sm p-2 hover:bg-muted rounded-sm cursor-pointer transition-colors">{s.question}</div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-              <Button onClick={handleAddQuestion} variant="default" className="bg-[#1e293b] hover:bg-[#1e293b]/90 text-white inline-block mt-4 cursor-pointer">Add More Question</Button>
+              <div className="space-y-2">
+                <Label>{isMessage ? "Status When Message is send" : "Status When Call is Placed"}</Label>
+                <Select value={placedStatus} onValueChange={handleSelectChange(setPlacedStatus)}>
+                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                    {statusOptions.map(s => (<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>{isMessage ? "Status for Successful Message" : "Status for Successful Call"}</Label>
+                <Select value={successfulStatus} onValueChange={handleSelectChange(setSuccessfulStatus)}>
+                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                    {statusOptions.map(s => (<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>{isMessage ? "Status for Unsuccessful Message" : "Status for Unsuccessful Call"}</Label>
+                <Select value={unsuccessfulStatus} onValueChange={handleSelectChange(setUnsuccessfulStatus)}>
+                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                    {statusOptions.map(s => (<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </Card>
         )}
       </div>
 
       {/* Bottom Save Bar */}
-      <div className="mt-8 flex justify-start gap-4">
+      <div className="mt-8 flex justify-center gap-4">
         <Button
           size="lg"
           onClick={handleSaveConfiguration}
@@ -989,15 +995,6 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           className="bg-primary hover:bg-primary/90 min-w-[200px] cursor-pointer dark:border-white"
         >
           {isSaving ? (isUpdateMode ? "Updating..." : "Saving...") : (isUpdateMode ? "Update Configure" : "Save Configure")}
-        </Button>
-
-        <Button
-          size="lg"
-          variant="outline"
-          onClick={() => router.back()}
-          className="min-w-[100px] cursor-pointer dark:border-white"
-        >
-          Back
         </Button>
       </div>
 
