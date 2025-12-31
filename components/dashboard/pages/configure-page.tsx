@@ -594,10 +594,10 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 mb-2">
-          <Button variant="default" size="icon" onClick={() => router.back()} className="h-8 w-8 -ml-2 cursor-pointer">
-            <ArrowLeft className="h-6 w-6" />
-          </Button>
+        <div className="flex items-center gap-6 mb-2">
+          <button onClick={() => router.back()} className="h-8 w-8 -ml-2 cursor-pointer rounded-full transition-all duration-300 hover:scale-125">
+            <ArrowLeft className="h-8 w-8" />
+          </button>
           <h1 className="text-3xl font-bold text-foreground">Configure – {featureName || "Loading..."}</h1>
         </div>
         <p className="text-muted-foreground">Complete your setup and configure {isCvFormatter ? "CV Formatting" : (isGdpr ? "GDPR Compliance" : (isMessage ? "messaging" : "interview"))} settings.</p>
