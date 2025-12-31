@@ -736,40 +736,40 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                   <div className="space-y-3 pt-2">
                     <Label>Should use last application date</Label>
                     <RadioGroup value={gdprShouldUseLastApplicationDate} onValueChange={setGdprShouldUseLastApplicationDate} className="flex gap-4">
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="app-yes" /><Label htmlFor="app-yes">Yes</Label></div>
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="app-no" /><Label htmlFor="app-no">No</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="app-yes" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="app-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="app-no" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="app-no">No</Label></div>
                     </RadioGroup>
                   </div>
 
                   <div className="space-y-3 pt-2">
                     <Label>Should use last placement date</Label>
                     <RadioGroup value={gdprShouldUseLastPlacementDate} onValueChange={setGdprShouldUseLastPlacementDate} className="flex gap-4">
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="place-yes" /><Label htmlFor="place-yes">Yes</Label></div>
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="place-no" /><Label htmlFor="place-no">No</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="place-yes" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="place-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="place-no" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="place-no">No</Label></div>
                     </RadioGroup>
                   </div>
 
                   <div className="space-y-3 pt-2">
                     <Label>Should use last note creatation date</Label>
                     <RadioGroup value={gdprShouldUseLastNoteCreatationDate} onValueChange={setGdprShouldUseLastNoteCreatationDate} className="flex gap-4">
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="note-yes" /><Label htmlFor="note-yes">Yes</Label></div>
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="note-no" /><Label htmlFor="note-no">No</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="note-yes" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="note-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="note-no" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="note-no">No</Label></div>
                     </RadioGroup>
                   </div>
 
                   <div className="space-y-3 pt-2">
                     <Label>Should use activity creation date</Label>
                     <RadioGroup value={gdprShouldUseActivityCreationDate} onValueChange={setGdprShouldUseActivityCreationDate} className="flex gap-4">
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="act-yes" /><Label htmlFor="act-yes">Yes</Label></div>
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="act-no" /><Label htmlFor="act-no">No</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="act-yes" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="act-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="act-no" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="act-no">No</Label></div>
                     </RadioGroup>
                   </div>
 
                   <div className="space-y-3 pt-2">
                     <Label>Should use candidate update date</Label>
                     <RadioGroup value={gdprShouldUseCandidateUpdateDate} onValueChange={setGdprShouldUseCandidateUpdateDate} className="flex gap-4">
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="cand-yes" /><Label htmlFor="cand-yes">Yes</Label></div>
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="cand-no" /><Label htmlFor="cand-no">No</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="cand-yes" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="cand-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="cand-no" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="cand-no">No</Label></div>
                     </RadioGroup>
                   </div>
 
@@ -797,8 +797,8 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                   <div className="space-y-3 pt-2">
                     <Label>End call if primary answer is negative?</Label>
                     <RadioGroup value={endCallNegative} onValueChange={setEndCallNegative} className="flex gap-4">
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="ec-yes" /><Label htmlFor="ec-yes">Yes</Label></div>
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="ec-no" /><Label htmlFor="ec-no">No</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="ec-yes" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="ec-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="ec-no" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="ec-no">No</Label></div>
                     </RadioGroup>
                   </div>
                 </>
