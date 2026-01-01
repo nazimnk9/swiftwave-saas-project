@@ -19,11 +19,11 @@ export interface PlatformResponse {
   results: Platform[]
 }
 
+import { getCookie, deleteCookie } from "cookies-next"
+
 function getAuthToken(): string | null {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("authToken")
-  }
-  return null
+  const token = getCookie("authToken")
+  return token ? (token as string) : null
 }
 
 export async function getPlatforms(): Promise<PlatformResponse> {
@@ -43,6 +43,10 @@ export async function getPlatforms(): Promise<PlatformResponse> {
     })
 
     if (!response.ok) {
+      if (response.status === 401) {
+        deleteCookie("authToken")
+        window.location.href = "/"
+      }
       throw new Error(`Failed to fetch platforms: ${response.statusText}`)
     }
 
@@ -77,6 +81,10 @@ export async function connectPlatform(payload: ConnectPlatformPayload): Promise<
     })
 
     if (!response.ok) {
+      if (response.status === 401) {
+        deleteCookie("authToken")
+        window.location.href = "/"
+      }
       throw new Error(`Failed to connect platform: ${response.statusText}`)
     }
 

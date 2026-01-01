@@ -5,6 +5,7 @@ import { InviteListPage } from "@/components/dashboard/pages/invite-list-page"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { Topbar } from "@/components/dashboard/topbar"
 import { useRouter } from "next/navigation"
+import { deleteCookie } from "cookies-next"
 
 export default function InviteListRoute() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -43,7 +44,7 @@ export default function InviteListRoute() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken")
+    deleteCookie("authToken")
     localStorage.removeItem("userEmail")
     localStorage.removeItem("userPassword")
     localStorage.removeItem("userFirstName")

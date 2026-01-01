@@ -9,6 +9,7 @@ import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
 import { LoaderOverlay } from "@/components/auth/loader-overlay"
 import { useRouter } from "next/navigation"
+import { getCookie } from "cookies-next"
 
 // Interfaces based on user provided JSON structure
 interface ChatMessage {
@@ -108,7 +109,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
         const fetchData = async () => {
             try {
                 setLoading(true)
-                const authToken = localStorage.getItem("authToken")
+                const authToken = getCookie("authToken")
                 const headers = { Authorization: `Bearer ${authToken}` }
 
                 let currentFeatureName = ""

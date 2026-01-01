@@ -5,6 +5,7 @@ import AppsPage from "@/components/dashboard/pages/apps-page"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { Topbar } from "@/components/dashboard/topbar"
 import { useRouter } from "next/navigation"
+import { deleteCookie } from "cookies-next"
 
 export default function AppsRoute() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -45,7 +46,7 @@ export default function AppsRoute() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken")
+    deleteCookie("authToken")
     localStorage.removeItem("userEmail")
     localStorage.removeItem("userPassword")
     localStorage.removeItem("userFirstName")

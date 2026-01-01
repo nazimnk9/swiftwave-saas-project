@@ -10,6 +10,7 @@ import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
+import { getCookie } from "cookies-next"
 import { Trash2, CheckCircle2, AlertCircle, X, Upload, Image as ImageIcon, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToastNotification } from "@/components/auth/toast-provider"
@@ -170,7 +171,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const authToken = localStorage.getItem("authToken")
+        const authToken = getCookie("authToken")
         const headers = { Authorization: `Bearer ${authToken}` }
 
         const [statusRes, platformRes, phoneRes, featuresRes, questionsRes] = await Promise.all([
@@ -349,7 +350,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
     if (!question.value.trim()) return
 
     try {
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
       const response = await axios.post(
         `${BASE_URL}/interview/call/config/primary_questions`,
         { question: question.value },
@@ -437,7 +438,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
     try {
       setIsSaving(true)
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
       let response
 
       if (isGdpr) {

@@ -608,6 +608,7 @@ import { User, Mail, Phone, Building, Edit2, Save } from "lucide-react"
 import { ToastNotification } from "@/components/auth/toast-notification"
 import { LoaderOverlay } from "@/components/auth/loader-overlay"
 import { BASE_URL } from "@/lib/baseUrl"
+import { getCookie } from "cookies-next"
 
 export function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true)
@@ -636,7 +637,7 @@ export function ProfilePage() {
   useEffect(() => {
     const fetchOrgData = async () => {
       try {
-        const authToken = localStorage.getItem("authToken")
+        const authToken = getCookie("authToken")
         if (!authToken) {
           setIsLoading(false)
           return
@@ -689,7 +690,7 @@ export function ProfilePage() {
     setErrors({})
 
     try {
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
       if (!authToken) {
         setToast({
           title: "Error",

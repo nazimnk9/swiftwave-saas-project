@@ -178,6 +178,7 @@ import { Mail, Plus, Clock, CheckCircle, XCircle, Search } from "lucide-react"
 import Link from "next/link"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
+import { getCookie } from "cookies-next"
 
 interface Invite {
   id: number
@@ -227,9 +228,9 @@ export function InviteListPage() {
     try {
       setIsLoading(true)
       setError(null)
-      
-      const authToken = localStorage.getItem("authToken") || sessionStorage.getItem("authToken")
-      
+
+      const authToken = getCookie("authToken") || sessionStorage.getItem("authToken")
+
       if (!authToken) {
         throw new Error("No authentication token found")
       }
@@ -241,7 +242,7 @@ export function InviteListPage() {
       })
 
       const apiData: ApiResponse = response.data
-      
+
       // Transform API data to match our frontend structure
       const transformedInvites: Invite[] = apiData.results.map((invite: ApiInvite) => ({
         id: invite.id,
@@ -358,9 +359,9 @@ export function InviteListPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <p className="text-red-700">{error}</p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={fetchInvites}
                   className="cursor-pointer border-red-300 text-red-700 hover:bg-red-100"
                 >
@@ -439,8 +440,8 @@ export function InviteListPage() {
                   {searchTerm ? "No invitations match your search" : "No invitations found"}
                 </p>
                 {searchTerm && (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="cursor-pointer mt-4"
                     onClick={() => setSearchTerm("")}
                   >

@@ -50,6 +50,7 @@ import { JobsPage } from "@/components/dashboard/pages/jobs-page"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { Topbar } from "@/components/dashboard/topbar"
 import { useRouter } from "next/navigation"
+import { deleteCookie } from "cookies-next"
 
 export default function JobsRoute() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -88,7 +89,7 @@ export default function JobsRoute() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken")
+    deleteCookie("authToken")
     localStorage.removeItem("userEmail")
     localStorage.removeItem("userPassword")
     localStorage.removeItem("userFirstName")

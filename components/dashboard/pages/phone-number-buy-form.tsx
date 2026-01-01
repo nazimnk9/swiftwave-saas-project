@@ -4143,6 +4143,7 @@ import { EndUserModal } from "./end-user-modal"
 import { AddressModal } from "./address-modal"
 import { FinalSubmissionModal } from "./final-submission-modal"
 import { useRouter } from "next/navigation"
+import { getCookie } from "cookies-next"
 
 interface Country {
   country: string
@@ -4202,7 +4203,7 @@ export function PhoneNumberBuyForm() {
 
   const fetchCountries = async () => {
     try {
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
       const response = await axios.get(`${BASE_URL}/phone_number/countries`, {
         headers: { Authorization: `Bearer ${authToken}` },
       })
@@ -4217,7 +4218,7 @@ export function PhoneNumberBuyForm() {
 
   const fetchBundles = async () => {
     try {
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
       const response = await axios.get(`${BASE_URL}/phone_number/bundles`, {
         headers: { Authorization: `Bearer ${authToken}` },
       })
@@ -4230,7 +4231,7 @@ export function PhoneNumberBuyForm() {
   const fetchPhoneNumbers = async (countryCode: string) => {
     try {
       setIsFetching(true)
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
       const response = await axios.get(`${BASE_URL}/phone_number/available_phone_numbers?country=${countryCode}`, {
         headers: { Authorization: `Bearer ${authToken}` },
       })
@@ -4302,7 +4303,7 @@ export function PhoneNumberBuyForm() {
 
     try {
       setIsLoading(true)
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
 
       const response = await axios.post(
         `${BASE_URL}/phone_number/buy`,

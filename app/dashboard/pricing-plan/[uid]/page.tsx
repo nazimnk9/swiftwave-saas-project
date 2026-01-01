@@ -5,10 +5,11 @@ import PricingPlanPage from "@/components/dashboard/pages/pricing-plan-page"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { Topbar } from "@/components/dashboard/topbar"
 import { useRouter, useParams } from "next/navigation"
+import { deleteCookie } from "cookies-next"
 
 export default function PricingPlanDynamicRoute() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
-     const [isCollapsed, setIsCollapsed] = useState(false)
+    const [isCollapsed, setIsCollapsed] = useState(false)
     const [isDark, setIsDark] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
     const router = useRouter()
@@ -46,7 +47,7 @@ export default function PricingPlanDynamicRoute() {
     }
 
     const handleLogout = () => {
-        localStorage.removeItem("authToken")
+        deleteCookie("authToken")
         localStorage.removeItem("userEmail")
         localStorage.removeItem("userPassword")
         localStorage.removeItem("userFirstName")

@@ -491,6 +491,7 @@
 // import { LoaderOverlay } from "@/components/auth/loader-overlay"
 // import { ToastNotification } from "@/components/auth/toast-notification"
 // import { useRouter } from "next/navigation"
+import { getCookie } from "cookies-next"
 
 // interface FinalSubmissionModalProps {
 //   phoneNumber: string
@@ -1386,7 +1387,7 @@ export function FinalSubmissionModal({ open, onOpenChange, onBack, onSuccess }: 
 
     try {
       setIsLoading(true)
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
 
       if (!authToken) {
         setError("Authentication token not found")

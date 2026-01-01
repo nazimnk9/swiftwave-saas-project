@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
 import { Skeleton } from "@/components/ui/skeleton"
+import { getCookie } from "cookies-next"
 
 interface AppFeature {
   id: number
@@ -182,7 +183,7 @@ export default function AppsPage() {
   const fetchFeatures = async () => {
     try {
       setIsLoading(true)
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
 
       const response = await axios.get<AppFeatureResponse>(`${BASE_URL}/subscription/features/`, {
         headers: {

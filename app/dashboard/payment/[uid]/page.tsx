@@ -5,6 +5,7 @@ import PaymentPage from "@/components/dashboard/pages/payment-page"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { Topbar } from "@/components/dashboard/topbar"
 import { useRouter, useParams } from "next/navigation"
+import { deleteCookie } from "cookies-next"
 
 export default function PaymentWithUidPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -48,7 +49,7 @@ export default function PaymentWithUidPage() {
     }
 
     const handleLogout = () => {
-        localStorage.removeItem("authToken")
+        deleteCookie("authToken")
         localStorage.removeItem("userEmail")
         localStorage.removeItem("userPassword")
         localStorage.removeItem("userFirstName")

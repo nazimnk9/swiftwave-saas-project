@@ -617,7 +617,7 @@
 //                         })
 //                       }
 //                     }}
-                    
+
 //                     disabled={isLoading}
 //                     className="pl-10 h-11 border-2 border-border focus:border-primary"
 //                   />
@@ -728,6 +728,7 @@
 // import { LoaderOverlay } from "./loader-overlay"
 // import { ToastNotification } from "./toast-notification"
 
+
 // interface SignInPageProps {
 //   onSignUpClick: () => void
 //   toggleTheme: () => void
@@ -787,19 +788,19 @@
 //       if (axios.isAxiosError(err)) {
 //         if (err.response?.data && typeof err.response.data === "object") {
 //           const errorData = err.response.data as Record<string, string[] | string>
-          
+
 //           // Check if response contains field-level errors
 //           if (errorData.email || errorData.password) {
 //             setFieldErrors({
 //               email: Array.isArray(errorData.email) ? errorData.email : [],
 //               password: Array.isArray(errorData.password) ? errorData.password : [],
 //             })
-            
+
 //             // Show field errors in toast with line breaks
 //             const errorMessages = []
 //             if (errorData.email) errorMessages.push(`Email: ${Array.isArray(errorData.email) ? errorData.email.join(", ") : errorData.email}`)
 //             if (errorData.password) errorMessages.push(`Password: ${Array.isArray(errorData.password) ? errorData.password.join(", ") : errorData.password}`)
-            
+
 //             showToast("Validation Error", errorMessages.join("\n"), "destructive")
 //           } else if (errorData.detail) {
 //             // Handle detail error message
@@ -993,7 +994,7 @@ interface SignInPageProps {
   isDark: boolean
 }
 
-export default function SignInPage({ onSignUpClick,onForgotClick, toggleTheme, isDark }: SignInPageProps) {
+export default function SignInPage({ onSignUpClick, onForgotClick, toggleTheme, isDark }: SignInPageProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -1030,12 +1031,11 @@ export default function SignInPage({ onSignUpClick,onForgotClick, toggleTheme, i
       console.log("[v0] Sign in successful:", response.data)
 
       const accessToken = response.data.access
-      // Set cookie instead of localStorage
-    document.cookie = `authToken=${accessToken}; path=/; max-age=86400; SameSite=Lax`
-    document.cookie = `userEmail=${encodeURIComponent(email)}; path=/; max-age=86400; SameSite=Lax`
-      localStorage.setItem("authToken", accessToken)
+      // Set cookie using cookies-next
+      setCookie("authToken", accessToken, { maxAge: 60 * 60 * 24 * 7, path: '/' }) // 7 days
+      setCookie("userEmail", email, { maxAge: 60 * 60 * 24 * 7, path: '/' })
+
       localStorage.setItem("userEmail", email)
-      localStorage.setItem("userPassword", password)
 
       setIsLoading(false)
 
@@ -1051,20 +1051,20 @@ export default function SignInPage({ onSignUpClick,onForgotClick, toggleTheme, i
       if (axios.isAxiosError(err)) {
         if (err.response?.data && typeof err.response.data === "object") {
           const errorData = err.response.data as Record<string, string[] | string>
-          
+
           // Check if response contains field-level errors
           if (errorData.email || errorData.password) {
             setFieldErrors({
               email: Array.isArray(errorData.email) ? errorData.email : [],
               password: Array.isArray(errorData.password) ? errorData.password : [],
             })
-            
+
             // Set general error for inline display
             const errorMessages = []
             if (errorData.email) errorMessages.push(`Email: ${Array.isArray(errorData.email) ? errorData.email.join(", ") : errorData.email}`)
             if (errorData.password) errorMessages.push(`Password: ${Array.isArray(errorData.password) ? errorData.password.join(", ") : errorData.password}`)
             setGeneralError(errorMessages.join('\n'))
-            
+
             // Create JSX element for multi-line toast message
             const ErrorMessages = () => (
               <div>
@@ -1076,7 +1076,7 @@ export default function SignInPage({ onSignUpClick,onForgotClick, toggleTheme, i
                 )}
               </div>
             )
-            
+
             showToast("Validation Error", <ErrorMessages />, "destructive")
           } else if (errorData.detail) {
             // Handle detail error message

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Phone, ArrowLeft, CheckCircle2, XCircle } from "lucide-react"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
+import { getCookie } from "cookies-next"
 import { LoaderOverlay } from "@/components/auth/loader-overlay"
 import { ToastNotification } from "@/components/auth/toast-notification"
 import { useRouter } from "next/navigation"
@@ -39,7 +40,7 @@ export function NumberListPage() {
   const fetchPhoneNumbers = async () => {
     try {
       setIsLoading(true)
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
 
       if (!authToken) {
         setError("Authentication token not found")

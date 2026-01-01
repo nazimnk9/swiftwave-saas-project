@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
+import { getCookie } from "cookies-next"
 import { useRouter } from "next/navigation"
 import { X, ArrowLeft } from "lucide-react"
 
@@ -40,7 +41,7 @@ export default function PaymentPage({ planUid }: PaymentPageProps) {
 
     try {
       setLoading(true)
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
       await axios.post(
         `${BASE_URL}/subscription/`,
         { plan_feature_uid: planUid },

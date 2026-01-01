@@ -349,6 +349,7 @@ import ForgotPasswordPage from "@/components/auth/forgot-password-page"
 import Dashboard from "@/components/dashboard/dashboard"
 import { ThemeProvider } from "@/components/theme-provider"
 import { useRouter } from "next/navigation"
+import { getCookie, deleteCookie } from "cookies-next"
 
 type AuthStep = "signin" | "signup" | "password-setup" | "dashboard" | "email-confirmation" | "forgot-password"
 
@@ -365,7 +366,7 @@ export default function Home() {
       document.documentElement.classList.add("dark")
     }
 
-    const authToken = localStorage.getItem("authToken")
+    const authToken = getCookie("authToken")
     if (authToken) {
       router.push("/dashboard")
     }
@@ -384,7 +385,7 @@ export default function Home() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken")
+    deleteCookie("authToken")
     localStorage.removeItem("userEmail")
     localStorage.removeItem("userPassword")
     setCurrentStep("signin")

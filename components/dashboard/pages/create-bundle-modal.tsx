@@ -580,6 +580,7 @@
 // import { ToastNotification } from "@/components/auth/toast-notification"
 // import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 // import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { getCookie } from "cookies-next"
 
 // interface CreateBundleModalProps {
 //   isOpen: boolean
@@ -1273,7 +1274,7 @@ export function CreateBundleModal({ open, onOpenChange, onNext, selectedCountryC
 
   const fetchCountries = async () => {
     try {
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
       const response = await axios.get(`${BASE_URL}/phone_number/countries`, {
         headers: { Authorization: `Bearer ${authToken}` },
       })

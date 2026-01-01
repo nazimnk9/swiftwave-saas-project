@@ -1554,6 +1554,7 @@ import { LoaderOverlay } from "@/components/auth/loader-overlay"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ToastNotification } from "@/components/auth/toast-notification"
 import { useRouter } from "next/navigation"
+import { getCookie } from "cookies-next"
 
 interface Platform {
   id: number
@@ -1617,7 +1618,7 @@ export function BusinessSettingsPage() {
   const fetchPlatforms = async () => {
     try {
       setIsLoading(true)
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
 
       if (!authToken) {
         setError("Authentication token not found. Please sign in again.")
@@ -1660,7 +1661,7 @@ export function BusinessSettingsPage() {
 
   const fetchCurrentOrganization = async () => {
     try {
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
 
       if (!authToken) {
         return
@@ -1689,7 +1690,7 @@ export function BusinessSettingsPage() {
         console.log("[v0] OAuth callback detected with code:", code)
         setIsIntegrating(true)
 
-        const authToken = localStorage.getItem("authToken")
+        const authToken = getCookie("authToken")
         const platformSlug = sessionStorage.getItem("platformSlug")
         const redirectUri = sessionStorage.getItem("redirectUri")
 
@@ -1790,7 +1791,7 @@ export function BusinessSettingsPage() {
       }
 
       setIsIntegrating(true)
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
 
       if (!authToken) {
         setToast({
@@ -1943,11 +1944,10 @@ export function BusinessSettingsPage() {
                     <Button
                       onClick={() => handleIntegrate(platform)}
                       disabled={isIntegrating || platform.is_connected}
-                      className={`gap-2 cursor-pointer ${
-                        platform.is_connected
-                          ? "bg-green-500/50 text-black cursor-not-allowed"
-                          : "bg-primary hover:bg-primary/90 text-primary-foreground"
-                      } font-semibold transition-all duration-200`}
+                      className={`gap-2 cursor-pointer ${platform.is_connected
+                        ? "bg-green-500/50 text-black cursor-not-allowed"
+                        : "bg-primary hover:bg-primary/90 text-primary-foreground"
+                        } font-semibold transition-all duration-200`}
                     >
                       <Zap className="w-4 h-4" />
                       {platform.is_connected ? "Already Integrated" : `Integrate ${platform.name} Account`}

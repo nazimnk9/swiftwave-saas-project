@@ -735,6 +735,7 @@ import { Input } from "@/components/ui/input"
 import { ChevronDown, ArrowLeft, ArrowRight } from "lucide-react"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
+import { getCookie } from "cookies-next"
 
 interface AddressModalProps {
   open: boolean
@@ -790,7 +791,7 @@ export function AddressModal({ open, onOpenChange, onBack, onNext, selectedCount
 
   const fetchCountries = async () => {
     try {
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
       const response = await axios.get(`${BASE_URL}/phone_number/countries`, {
         headers: { Authorization: `Bearer ${authToken}` },
       })

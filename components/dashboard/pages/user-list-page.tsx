@@ -184,6 +184,7 @@ import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
 import { LoaderOverlay } from "@/components/auth/loader-overlay"
 import { ToastNotification } from "@/components/auth/toast-notification"
+import { getCookie } from "cookies-next"
 
 interface UserData {
   uid: string
@@ -220,7 +221,7 @@ export function UserListPage() {
   const fetchUsers = async () => {
     try {
       setIsFetching(true)
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
 
       if (!authToken) {
         setToast({ title: "Error", description: "Authentication token not found", variant: "destructive" })
@@ -264,7 +265,7 @@ export function UserListPage() {
     })
   }
 
-  const filteredUsers = users.filter((user) => 
+  const filteredUsers = users.filter((user) =>
     user.user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -344,17 +345,16 @@ export function UserListPage() {
                               <span>{user.user.phone}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                           <span className="text-foreground/60">Role:</span>
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            user.role === "OWNER" 
-                              ? "bg-purple-100 text-purple-700" 
-                              : user.role === "ADMIN"
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-gray-100 text-gray-700"
-                          }`}>
-                            {user.role}
-                          </span>
-                        </div>
+                              <span className="text-foreground/60">Role:</span>
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${user.role === "OWNER"
+                                  ? "bg-purple-100 text-purple-700"
+                                  : user.role === "ADMIN"
+                                    ? "bg-blue-100 text-blue-700"
+                                    : "bg-gray-100 text-gray-700"
+                                }`}>
+                                {user.role}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -379,9 +379,8 @@ export function UserListPage() {
                         <div className="flex items-center gap-2 text-sm">
                           <span className="text-foreground/60">Status:</span>
                           <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
-                              user.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                            }`}
+                            className={`px-2 py-1 rounded text-xs font-medium ${user.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                              }`}
                           >
                             {user.is_active ? "Active" : "Inactive"}
                           </span>

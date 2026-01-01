@@ -9,6 +9,7 @@ import Link from "next/link"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
 import { useRouter } from "next/navigation"
+import { getCookie, deleteCookie } from "cookies-next"
 
 interface TopbarProps {
   onMenuClick: () => void
@@ -113,7 +114,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile, i
   const fetchOrganizations = async () => {
     try {
       setIsLoadingOrgs(true)
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
 
       if (!authToken) {
         console.log("[v0] No auth token found")
@@ -138,7 +139,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile, i
 
   const fetchCurrentOrganization = async () => {
     try {
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
 
       if (!authToken) {
         return
@@ -160,7 +161,7 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile, i
   const handleSwitchOrganization = async (uid: string) => {
     await fetchOrganizations()
     try {
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
 
       if (!authToken) {
         return
@@ -198,9 +199,9 @@ export function Topbar({ onMenuClick, onLogout, toggleTheme, isDark, isMobile, i
   ]
 
   const handleSignOut = () => {
-    localStorage.removeItem("authToken")
+    deleteCookie("authToken")
     localStorage.removeItem("userEmail")
-    localStorage.removeItem("userPassword")
+    // localStorage.removeItem("userPassword")
     localStorage.removeItem("userFirstName")
     localStorage.removeItem("userLastName")
     localStorage.removeItem("userCompany")

@@ -370,6 +370,7 @@ import { BASE_URL } from "@/lib/baseUrl"
 import { LoaderOverlay } from "@/components/auth/loader-overlay"
 import { ToastNotification } from "@/components/auth/toast-notification"
 import Link from "next/link"
+import { getCookie } from "cookies-next"
 
 export function InviteUserPage() {
   const [email, setEmail] = useState("")
@@ -381,38 +382,38 @@ export function InviteUserPage() {
   )
 
   const roleOptions = [
-    { 
-      value: "OWNER", 
-      label: "Owner", 
-      icon: Crown, 
+    {
+      value: "OWNER",
+      label: "Owner",
+      icon: Crown,
       description: "Full system access and control",
       color: "text-yellow-500"
     },
-    { 
-      value: "ADMIN", 
-      label: "Admin", 
-      icon: Shield, 
+    {
+      value: "ADMIN",
+      label: "Admin",
+      icon: Shield,
       description: "Administrative privileges",
       color: "text-red-500"
     },
-    { 
-      value: "MANAGER", 
-      label: "Manager", 
-      icon: Users, 
+    {
+      value: "MANAGER",
+      label: "Manager",
+      icon: Users,
       description: "Team management capabilities",
       color: "text-blue-500"
     },
-    { 
-      value: "RECRUITER", 
-      label: "Recruiter", 
-      icon: UserPlus, 
+    {
+      value: "RECRUITER",
+      label: "Recruiter",
+      icon: UserPlus,
       description: "Recruitment and hiring tools",
       color: "text-green-500"
     },
-    { 
-      value: "VIEWER", 
-      label: "Viewer", 
-      icon: Eye, 
+    {
+      value: "VIEWER",
+      label: "Viewer",
+      icon: Eye,
       description: "Read-only access",
       color: "text-gray-500"
     },
@@ -448,7 +449,7 @@ export function InviteUserPage() {
 
     try {
       setIsLoading(true)
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
 
       if (!authToken) {
         setToast({ title: "Error", description: "Authentication token not found", variant: "destructive" })
@@ -556,7 +557,7 @@ export function InviteUserPage() {
                   Role
                 </label>
                 <Select value={role} onValueChange={handleRoleChange} disabled={isLoading}>
-                  <SelectTrigger 
+                  <SelectTrigger
                     className={`w-full h-12 ${errors.role ? "border-red-500" : ""}`}
                     id="role"
                   >
@@ -575,8 +576,8 @@ export function InviteUserPage() {
                     {roleOptions.map((option) => {
                       const IconComponent = option.icon
                       return (
-                        <SelectItem 
-                          key={option.value} 
+                        <SelectItem
+                          key={option.value}
                           value={option.value}
                           className="cursor-pointer hover:bg-secondary/50 transition-colors duration-200 py-3"
                         >

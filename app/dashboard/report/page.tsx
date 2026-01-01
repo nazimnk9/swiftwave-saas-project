@@ -5,6 +5,7 @@ import { Topbar } from "@/components/dashboard/topbar"
 import ReportPage from "@/components/dashboard/pages/report-page"
 import { ThemeProvider } from "@/components/theme-provider"
 import { useRouter, useParams } from "next/navigation"
+import { deleteCookie } from "cookies-next"
 import { useState, useEffect } from "react"
 
 export default function ReportRoute() {
@@ -47,7 +48,7 @@ export default function ReportRoute() {
     }
 
     const handleLogout = () => {
-        localStorage.removeItem("authToken")
+        deleteCookie("authToken")
         localStorage.removeItem("userEmail")
         localStorage.removeItem("userPassword")
         localStorage.removeItem("userFirstName")

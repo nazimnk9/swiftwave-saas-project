@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
 import { useRouter } from "next/navigation"
+import { getCookie } from "cookies-next"
 
 interface PricingPlanFeature {
   id: number
@@ -68,7 +69,7 @@ export default function PricingPlanPage({ featureUid }: PricingPlanPageProps) {
   const fetchPlans = async () => {
     try {
       setIsLoading(true)
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
       // user requested: ${BASE_URL}/subscription/plan/{uid}
       // Assuming {uid} refers to the featureUid passed in.
       // API structure: ${BASE_URL}/subscription/plan/${featureUid}
@@ -91,7 +92,7 @@ export default function PricingPlanPage({ featureUid }: PricingPlanPageProps) {
   const handleSelectPlan = async (planUid: string) => {
     try {
       setIsPurchasing(true)
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
 
       await axios.post(
         `${BASE_URL}/subscription/`,

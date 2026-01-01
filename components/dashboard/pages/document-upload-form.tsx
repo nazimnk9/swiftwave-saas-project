@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight, ArrowLeft, Upload, ChevronDown, File } from "lucide-react"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
+import { getCookie } from "cookies-next"
 import { LoaderOverlay } from "@/components/auth/loader-overlay"
 import { ToastNotification } from "@/components/auth/toast-notification"
 
@@ -59,7 +60,7 @@ export function DocumentUploadForm({ bundleId, onBack, onNext }: DocumentUploadF
 
     try {
       setIsLoading(true)
-      const authToken = localStorage.getItem("authToken")
+      const authToken = getCookie("authToken")
 
       if (!authToken) {
         setError("Authentication token not found")

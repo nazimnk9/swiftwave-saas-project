@@ -5,6 +5,7 @@ import { ProfilePage } from "@/components/dashboard/pages/profile-page"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { Topbar } from "@/components/dashboard/topbar"
 import { useRouter } from "next/navigation"
+import { deleteCookie } from "cookies-next"
 
 export default function ProfileRoute() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -43,7 +44,7 @@ export default function ProfileRoute() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken")
+    deleteCookie("authToken")
     localStorage.removeItem("userEmail")
     localStorage.removeItem("userPassword")
     localStorage.removeItem("userFirstName")

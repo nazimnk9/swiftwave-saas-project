@@ -1,10 +1,11 @@
 "use client"
 
-import { useState,useEffect } from "react"
+import { useState, useEffect } from "react"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { Topbar } from "@/components/dashboard/topbar"
 import { PhoneNumberBuyForm } from "@/components/dashboard/pages/phone-number-buy-form"
 import { useRouter } from "next/navigation"
+import { deleteCookie } from "cookies-next"
 
 export default function PhoneNumberBuyPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -44,7 +45,7 @@ export default function PhoneNumberBuyPage() {
 
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken")
+    deleteCookie("authToken")
     localStorage.removeItem("userEmail")
     localStorage.removeItem("userPassword")
     localStorage.removeItem("userFirstName")

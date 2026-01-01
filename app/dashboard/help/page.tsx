@@ -50,6 +50,7 @@ import { HelpPage } from "@/components/dashboard/pages/help-page"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { Topbar } from "@/components/dashboard/topbar"
 import { useRouter } from "next/navigation"
+import { deleteCookie } from "cookies-next"
 
 export default function HelpRoute() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -88,7 +89,7 @@ export default function HelpRoute() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken")
+    deleteCookie("authToken")
     localStorage.removeItem("userEmail")
     localStorage.removeItem("userPassword")
     localStorage.removeItem("userFirstName")
