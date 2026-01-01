@@ -9,11 +9,12 @@ import { deleteCookie } from "cookies-next"
 
 export default function PhoneNumberBuyPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [isCollapsed, setIsCollapsed] = useState(false)
   const [isDark, setIsDark] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
 
-  useEffect(() => {
+   useEffect(() => {
     const savedTheme = localStorage.getItem("theme")
     if (savedTheme === "dark") {
       setIsDark(true)
@@ -24,6 +25,7 @@ export default function PhoneNumberBuyPage() {
       setIsMobile(window.innerWidth < 768)
       if (window.innerWidth < 768) {
         setSidebarOpen(false)
+        setIsCollapsed(false)
       }
     }
 
@@ -43,7 +45,6 @@ export default function PhoneNumberBuyPage() {
     }
   }
 
-
   const handleLogout = () => {
     deleteCookie("authToken")
     localStorage.removeItem("userEmail")
@@ -56,7 +57,11 @@ export default function PhoneNumberBuyPage() {
 
   return (
     <div className={`flex h-screen bg-background overflow-hidden ${isDark ? "dark" : ""}`}>
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        isCollapsed={isCollapsed}
+      />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Topbar
           onMenuClick={() => setSidebarOpen(!sidebarOpen)}
@@ -64,6 +69,8 @@ export default function PhoneNumberBuyPage() {
           toggleTheme={toggleTheme}
           isDark={isDark}
           isMobile={isMobile}
+          isCollapsed={isCollapsed}
+          onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
         />
         <PhoneNumberBuyForm />
       </div>
