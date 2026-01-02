@@ -60,6 +60,20 @@ interface AppFeature {
   name: string
 }
 
+interface AwrStatus {
+  id: number
+  name: string
+}
+
+interface AwrPaymentType {
+  name: string
+}
+
+interface AwrMonthOption {
+  label: string
+  value: number
+}
+
 // Fixed dropdown options for calling time
 const CALLING_TIME_OPTIONS = [
   { label: "5 min", value: 5 },
@@ -99,6 +113,21 @@ const GDPR_INTERVAL_OPTIONS = [
   { label: "24 Months", value: "24_MONTH" },
   { label: "36 Months", value: "36_MONTH" },
   { label: "48 Months", value: "48_MONTH" },
+]
+
+const AWR_PLACEMENT_DAYS_OPTIONS: AwrMonthOption[] = [
+  { label: "1 month", value: 30 },
+  { label: "2 month", value: 60 },
+  { label: "3 month", value: 90 },
+  { label: "4 month", value: 120 },
+  { label: "5 month", value: 150 },
+  { label: "6 month", value: 180 },
+  { label: "7 month", value: 210 },
+  { label: "8 month", value: 240 },
+  { label: "9 month", value: 270 },
+  { label: "10 month", value: 300 },
+  { label: "11 month", value: 330 },
+  { label: "12 month", value: 360 }
 ]
 
 export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
@@ -143,6 +172,13 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const [gdprShouldUseCandidateUpdateDate, setGdprShouldUseCandidateUpdateDate] = useState("true")
   const [gdprIntervalFromLastAction, setGdprIntervalFromLastAction] = useState("6_MONTH")
 
+  // AWR Specific States
+  const [awrStatusOptions, setAwrStatusOptions] = useState<AwrStatus[]>([])
+  const [awrPaymentTypeOptions, setAwrPaymentTypeOptions] = useState<AwrPaymentType[]>([])
+  const [awrSelectedStatusIds, setAwrSelectedStatusIds] = useState<number[]>([])
+  const [awrSelectedPaymentTypes, setAwrSelectedPaymentTypes] = useState<string[]>([])
+  const [awrPlacementDays, setAwrPlacementDays] = useState<string>("")
+
   // Dynamic Questions
   const [questions, setQuestions] = useState<QuestionInput[]>([{ tempId: crypto.randomUUID(), value: "", isSaved: false }])
 
@@ -158,6 +194,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
   const isCvFormatter = featureName.toLowerCase().includes("cv") && featureName.toLowerCase().includes("formatter")
   const isGdpr = featureName.toLowerCase().includes("gdpr")
+  const isAwr = featureName.toLowerCase().includes("awr") && (featureName.toLowerCase().includes("complience") || featureName.toLowerCase().includes("compliance"))
 
   // Logo File Input Ref
   const logoInputRef = useRef<HTMLInputElement>(null)
@@ -174,18 +211,24 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         const authToken = getCookie("authToken")
         const headers = { Authorization: `Bearer ${authToken}` }
 
-        const [statusRes, platformRes, phoneRes, featuresRes, questionsRes] = await Promise.all([
+        const [statusRes, platformRes, phoneRes, featuresRes, questionsRes, awrStatusRes, awrPaymentRes] = await Promise.all([
           axios.get<InterviewStatus[]>(`${BASE_URL}/interview/status/`, { headers }),
           axios.get<{ results: Platform[] }>(`${BASE_URL}/organizations/platform/my_platforms`, { headers }),
           axios.get<{ results: PhoneNumber[] }>(`${BASE_URL}/phone_number/`, { headers }),
           axios.get<{ results: AppFeature[] }>(`${BASE_URL}/subscription/features/`, { headers }),
-          axios.get<{ results: SuggestedQuestion[] }>(`${BASE_URL}/interview/call/config/primary_questions`, { headers })
+          axios.get<{ results: SuggestedQuestion[] }>(`${BASE_URL}/interview/call/config/primary_questions`, { headers }),
+          axios.get<AwrStatus[]>(`${BASE_URL}/awr/list/status`, { headers }).catch(() => ({ data: [] })),
+          axios.get<AwrPaymentType[]>(`${BASE_URL}/awr/list/payment-types`, { headers }).catch(() => ({ data: [] }))
         ])
 
-        setStatusOptions(statusRes.data)
-        setPlatformOptions(platformRes.data.results)
-        setPhoneNumberOptions(phoneRes.data.results)
-        setSuggestedQuestions(questionsRes.data.results)
+        if (statusRes) setStatusOptions(statusRes.data)
+        if (platformRes) setPlatformOptions(platformRes.data.results)
+        if (phoneRes) setPhoneNumberOptions(phoneRes.data.results)
+        if (questionsRes) setSuggestedQuestions(questionsRes.data.results)
+        if (awrStatusRes) setAwrStatusOptions(awrStatusRes.data)
+        if (awrPaymentRes) setAwrPaymentTypeOptions(awrPaymentRes.data)
+
+        // Data processing
 
         const currentFeature = featuresRes.data.results.find(f => f.uid === featureUid)
         if (currentFeature) {
@@ -198,10 +241,26 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         const currentIsGdpr = name.includes("gdpr")
         const currentIsSms = name.includes("sms")
         const currentIsWhatsApp = name.includes("what's app") || name.includes("whatsapp")
+        const currentIsAwr = name.includes("awr")
         const currentIsMessage = currentIsSms || currentIsWhatsApp
         const currentType = currentIsWhatsApp ? "AI_WHATSAPP" : (currentIsSms ? "AI_SMS" : null)
 
-        if (currentIsGdpr) {
+        if (currentIsAwr) {
+          try {
+            const configRes = await axios.get(`${BASE_URL}/awr/config/details`, { headers })
+            const configData = configRes.data
+
+            if (configData) {
+              setIsUpdateMode(true)
+              setPlatformUid(configData.platform?.uid || "")
+              setAwrSelectedStatusIds(configData.selected_status_ids || [])
+              setAwrSelectedPaymentTypes(configData.selected_payment_types || [])
+              setAwrPlacementDays(String(configData.placement_started_before_days || ""))
+            }
+          } catch (err) {
+            // No config yet
+          }
+        } else if (currentIsGdpr) {
           try {
             const configRes = await axios.get(`${BASE_URL}/gdpr/config/details`, { headers })
             const configData = configRes.data
@@ -408,7 +467,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const handleSaveConfiguration = async () => {
     setError("")
 
-    if (!isCvFormatter && !isGdpr) {
+    if (!isCvFormatter && !isGdpr && !isAwr) {
       // Validation for Interview/Message apps
       const selectedStatuses = [applicationStatus, unsuccessfulStatus, successfulStatus, placedStatus].filter(Boolean)
       const uniqueStatuses = new Set(selectedStatuses)
@@ -441,7 +500,25 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
       const authToken = getCookie("authToken")
       let response
 
-      if (isGdpr) {
+      if (isAwr) {
+        const payload = {
+          platform_uid: platformUid,
+          selected_status_ids: awrSelectedStatusIds,
+          selected_payment_types: awrSelectedPaymentTypes,
+          placement_started_before_days: Number(awrPlacementDays)
+        }
+
+        if (isUpdateMode) {
+          response = await axios.patch(`${BASE_URL}/awr/config/details`, payload, {
+            headers: { Authorization: `Bearer ${authToken}` }
+          })
+        } else {
+          response = await axios.post(`${BASE_URL}/awr/config/`, payload, {
+            headers: { Authorization: `Bearer ${authToken}` }
+          })
+        }
+
+      } else if (isGdpr) {
         const payload = {
           platform_uid: platformUid,
           should_use_last_application_date: gdprShouldUseLastApplicationDate === "true",
@@ -636,8 +713,8 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                 </Select>
               </div>
 
-              {/* Phone Number (Hide for CV Formatter & GDPR) */}
-              {!isCvFormatter && !isGdpr && (
+              {/* Phone Number (Hide for CV Formatter & GDPR & AWR) */}
+              {!isCvFormatter && !isGdpr && !isAwr && (
                 <div className="space-y-2">
                   <Label>Select Phone Number</Label>
                   <Select value={phoneNumberUid} onValueChange={handleSelectChange(setPhoneNumberUid)}>
@@ -657,6 +734,85 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                     Need another number? <Link href="/dashboard/phone-number-buy" className="text-primary hover:underline">Buy New Number</Link>
                   </p>
                 </div>
+              )}
+
+              {/* AWR Specific Fields */}
+              {isAwr && (
+                <>
+                  {/* Selected Status Ids */}
+                  <div className="space-y-2">
+                    <Label>Selected Status Ids</Label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {awrSelectedStatusIds.map((id) => {
+                        const status = awrStatusOptions.find(opt => opt.id === id)
+                        return (
+                          <div key={id} className="bg-primary/10 text-primary dark:text-white dark:border border-white text-sm px-3 py-1 rounded-full flex items-center gap-1 border border-primary/20">
+                            {status ? status.name : id}
+                            <X className="h-3 w-3 cursor-pointer hover:text-primary/70 dark:hover:text-white/70" onClick={() => setAwrSelectedStatusIds(prev => prev.filter(item => item !== id))} />
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <Select onValueChange={(val) => {
+                      const id = Number(val)
+                      if (!awrSelectedStatusIds.includes(id)) {
+                        setAwrSelectedStatusIds([...awrSelectedStatusIds, id])
+                      }
+                    }} value="">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status to add" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {awrStatusOptions.filter(opt => !awrSelectedStatusIds.includes(opt.id)).map(opt => (
+                          <SelectItem key={opt.id} value={String(opt.id)}>{opt.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Selected Payment Types */}
+                  <div className="space-y-2">
+                    <Label>Selected Payment Types</Label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {awrSelectedPaymentTypes.map((type) => (
+                        <div key={type} className="bg-primary/10 text-primary dark:text-white dark:border border-white text-sm px-3 py-1 rounded-full flex items-center gap-1 border border-primary/20">
+                          {type}
+                          <X className="h-3 w-3 cursor-pointer hover:text-primary/70 dark:hover:text-white/70" onClick={() => setAwrSelectedPaymentTypes(prev => prev.filter(item => item !== type))} />
+                        </div>
+                      ))}
+                    </div>
+                    <Select onValueChange={(val) => {
+                      if (!awrSelectedPaymentTypes.includes(val)) {
+                        setAwrSelectedPaymentTypes([...awrSelectedPaymentTypes, val])
+                      }
+                    }} value="">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select payment type to add" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {awrPaymentTypeOptions.filter(opt => !awrSelectedPaymentTypes.includes(opt.name)).map(opt => (
+                          <SelectItem key={opt.name} value={opt.name}>{opt.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Placement Started Before Days */}
+                  <div className="space-y-2">
+                    <Label>Placement Started Before Days</Label>
+                    <Select value={awrPlacementDays} onValueChange={handleSelectChange(setAwrPlacementDays)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select days" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                        {AWR_PLACEMENT_DAYS_OPTIONS.map(opt => (
+                          <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
               )}
 
               {/* CV Formatter Specific Fields */}
@@ -795,7 +951,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               )}
 
               {/* Existing Interview Fields (Calls, Voice ID) - Hide if CV Formatter or Message or GDPR */}
-              {!isCvFormatter && !isMessage && !isGdpr && (
+              {!isCvFormatter && !isMessage && !isGdpr && !isAwr && (
                 <>
                   <div className="space-y-2">
                     <Label>ElevenLabs Voice ID (Optional)</Label>
@@ -816,7 +972,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
           {/* Automation Logic Card - Hide for CV Formatter & GDPR */}
           {/* Interview Questions - Moved to Left Column */}
-          {!isCvFormatter && !isGdpr && (
+          {!isCvFormatter && !isGdpr && !isAwr && (
             <Card className="p-6 h-fit">
               <h2 className="text-xl font-semibold text-foreground mb-4">Interview Questions</h2>
               <p className="text-sm text-muted-foreground mb-4">
@@ -908,6 +1064,9 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           </Card>
         ) : isGdpr ? (
           // GDPR - Empty Right Column (or we can add instructions/branding if needed)
+          null
+        ) : isAwr ? (
+          // AWR - Empty Right Column (or we can add instructions/branding if needed)
           null
         ) : (
           /* Automation Logic - Moved to Right Column */

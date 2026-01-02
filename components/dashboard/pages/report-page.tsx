@@ -71,6 +71,9 @@ interface DisplayReportItem {
     attachment_id?: string
     pdf_file_with_logo?: string
     pdf_file_without_logo?: string
+    // AWR Extra Fields
+    placement_id?: number
+    contact_email?: string
 }
 
 interface ReportResponse {
@@ -103,6 +106,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
     const isGdpr = nameLower.includes("gdpr")
     const isSms = nameLower.includes("sms")
     const isWhatsApp = nameLower.includes("what's app") || nameLower.includes("whatsapp")
+    const isAwr = nameLower.includes("awr") && (nameLower.includes("complience") || nameLower.includes("compliance"))
     const isMessage = isSms || isWhatsApp
 
     useEffect(() => {
@@ -146,6 +150,28 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                         ai_decision: "-",
                         status: "-",
                         updated_at: "", // or item.created_at if available
+                        conversation_json: []
+                    }))
+                    setReports(normalized)
+
+                } else if (name.includes("awr") && (name.includes("complience") || name.includes("compliance"))) {
+                    // AWR Report Fetch
+                    const reportsRes = await axios.get<ReportResponse>(`${BASE_URL}/awr/reports/`, { headers })
+
+                    const normalized = reportsRes.data.results.map((item: any) => ({
+                        id: item.id,
+                        uid: item.uid,
+                        placement_id: item.placement_id,
+                        contact_email: item.contact_email,
+                        // Default others
+                        candidate_id: 0,
+                        candidate_name: "-",
+                        candidate_email: "-",
+                        candidate_phone: "-",
+                        started_at: item.created_at,
+                        status: "-",
+                        ai_decision: "-",
+                        updated_at: item.updated_at,
                         conversation_json: []
                     }))
                     setReports(normalized)
@@ -284,6 +310,11 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                                     <TableHead className="font-semibold text-foreground">Status</TableHead>
                                     <TableHead className="font-semibold text-foreground">Chat History</TableHead>
                                 </>
+                            ) : isAwr ? (
+                                <>
+                                    <TableHead className="font-semibold text-foreground">Placement Id</TableHead>
+                                    <TableHead className="font-semibold text-foreground">Client Email</TableHead>
+                                </>
                             ) : (
                                 <>
                                     <TableHead className="font-semibold text-foreground">Interview ID</TableHead>
@@ -303,11 +334,11 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={isCvFormatter || isGdpr ? 4 : 10} className="text-center h-24">Loading records...</TableCell>
+                                <TableCell colSpan={isCvFormatter || isGdpr ? 4 : (isAwr ? 2 : 10)} className="text-center h-24">Loading records...</TableCell>
                             </TableRow>
                         ) : reports.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={isCvFormatter || isGdpr ? 4 : 10} className="text-center h-24">No records found.</TableCell>
+                                <TableCell colSpan={isCvFormatter || isGdpr ? 4 : (isAwr ? 2 : 10)} className="text-center h-24">No records found.</TableCell>
                             </TableRow>
                         ) : (
                             reports.map((row) => (
@@ -355,6 +386,11 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                                                     View
                                                 </Button>
                                             </TableCell>
+                                        </>
+                                    ) : isAwr ? (
+                                        <>
+                                            <TableCell className="text-sm">{row.placement_id}</TableCell>
+                                            <TableCell className="text-sm">{row.contact_email}</TableCell>
                                         </>
                                     ) : (
                                         <>

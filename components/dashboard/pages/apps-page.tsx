@@ -80,7 +80,7 @@ const APP_ASSET_CONFIG = [
     id: "awr-compliance",
     logoJobAdder: "/images/JobAdder.jpg",
     logoBullhorn: "/images/Bullhornconnector.jpg",
-    buttons: ["Purchase"],
+    buttons: ["Purchase", "Configure", "Report"],
     hasMore: true,
   },
 ]
