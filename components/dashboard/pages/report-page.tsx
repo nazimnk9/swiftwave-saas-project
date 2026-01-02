@@ -400,7 +400,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                                     <TableHead className="font-semibold text-foreground">Ai Decision</TableHead>
                                     <TableHead className="font-semibold text-foreground">Updated At</TableHead>
                                     <TableHead className="font-semibold text-foreground">Chat History</TableHead>
-                                    <TableHead className="font-semibold text-foreground">Retry call Interview</TableHead>
+                                    {!isMessage && <TableHead className="font-semibold text-foreground">Retry call Interview</TableHead>}
                                 </>
                             )}
                         </TableRow>
@@ -486,17 +486,19 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                                                     View
                                                 </Button>
                                             </TableCell>
-                                            <TableCell className="text-sm">
-                                                <Button
-                                                    size="sm"
-                                                    variant="default"
-                                                    className="cursor-pointer"
-                                                    onClick={() => handleSingleRecall(row.reports_uid)}
-                                                    disabled={isRecalling}
-                                                >
-                                                    Recall
-                                                </Button>
-                                            </TableCell>
+                                            {!isMessage && (
+                                                <TableCell className="text-sm">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="default"
+                                                        className="cursor-pointer"
+                                                        onClick={() => handleSingleRecall(row.reports_uid)}
+                                                        disabled={isRecalling}
+                                                    >
+                                                        Recall
+                                                    </Button>
+                                                </TableCell>
+                                            )}
                                         </>
                                     )}
                                 </TableRow>
