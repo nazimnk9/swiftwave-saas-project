@@ -10,6 +10,9 @@ import { BASE_URL } from "@/lib/baseUrl"
 import { LoaderOverlay } from "@/components/auth/loader-overlay"
 import { useRouter } from "next/navigation"
 import { getCookie } from "cookies-next"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
+import { useToastNotification } from "@/components/auth/toast-provider"
 
 // Interfaces based on user provided JSON structure
 interface ChatMessage {
@@ -57,6 +60,7 @@ interface ReportItem {
 // Internal normalized interface for display
 interface DisplayReportItem {
     id: number
+    reports_uid?: string // Added for Recall API
     uid: string // Used for Interview UID or Attachment ID sometimes if needed, mostly Interview UID
     candidate_id: number
     candidate_name: string
@@ -92,8 +96,17 @@ interface ReportPageProps {
     featureUid?: string
 }
 
+const RETRY_OPTIONS = Array.from({ length: 20 }, (_, i) => ({
+    label: `${(i + 1) * 5} person`,
+    value: (i + 1) * 5
+}))
+
 export default function ReportPage({ featureUid }: ReportPageProps) {
+    const { toast } = useToastNotification()
     const [isChatModalOpen, setIsChatModalOpen] = useState(false)
+    const [isRecallModalOpen, setIsRecallModalOpen] = useState(false)
+    const [recallLimit, setRecallLimit] = useState("5")
+    const [isRecalling, setIsRecalling] = useState(false)
     const [reports, setReports] = useState<DisplayReportItem[]>([])
     const [loading, setLoading] = useState(true)
     const [featureName, setFeatureName] = useState("Reports")
@@ -234,6 +247,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
 
                     const normalized = reportsRes.data.results.map((item: any) => ({
                         id: item.id,
+                        reports_uid: item.uid,
                         uid: item.interview_data.uid,
                         candidate_id: item.interview_data.candidate_id,
                         candidate_name: item.interview_data.candidate_name,
@@ -280,15 +294,74 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
         }
     }
 
+    const handleRecall = async () => {
+        try {
+            setIsRecalling(true)
+            const authToken = getCookie("authToken")
+            await axios.post(`${BASE_URL}/interview/retry/`, { limit: Number(recallLimit) }, {
+                headers: { Authorization: `Bearer ${authToken}` }
+            })
+            toast({
+                title: "Success",
+                description: "Retry call process started successfully."
+            })
+            setIsRecallModalOpen(false)
+        } catch (error) {
+            console.error("Error retrying calls:", error)
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Failed to initiate retry calls."
+            })
+        } finally {
+            setIsRecalling(false)
+        }
+    }
+
+    const handleSingleRecall = async (uid?: string) => {
+        if (!uid) return
+        try {
+            setIsRecalling(true)
+            const authToken = getCookie("authToken")
+            await axios.post(`${BASE_URL}/interview/retry/${uid}`, {}, {
+                headers: { Authorization: `Bearer ${authToken}` }
+            })
+            toast({
+                title: "Success",
+                description: "Recall initiated successfully."
+            })
+        } catch (error) {
+            console.error("Error recalling interview:", error)
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Failed to initiate recall."
+            })
+        } finally {
+            setIsRecalling(false)
+        }
+    }
+
     return (
         <div className="min-h-screen bg-background p-8">
-            <LoaderOverlay isLoading={loading} message="Loading reports..." />
+            <LoaderOverlay isLoading={loading || isRecalling} message={isRecalling ? "Processing recall..." : "Loading reports..."} />
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-foreground mb-2">Report - {featureName}</h1>
-                <p className="text-muted-foreground">
-                    View {isCvFormatter ? "formatted CVs" : "automation interview records"} for the {featureName}.
-                </p>
+            <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-foreground mb-2">Report - {featureName}</h1>
+                    <p className="text-muted-foreground">
+                        View {isCvFormatter ? "formatted CVs" : "automation interview records"} for the {featureName}.
+                    </p>
+                </div>
+                {/* Retry Call Interview Button (Only for Call Interview) */}
+                {!isCvFormatter && !isGdpr && !isAwr && !isMessage && (
+                    <Button
+                        onClick={() => setIsRecallModalOpen(true)}
+                        className="bg-primary hover:bg-primary/90 cursor-pointer"
+                    >
+                        Retry Call Interview
+                    </Button>
+                )}
             </div>
 
             {/* Report Table */}
@@ -327,6 +400,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                                     <TableHead className="font-semibold text-foreground">Ai Decision</TableHead>
                                     <TableHead className="font-semibold text-foreground">Updated At</TableHead>
                                     <TableHead className="font-semibold text-foreground">Chat History</TableHead>
+                                    <TableHead className="font-semibold text-foreground">Retry call Interview</TableHead>
                                 </>
                             )}
                         </TableRow>
@@ -412,6 +486,17 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                                                     View
                                                 </Button>
                                             </TableCell>
+                                            <TableCell className="text-sm">
+                                                <Button
+                                                    size="sm"
+                                                    variant="default"
+                                                    className="cursor-pointer"
+                                                    onClick={() => handleSingleRecall(row.reports_uid)}
+                                                    disabled={isRecalling}
+                                                >
+                                                    Recall
+                                                </Button>
+                                            </TableCell>
                                         </>
                                     )}
                                 </TableRow>
@@ -467,6 +552,57 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                     </Dialog>
                 )
             }
+
+            {/* Recall Modal */}
+            <Dialog open={isRecallModalOpen} onOpenChange={setIsRecallModalOpen}>
+                <DialogContent className="max-w-md">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-semibold text-foreground">Recall</h2>
+                        <button
+                            onClick={() => setIsRecallModalOpen(false)}
+                            className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none cursor-pointer"
+                        >
+                            <X className="h-5 w-5" />
+                            <span className="sr-only">Close</span>
+                        </button>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Select number of recently disconnected candidates to call</Label>
+                            <Select value={recallLimit} onValueChange={setRecallLimit}>
+                                <SelectTrigger className="w-full mt-1 h-8 text-xs pr-8">
+                                    <SelectValue placeholder="Select count" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {RETRY_OPTIONS.map(opt => (
+                                        <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {recallLimit && (
+                                <X
+                                    className="absolute right-8 top-1/2 h-3.5 w-3.5 cursor-pointer text-muted-foreground hover:text-foreground z-10"
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        setRecallLimit("")
+                                    }}
+                                />
+                            )}
+                        </div>
+
+                        <div className="flex justify-end pt-4">
+                            <Button
+                                onClick={handleRecall}
+                                disabled={isRecalling}
+                                className="bg-primary hover:bg-primary/90 cursor-pointer"
+                            >
+                                {isRecalling ? "Processing..." : "Recall"}
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div >
     )
 }
