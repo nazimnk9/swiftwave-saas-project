@@ -83,6 +83,14 @@ const APP_ASSET_CONFIG = [
     buttons: ["Purchase", "Configure", "Report"],
     hasMore: true,
   },
+  {
+    keywords: ["skill", "search"],
+    id: "candidate-skill-search",
+    logoJobAdder: "/images/JobAdder.jpg",
+    logoBullhorn: "/images/Bullhornconnector.jpg",
+    buttons: ["Purchase", "Configure", "Report"],
+    hasMore: true,
+  },
 ]
 
 const appDetails = {

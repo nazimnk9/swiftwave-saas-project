@@ -78,6 +78,12 @@ interface DisplayReportItem {
     // AWR Extra Fields
     placement_id?: number
     contact_email?: string
+    // Skill Search Extra Fields
+    job_ad_id?: number
+    match_percentage?: number
+    match_source?: string
+    application_id?: number | null
+    application_created?: boolean
 }
 
 interface ReportResponse {
@@ -120,6 +126,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
     const isSms = nameLower.includes("sms")
     const isWhatsApp = nameLower.includes("what's app") || nameLower.includes("whatsapp")
     const isAwr = nameLower.includes("awr") && (nameLower.includes("complience") || nameLower.includes("compliance"))
+    const isSkillSearch = nameLower.includes("skill") && nameLower.includes("search")
     const isMessage = isSms || isWhatsApp
 
     useEffect(() => {
@@ -185,6 +192,31 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                         status: "-",
                         ai_decision: "-",
                         updated_at: item.updated_at,
+                        conversation_json: []
+                    }))
+                    setReports(normalized)
+
+                } else if (name.includes("skill") && name.includes("search")) {
+                    // Skill Search Report Fetch
+                    const reportsRes = await axios.get<ReportResponse>(`${BASE_URL}/skill_search/reports/`, { headers })
+
+                    const normalized = reportsRes.data.results.map((item: any) => ({
+                        id: item.id,
+                        uid: "", // Not used
+                        candidate_id: item.candidate_id,
+                        job_ad_id: item.job_ad_id,
+                        match_percentage: item.match_percentage,
+                        match_source: item.match_source,
+                        application_id: item.application_id,
+                        application_created: item.application_created,
+                        // Default others
+                        candidate_name: "-",
+                        candidate_email: "-",
+                        candidate_phone: "-",
+                        started_at: item.created_at,
+                        status: "-",
+                        ai_decision: "-",
+                        updated_at: "",
                         conversation_json: []
                     }))
                     setReports(normalized)
@@ -354,7 +386,7 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                     </p>
                 </div>
                 {/* Retry Call Interview Button (Only for Call Interview) */}
-                {!isCvFormatter && !isGdpr && !isAwr && !isMessage && (
+                {!isCvFormatter && !isGdpr && !isAwr && !isSkillSearch && !isMessage && (
                     <Button
                         onClick={() => setIsRecallModalOpen(true)}
                         className="bg-primary hover:bg-primary/90 cursor-pointer"
@@ -388,6 +420,15 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                                     <TableHead className="font-semibold text-foreground">Placement Id</TableHead>
                                     <TableHead className="font-semibold text-foreground">Client Email</TableHead>
                                 </>
+                            ) : isSkillSearch ? (
+                                <>
+                                    <TableHead className="font-semibold text-foreground">Candidate ID</TableHead>
+                                    <TableHead className="font-semibold text-foreground">Job Ad ID</TableHead>
+                                    <TableHead className="font-semibold text-foreground">Match Percentage</TableHead>
+                                    <TableHead className="font-semibold text-foreground">Match Source</TableHead>
+                                    <TableHead className="font-semibold text-foreground">Application ID</TableHead>
+                                    <TableHead className="font-semibold text-foreground">Application Created</TableHead>
+                                </>
                             ) : (
                                 <>
                                     <TableHead className="font-semibold text-foreground">Interview ID</TableHead>
@@ -408,11 +449,11 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={isCvFormatter || isGdpr ? 4 : (isAwr ? 2 : 10)} className="text-center h-24">Loading records...</TableCell>
+                                <TableCell colSpan={isCvFormatter || isGdpr ? 4 : (isAwr ? 2 : (isSkillSearch ? 6 : 10))} className="text-center h-24">Loading records...</TableCell>
                             </TableRow>
                         ) : reports.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={isCvFormatter || isGdpr ? 4 : (isAwr ? 2 : 10)} className="text-center h-24">No records found.</TableCell>
+                                <TableCell colSpan={isCvFormatter || isGdpr ? 4 : (isAwr ? 2 : (isSkillSearch ? 6 : 10))} className="text-center h-24">No records found.</TableCell>
                             </TableRow>
                         ) : (
                             reports.map((row) => (
@@ -465,6 +506,25 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                                         <>
                                             <TableCell className="text-sm">{row.placement_id}</TableCell>
                                             <TableCell className="text-sm">{row.contact_email}</TableCell>
+                                        </>
+                                    ) : isSkillSearch ? (
+                                        <>
+                                            <TableCell className="text-sm">{row.candidate_id}</TableCell>
+                                            <TableCell className="text-sm">{row.job_ad_id}</TableCell>
+                                            <TableCell className="text-sm">{row.match_percentage}%</TableCell>
+                                            <TableCell className="text-sm">{row.match_source}</TableCell>
+                                            <TableCell className="text-sm">{row.application_id || "-"}</TableCell>
+                                            <TableCell className="text-sm">
+                                                {row.application_created ? (
+                                                    <div className="flex justify-start text-green-500">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex justify-start text-red-500">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                                    </div>
+                                                )}
+                                            </TableCell>
                                         </>
                                     ) : (
                                         <>

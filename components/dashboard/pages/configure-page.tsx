@@ -74,6 +74,11 @@ interface AwrMonthOption {
   value: number
 }
 
+interface CandidateStatus {
+  id: number
+  name: string
+}
+
 // Fixed dropdown options for calling time
 const CALLING_TIME_OPTIONS = [
   { label: "5 min", value: 5 },
@@ -89,6 +94,21 @@ const CALLING_TIME_OPTIONS = [
   { label: "50 min", value: 50 },
   { label: "55 min", value: 55 },
   { label: "60 min", value: 60 },
+]
+
+// Skill Search Constants
+const SEARCH_RADIUS_OPTIONS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+const MIN_SKILL_MATCH_OPTIONS = [
+  { label: "10%", value: 10 },
+  { label: "20%", value: 20 },
+  { label: "30%", value: 30 },
+  { label: "40%", value: 40 },
+  { label: "50%", value: 50 },
+  { label: "60%", value: 60 },
+  { label: "70%", value: 70 },
+  { label: "80%", value: 80 },
+  { label: "90%", value: 90 },
+  { label: "100%", value: 100 },
 ]
 
 // CV Formatter Constants
@@ -142,11 +162,26 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const [isUpdateMode, setIsUpdateMode] = useState(false)
   const [suggestedQuestions, setSuggestedQuestions] = useState<SuggestedQuestion[]>([])
 
+  // Skill Search Data States
+  const [candidateStatusOptions, setCandidateStatusOptions] = useState<CandidateStatus[]>([])
+
   // Form Field States
   const [phoneNumberUid, setPhoneNumberUid] = useState("")
   const [platformUid, setPlatformUid] = useState("")
   const [voiceId, setVoiceId] = useState("")
   const [endCallNegative, setEndCallNegative] = useState("false")
+
+  // Skill Search Form States
+  const [searchRadiusKm, setSearchRadiusKm] = useState<string>("")
+  const [selectedCandidateStatusIds, setSelectedCandidateStatusIds] = useState<number[]>([])
+  const [jobAdStatusForSkillSearch, setJobAdStatusForSkillSearch] = useState<string>("Current")
+  const [minSkillMatchPercentage, setMinSkillMatchPercentage] = useState<string>("")
+  const [considerEmploymentHistory, setConsiderEmploymentHistory] = useState("true")
+  const [processCvForSkills, setProcessCvForSkills] = useState("true")
+  const [maxCandidatesPerJob, setMaxCandidatesPerJob] = useState<string>("")
+  const [autoApplyMatchedCandidates, setAutoApplyMatchedCandidates] = useState("true")
+  const [autoApplyStatus, setAutoApplyStatus] = useState<string>("")
+  const [sendWhatsappNotifications, setSendWhatsappNotifications] = useState("true")
 
   // Status Assignments
   const [jobAdStatus, setJobAdStatus] = useState("Current")
@@ -195,6 +230,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const isCvFormatter = featureName.toLowerCase().includes("cv") && featureName.toLowerCase().includes("formatter")
   const isGdpr = featureName.toLowerCase().includes("gdpr")
   const isAwr = featureName.toLowerCase().includes("awr") && (featureName.toLowerCase().includes("complience") || featureName.toLowerCase().includes("compliance"))
+  const isSkillSearch = featureName.toLowerCase().includes("skill") && featureName.toLowerCase().includes("search")
 
   // Logo File Input Ref
   const logoInputRef = useRef<HTMLInputElement>(null)
@@ -211,14 +247,15 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         const authToken = getCookie("authToken")
         const headers = { Authorization: `Bearer ${authToken}` }
 
-        const [statusRes, platformRes, phoneRes, featuresRes, questionsRes, awrStatusRes, awrPaymentRes] = await Promise.all([
+        const [statusRes, platformRes, phoneRes, featuresRes, questionsRes, awrStatusRes, awrPaymentRes, candidateStatusRes] = await Promise.all([
           axios.get<InterviewStatus[]>(`${BASE_URL}/interview/status/`, { headers }),
           axios.get<{ results: Platform[] }>(`${BASE_URL}/organizations/platform/my_platforms`, { headers }),
           axios.get<{ results: PhoneNumber[] }>(`${BASE_URL}/phone_number/`, { headers }),
           axios.get<{ results: AppFeature[] }>(`${BASE_URL}/subscription/features/`, { headers }),
           axios.get<{ results: SuggestedQuestion[] }>(`${BASE_URL}/interview/call/config/primary_questions`, { headers }),
           axios.get<AwrStatus[]>(`${BASE_URL}/awr/list/status`, { headers }).catch(() => ({ data: [] })),
-          axios.get<AwrPaymentType[]>(`${BASE_URL}/awr/list/payment-types`, { headers }).catch(() => ({ data: [] }))
+          axios.get<AwrPaymentType[]>(`${BASE_URL}/awr/list/payment-types`, { headers }).catch(() => ({ data: [] })),
+          axios.get<CandidateStatus[]>(`${BASE_URL}/skill_search/list/candidates/status`, { headers }).catch(() => ({ data: [] }))
         ])
 
         if (statusRes) setStatusOptions(statusRes.data)
@@ -227,6 +264,8 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         if (questionsRes) setSuggestedQuestions(questionsRes.data.results)
         if (awrStatusRes) setAwrStatusOptions(awrStatusRes.data)
         if (awrPaymentRes) setAwrPaymentTypeOptions(awrPaymentRes.data)
+        // @ts-ignore
+        if (candidateStatusRes) setCandidateStatusOptions(candidateStatusRes.data)
 
         // Data processing
 
@@ -242,6 +281,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         const currentIsSms = name.includes("sms")
         const currentIsWhatsApp = name.includes("what's app") || name.includes("whatsapp")
         const currentIsAwr = name.includes("awr")
+        const currentIsSkillSearch = name.includes("skill") && name.includes("search")
         const currentIsMessage = currentIsSms || currentIsWhatsApp
         const currentType = currentIsWhatsApp ? "AI_WHATSAPP" : (currentIsSms ? "AI_SMS" : null)
 
@@ -302,6 +342,28 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           } catch (err) {
             // No config yet, set defaults
             setCvEnabledSections([...CV_ENABLED_SECTIONS_OPTIONS])
+          }
+        } else if (currentIsSkillSearch) {
+          try {
+            const configRes = await axios.get(`${BASE_URL}/skill_search/config/details`, { headers })
+            const configData = configRes.data
+
+            if (configData) {
+              setIsUpdateMode(true)
+              setPlatformUid(configData.platform?.uid || "")
+              setSearchRadiusKm(String(configData.search_radius_km || ""))
+              setSelectedCandidateStatusIds(configData.candidate_status_ids || [])
+              setJobAdStatusForSkillSearch(configData.jobad_status_for_skill_search || "Current")
+              setMinSkillMatchPercentage(String(configData.minimum_skill_match_percentage || ""))
+              setConsiderEmploymentHistory(configData.consider_employment_history ? "true" : "false")
+              setProcessCvForSkills(configData.process_cv_for_skills ? "true" : "false")
+              setMaxCandidatesPerJob(String(configData.max_candidates_per_job || ""))
+              setAutoApplyMatchedCandidates(configData.auto_apply_matched_candidates ? "true" : "false")
+              setAutoApplyStatus(String(configData.auto_apply_status || ""))
+              setSendWhatsappNotifications(configData.send_whatsapp_notifications ? "true" : "false")
+            }
+          } catch (err) {
+            // No config yet
           }
         } else if (currentIsMessage && currentType) {
           try {
@@ -467,7 +529,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const handleSaveConfiguration = async () => {
     setError("")
 
-    if (!isCvFormatter && !isGdpr && !isAwr) {
+    if (!isCvFormatter && !isGdpr && !isAwr && !isSkillSearch) {
       // Validation for Interview/Message apps
       const selectedStatuses = [applicationStatus, unsuccessfulStatus, successfulStatus, placedStatus].filter(Boolean)
       const uniqueStatuses = new Set(selectedStatuses)
@@ -535,6 +597,31 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           })
         } else {
           response = await axios.post(`${BASE_URL}/gdpr/config/`, payload, {
+            headers: { Authorization: `Bearer ${authToken}` }
+          })
+        }
+
+      } else if (isSkillSearch) {
+        const payload = {
+          platform_uid: platformUid,
+          search_radius_km: Number(searchRadiusKm),
+          candidate_status_ids: selectedCandidateStatusIds,
+          jobad_status_for_skill_search: jobAdStatusForSkillSearch,
+          minimum_skill_match_percentage: Number(minSkillMatchPercentage),
+          consider_employment_history: considerEmploymentHistory === "true",
+          process_cv_for_skills: processCvForSkills === "true",
+          max_candidates_per_job: Number(maxCandidatesPerJob),
+          auto_apply_matched_candidates: autoApplyMatchedCandidates === "true",
+          auto_apply_status: Number(autoApplyStatus),
+          send_whatsapp_notifications: sendWhatsappNotifications === "true",
+        }
+
+        if (isUpdateMode) {
+          response = await axios.patch(`${BASE_URL}/skill_search/config/details`, payload, {
+            headers: { Authorization: `Bearer ${authToken}` }
+          })
+        } else {
+          response = await axios.post(`${BASE_URL}/skill_search/config/`, payload, {
             headers: { Authorization: `Bearer ${authToken}` }
           })
         }
@@ -713,8 +800,137 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                 </Select>
               </div>
 
-              {/* Phone Number (Hide for CV Formatter & GDPR & AWR) */}
-              {!isCvFormatter && !isGdpr && !isAwr && (
+              {/* Skill Search Specific Fields (Moved to General Settings) */}
+              {isSkillSearch && (
+                <>
+                  {/* Search Radius Km */}
+                  <div className="space-y-2">
+                    <Label>Search Radius Km</Label>
+                    <Select value={searchRadiusKm} onValueChange={handleSelectChange(setSearchRadiusKm)}>
+                      <SelectTrigger><SelectValue placeholder="Select radius" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                        {SEARCH_RADIUS_OPTIONS.map(opt => (
+                          <SelectItem key={opt} value={String(opt)}>{opt}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Candidate Status Ids */}
+                  <div className="space-y-2">
+                    <Label>Candidate Status Ids</Label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {selectedCandidateStatusIds.map((id) => {
+                        const status = candidateStatusOptions.find(opt => opt.id === id)
+                        return (
+                          <div key={id} className="bg-primary/10 text-primary dark:text-white dark:border border-white text-sm px-3 py-1 rounded-full flex items-center gap-1 border border-primary/20">
+                            {status ? status.name : id}
+                            <X className="h-3 w-3 cursor-pointer hover:text-primary/70 dark:hover:text-white/70" onClick={() => setSelectedCandidateStatusIds(prev => prev.filter(item => item !== id))} />
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <Select onValueChange={(val) => {
+                      const id = Number(val)
+                      if (!selectedCandidateStatusIds.includes(id)) {
+                        setSelectedCandidateStatusIds([...selectedCandidateStatusIds, id])
+                      }
+                    }} value="">
+                      <SelectTrigger><SelectValue placeholder="Select status to add" /></SelectTrigger>
+                      <SelectContent>
+                        {candidateStatusOptions.filter(opt => !selectedCandidateStatusIds.includes(opt.id)).map(opt => (
+                          <SelectItem key={opt.id} value={String(opt.id)}>{opt.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Job Ad Status for Skill Search */}
+                  <div className="space-y-2">
+                    <Label>Job Ad Status</Label>
+                    <Select value={jobAdStatusForSkillSearch} onValueChange={handleSelectChange(setJobAdStatusForSkillSearch)}>
+                      <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Current">Current</SelectItem>
+                        <SelectItem value="Expired">Expired</SelectItem>
+                        <SelectItem value="Draft">Draft</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Minimum Skill Match Percentage */}
+                  <div className="space-y-2">
+                    <Label>Minimum Skill Match Percentage</Label>
+                    <Select value={minSkillMatchPercentage} onValueChange={handleSelectChange(setMinSkillMatchPercentage)}>
+                      <SelectTrigger><SelectValue placeholder="Select percentage" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                        {MIN_SKILL_MATCH_OPTIONS.map(opt => (
+                          <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Consider Employment History */}
+                  <div className="space-y-3 pt-2">
+                    <Label>Consider Employment History?</Label>
+                    <RadioGroup value={considerEmploymentHistory} onValueChange={setConsiderEmploymentHistory} className="flex gap-4">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="ceh-yes" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="ceh-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="ceh-no" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="ceh-no">No</Label></div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Process CV for Skills */}
+                  <div className="space-y-3 pt-2">
+                    <Label>Process cv for skills?</Label>
+                    <RadioGroup value={processCvForSkills} onValueChange={setProcessCvForSkills} className="flex gap-4">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="pcs-yes" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="pcs-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="pcs-no" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="pcs-no">No</Label></div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Max Candidates Per Job */}
+                  <div className="space-y-2">
+                    <Label>Max Candidates Per Job</Label>
+                    <Input type="number" value={maxCandidatesPerJob} onChange={(e) => setMaxCandidatesPerJob(e.target.value)} className="bg-background" />
+                  </div>
+
+                  {/* Auto Apply Matched Candidates */}
+                  <div className="space-y-3 pt-2">
+                    <Label>Auto apply matched candidates?</Label>
+                    <RadioGroup value={autoApplyMatchedCandidates} onValueChange={setAutoApplyMatchedCandidates} className="flex gap-4">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="aamc-yes" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="aamc-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="aamc-no" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="aamc-no">No</Label></div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Auto Apply Status */}
+                  <div className="space-y-2">
+                    <Label>Auto Apply Status</Label>
+                    <Select value={autoApplyStatus} onValueChange={handleSelectChange(setAutoApplyStatus)}>
+                      <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                        {statusOptions.map(s => (<SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Send Whatsapp Notifications */}
+                  <div className="space-y-3 pt-2">
+                    <Label>Send whatsapp notifications?</Label>
+                    <RadioGroup value={sendWhatsappNotifications} onValueChange={setSendWhatsappNotifications} className="flex gap-4">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="true" id="swn-yes" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="swn-yes">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="false" id="swn-no" className="dark:text-white dark:bg-white dark:hover:text-white dark:hover:bg-white dark:hover:text-white" /><Label htmlFor="swn-no">No</Label></div>
+                    </RadioGroup>
+                  </div>
+                </>
+              )}
+
+              {/* Phone Number (Hide for CV Formatter & GDPR & AWR & Skill Search) */}
+              {!isCvFormatter && !isGdpr && !isAwr && !isSkillSearch && (
                 <div className="space-y-2">
                   <Label>Select Phone Number</Label>
                   <Select value={phoneNumberUid} onValueChange={handleSelectChange(setPhoneNumberUid)}>
@@ -950,8 +1166,8 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                 </>
               )}
 
-              {/* Existing Interview Fields (Calls, Voice ID) - Hide if CV Formatter or Message or GDPR */}
-              {!isCvFormatter && !isMessage && !isGdpr && !isAwr && (
+              {/* Existing Interview Fields (Calls, Voice ID) - Hide if CV Formatter or Message or GDPR or Skill Search */}
+              {!isCvFormatter && !isMessage && !isGdpr && !isAwr && !isSkillSearch && (
                 <>
                   <div className="space-y-2">
                     <Label>ElevenLabs Voice ID (Optional)</Label>
@@ -972,7 +1188,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
           {/* Automation Logic Card - Hide for CV Formatter & GDPR */}
           {/* Interview Questions - Moved to Left Column */}
-          {!isCvFormatter && !isGdpr && !isAwr && (
+          {!isCvFormatter && !isGdpr && !isAwr && !isSkillSearch && (
             <Card className="p-6 h-fit">
               <h2 className="text-xl font-semibold text-foreground mb-4">Interview Questions</h2>
               <p className="text-sm text-muted-foreground mb-4">
@@ -1067,6 +1283,9 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           null
         ) : isAwr ? (
           // AWR - Empty Right Column (or we can add instructions/branding if needed)
+          null
+        ) : isSkillSearch ? (
+          // Skill Search - Empty Right Column
           null
         ) : (
           /* Automation Logic - Moved to Right Column */
