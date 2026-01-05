@@ -280,15 +280,15 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                     const normalized = reportsRes.data.results.map((item: any) => ({
                         id: item.id,
                         reports_uid: item.uid,
-                        uid: item.interview_data.uid,
-                        candidate_id: item.interview_data.candidate_id,
-                        candidate_name: item.interview_data.candidate_name,
-                        candidate_email: item.interview_data.candidate_email,
-                        candidate_phone: item.interview_data.candidate_phone,
-                        started_at: item.interview_data.started_at,
+                        uid: item.uid,
+                        candidate_id: item.candidate_id,
+                        candidate_name: item.candidate_name,
+                        candidate_email: item.candidate_email,
+                        candidate_phone: item.candidate_phone,
+                        started_at: item.started_at,
                         status: item.status,
                         ai_decision: item.ai_decision,
-                        updated_at: item.interview_data.updated_at,
+                        updated_at: item.updated_at,
                         conversation_json: item.interview_data.conversation_json || []
                     }))
                     setReports(normalized)
