@@ -11,7 +11,7 @@ import { useState, useEffect, useRef } from "react"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
 import { getCookie } from "cookies-next"
-import { Trash2, CheckCircle2, AlertCircle, X, Upload, Image as ImageIcon, ArrowLeft } from "lucide-react"
+import { Trash2, CheckCircle2, AlertCircle, X, Upload, Image as ImageIcon, ArrowLeft, Search, Plus } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToastNotification } from "@/components/auth/toast-provider"
 import { LoaderOverlay } from "@/components/auth/loader-overlay"
@@ -79,6 +79,20 @@ interface CandidateStatus {
   name: string
 }
 
+interface ContentVariable {
+  serial: string
+  value: string
+}
+
+interface Contact {
+  id: number
+  first_name: string | null
+  last_name: string | null
+  email: string | null
+  phone: string | null
+}
+
+
 // Fixed dropdown options for calling time
 const CALLING_TIME_OPTIONS = [
   { label: "5 min", value: 5 },
@@ -127,6 +141,12 @@ const CV_ENABLED_SECTIONS_OPTIONS = [
   "Areas for improvement & recommendations"
 ]
 
+const SERIAL_OPTIONS = Array.from({ length: 10 }, (_, i) => ({
+  label: String(i + 1),
+  value: i + 1
+}))
+
+
 const GDPR_INTERVAL_OPTIONS = [
   { label: "6 Months", value: "6_MONTH" },
   { label: "12 Months", value: "12_MONTH" },
@@ -165,6 +185,27 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   // Skill Search Data States
   const [candidateStatusOptions, setCandidateStatusOptions] = useState<CandidateStatus[]>([])
 
+  // WhatsApp Campaign Data States
+  const [contacts, setContacts] = useState<Contact[]>([])
+  const [contactSearchTerm, setContactSearchTerm] = useState("")
+  // Dropdown visibility state
+  const [isContactDropdownOpen, setIsContactDropdownOpen] = useState(false)
+  const contactDropdownRef = useRef<HTMLDivElement>(null)
+
+  // Click outside handler for contact dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (contactDropdownRef.current && !contactDropdownRef.current.contains(event.target as Node)) {
+        setIsContactDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
+
+
   // Form Field States
   const [phoneNumberUid, setPhoneNumberUid] = useState("")
   const [platformUid, setPlatformUid] = useState("")
@@ -182,6 +223,18 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
   const [autoApplyMatchedCandidates, setAutoApplyMatchedCandidates] = useState("true")
   const [autoApplyStatus, setAutoApplyStatus] = useState<string>("")
   const [sendWhatsappNotifications, setSendWhatsappNotifications] = useState("true")
+
+  // WhatsApp Campaign Form States
+  const [campaignTitle, setCampaignTitle] = useState("")
+  const [twilioContentSid, setTwilioContentSid] = useState("")
+  const [contentVariables, setContentVariables] = useState<ContentVariable[]>([])
+  const [contactFilterType, setContactFilterType] = useState<string>("")
+  const [selectedContactIds, setSelectedContactIds] = useState<number[]>([])
+  const [scheduleType, setScheduleType] = useState<string>("")
+  const [scheduledAt, setScheduledAt] = useState("")
+  const [chatbotTemplate, setChatbotTemplate] = useState<string>("")
+  const [waFromPhoneNumber, setWaFromPhoneNumber] = useState("")
+
 
   // Status Assignments
   const [jobAdStatus, setJobAdStatus] = useState("Current")
@@ -224,13 +277,15 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
   // Determine App Type
   const isSms = featureName.toLowerCase().includes("sms")
-  const isWhatsApp = featureName.toLowerCase().includes("what's app") || featureName.toLowerCase().includes("whatsapp")
+  const isWhatsApp = featureName.toLowerCase().includes("recruiter") || featureName.toLowerCase().includes("recruiter")
   const isMessage = isSms || isWhatsApp
 
   const isCvFormatter = featureName.toLowerCase().includes("cv") && featureName.toLowerCase().includes("formatter")
   const isGdpr = featureName.toLowerCase().includes("gdpr")
   const isAwr = featureName.toLowerCase().includes("awr") && (featureName.toLowerCase().includes("complience") || featureName.toLowerCase().includes("compliance"))
   const isSkillSearch = featureName.toLowerCase().includes("skill") && featureName.toLowerCase().includes("search")
+  const isWhatsappCampaign = featureName.toLowerCase().includes("campaign") && featureName.toLowerCase().includes("whatsapp")
+
 
   // Logo File Input Ref
   const logoInputRef = useRef<HTMLInputElement>(null)
@@ -279,10 +334,12 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         const currentIsCv = name.includes("cv") && name.includes("formatter")
         const currentIsGdpr = name.includes("gdpr")
         const currentIsSms = name.includes("sms")
-        const currentIsWhatsApp = name.includes("what's app") || name.includes("whatsapp")
+        const currentIsWhatsApp = name.includes("recruiter") || name.includes("recruiter")
         const currentIsAwr = name.includes("awr")
         const currentIsSkillSearch = name.includes("skill") && name.includes("search")
+        const currentIsWhatsappCampaign = name.includes("campaign") && name.includes("whatsapp")
         const currentIsMessage = currentIsSms || currentIsWhatsApp
+
         const currentType = currentIsWhatsApp ? "AI_WHATSAPP" : (currentIsSms ? "AI_SMS" : null)
 
         if (currentIsAwr) {
@@ -365,7 +422,32 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           } catch (err) {
             // No config yet
           }
+        } else if (currentIsWhatsappCampaign) {
+          try {
+            // Fetch initial contacts
+            // Note: The prompt says "when select 'selected' from 'Contact filter type' drop down select field then show 'Selected contact ids' multi drop down select field & option show in 'Selected contact ids' multi drop down select field from get api"
+            // But we might want to pre-fetch if we are in update mode and contacts are already selected.
+            // For now, we will fetch contacts when the component mounts if it is a campaign app, or lazily when needed.
+            // Let's fetch basic contacts here.
+            axios.get<Contact[]>(`${BASE_URL}/campaign/whatsapp/list/contacts`, { headers }).then(res => {
+              setContacts(res.data)
+            }).catch(e => console.error("Error fetching contacts", e))
+
+            // Usually we would fetch current config details here, but the prompt implies we are building the form. 
+            // If there's a GET endpoint for config details, we should use it. 
+            // The prompt says "post data in post api", but also implied "when click Configure button ... then show ... field". 
+            // It doesn't explicitly mention fetching existing config for campaign, but standard practice is to try.
+            // I will assume standard pattern applies if endpoint exists, otherwise just default state.
+            // Given the prompt instruction "when input data from all input field then click Save... then post data", 
+            // and the fact it's a "campagin", it might be a one-off create action? 
+            // However, this page is "configure-page", which implies persistent configuration.
+            // I'll skip fetching config details for now as strictly not requested, but I'll set defaults.
+
+          } catch (err) {
+            console.error(err)
+          }
         } else if (currentIsMessage && currentType) {
+
           try {
             const configRes = await axios.get(`${BASE_URL}/interview/message/config/details`, {
               headers,
@@ -524,13 +606,51 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
     if (logoInputRef.current) logoInputRef.current.value = ""
   }
 
+  // --- Campaign Handlers ---
+  const handleAddContentVariable = () => {
+    setContentVariables([...contentVariables, { serial: "", value: "" }])
+  }
+
+  const handleContentVariableChange = (index: number, field: keyof ContentVariable, val: string) => {
+    const newVars = [...contentVariables]
+    newVars[index][field] = val
+    setContentVariables(newVars)
+  }
+
+  const fetchContacts = async (searchTerm: string = "") => {
+    try {
+      const authToken = getCookie("authToken")
+      const params = searchTerm ? { name: searchTerm } : {}
+      const res = await axios.get<Contact[]>(`${BASE_URL}/campaign/whatsapp/list/contacts`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+        params
+      })
+      setContacts(res.data)
+    } catch (err) {
+      console.error("Failed to fetch contacts", err)
+    }
+  }
+
+  useEffect(() => {
+    // Debounce search
+    const timer = setTimeout(() => {
+      if (isWhatsappCampaign && contactFilterType === "selected") {
+        fetchContacts(contactSearchTerm)
+      }
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [contactSearchTerm, isWhatsappCampaign, contactFilterType])
+
+
+
 
   // Final Save/Update Handler
   const handleSaveConfiguration = async () => {
     setError("")
 
-    if (!isCvFormatter && !isGdpr && !isAwr && !isSkillSearch) {
+    if (!isCvFormatter && !isGdpr && !isAwr && !isSkillSearch && !isWhatsappCampaign) {
       // Validation for Interview/Message apps
+
       const selectedStatuses = [applicationStatus, unsuccessfulStatus, successfulStatus, placedStatus].filter(Boolean)
       const uniqueStatuses = new Set(selectedStatuses)
       if (selectedStatuses.length !== uniqueStatuses.size) {
@@ -625,6 +745,24 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
             headers: { Authorization: `Bearer ${authToken}` }
           })
         }
+
+      } else if (isWhatsappCampaign) {
+        const payload = {
+          platform_uid: platformUid,
+          campaign_title: campaignTitle,
+          twilio_content_sid: twilioContentSid,
+          content_variables: contentVariables,
+          contact_filter_type: contactFilterType,
+          selected_contact_ids: selectedContactIds,
+          schedule_type: scheduleType,
+          chatbot_template: chatbotTemplate,
+          from_phone_number: waFromPhoneNumber,
+          scheduled_at: scheduledAt
+        }
+
+        response = await axios.post(`${BASE_URL}/campaign/whatsapp/config/`, payload, {
+          headers: { Authorization: `Bearer ${authToken}` }
+        })
 
       } else if (isCvFormatter) {
         // CV Formatter Save Logic (FormData)
@@ -929,8 +1067,182 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                 </>
               )}
 
+              {/* WhatsApp Campaign Specific Fields */}
+              {isWhatsappCampaign && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Campaign Title</Label>
+                    <Input value={campaignTitle} onChange={(e) => setCampaignTitle(e.target.value)} placeholder="Type title" className="bg-background" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Twilio Content Sid</Label>
+                    <Input value={twilioContentSid} onChange={(e) => setTwilioContentSid(e.target.value)} placeholder="Type SID" className="bg-background" />
+                  </div>
+
+                  {/* Content Variables */}
+                  <div className="space-y-2 border rounded-md p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label>Content variables</Label>
+                      <Button variant="outline" size="sm" onClick={handleAddContentVariable} className="gap-1 bg-primary hover:bg-primary/90 cursor-pointer dark:border-white"><Plus className="h-4 w-4" /> Add</Button>
+                    </div>
+                    <div className="space-y-3">
+                      {contentVariables.map((v, idx) => (
+                        <div key={idx} className="flex gap-2 items-end">
+                          <div className="space-y-1 flex-1">
+                            <Label className="text-xs text-muted-foreground">Serial</Label>
+                            <Select value={v.serial} onValueChange={(val) => handleContentVariableChange(idx, 'serial', val)}>
+                              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                              <SelectContent>
+                                {SERIAL_OPTIONS.map(opt => (
+                                  <SelectItem key={opt.value} value={opt.label}>{opt.label}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1 flex-[2]">
+                            <Label className="text-xs text-muted-foreground">Value</Label>
+                            <Input value={v.value} onChange={(e) => handleContentVariableChange(idx, 'value', e.target.value)} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Contact filter type</Label>
+                    <Select value={contactFilterType} onValueChange={handleSelectChange(setContactFilterType)}>
+                      <SelectTrigger><SelectValue placeholder="Select filter type" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                        <SelectItem value="selected">selected</SelectItem>
+                        <SelectItem value="all">all</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {contactFilterType === "selected" && (
+                    <div className="space-y-2" ref={contactDropdownRef}>
+                      <Label>Selected contact ids</Label>
+                      {/* Display Selected Tags (Click to open) */}
+                      <div
+                        className="flex flex-wrap gap-2 mb-2 bg-background border p-2 rounded-md min-h-[40px] cursor-pointer"
+                        onClick={() => setIsContactDropdownOpen(true)}
+                      >
+                        {selectedContactIds.length === 0 && (
+                          <span className="text-muted-foreground text-sm my-auto pl-1">Select contacts...</span>
+                        )}
+                        {selectedContactIds.map(id => {
+                          const contact = contacts.find(c => c.id === id)
+
+                          let label = String(id)
+                          if (contact) {
+                            const nameParts = [contact.first_name, contact.last_name].filter(n => n && n.trim())
+                            const finalNameStr = nameParts.length > 0 ? `(${nameParts.join(" ")})` : ""
+                            label = contact.phone ? `${contact.phone} ${finalNameStr}`.trim() : (finalNameStr || "Not found")
+                          }
+
+                          return (
+                            <div key={id} className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs flex items-center gap-1 border border-primary/20">
+                              <span>{label}</span>
+                              <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={(e) => {
+                                e.stopPropagation() // Prevent reopening if clicking close
+                                setSelectedContactIds(prev => prev.filter(pid => pid !== id))
+                              }} />
+                            </div>
+                          )
+                        })}
+                      </div>
+
+                      {/* Searchable Dropdown area - Conditional Render */}
+                      {isContactDropdownOpen && (
+                        <div className="relative">
+                          <div className="relative">
+                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              placeholder="Search contacts..."
+                              className="pl-8 bg-background"
+                              value={contactSearchTerm}
+                              onChange={(e) => setContactSearchTerm(e.target.value)}
+                              autoFocus
+                            />
+                          </div>
+                          <div className="max-h-[200px] overflow-y-auto border rounded-md mt-1 bg-background shadow-md absolute w-full z-10">
+                            {contacts.length === 0 ? (
+                              <div className="p-2 text-sm text-muted-foreground text-center">No contacts found</div>
+                            ) : (
+                              contacts.map(contact => {
+                                const isSelected = selectedContactIds.includes(contact.id)
+
+                                const nameParts = [contact.first_name, contact.last_name].filter(n => n && n.trim())
+                                const finalNameStr = nameParts.length > 0 ? `(${nameParts.join(" ")})` : ""
+
+                                const displayText = contact.phone ? `${contact.phone} ${finalNameStr}`.trim() : (finalNameStr || "Not found")
+
+                                return (
+                                  <div
+                                    key={contact.id}
+                                    className={`p-2 text-sm cursor-pointer hover:bg-muted flex items-center justify-between ${isSelected ? "bg-muted/50" : ""}`}
+                                    onClick={() => {
+                                      if (!isSelected) {
+                                        setSelectedContactIds([...selectedContactIds, contact.id])
+                                      } else {
+                                        setSelectedContactIds(selectedContactIds.filter(id => id !== contact.id))
+                                      }
+                                    }}
+                                  >
+                                    <span>{displayText}</span>
+                                    <div className="text-xs text-muted-foreground">{contact.first_name || ""} {contact.last_name || ""}</div>
+                                    {isSelected && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                                  </div>
+                                )
+                              })
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label>Schedule type</Label>
+                    <Select value={scheduleType} onValueChange={handleSelectChange(setScheduleType)}>
+                      <SelectTrigger><SelectValue placeholder="Select schedule type" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                        <SelectItem value="now">now</SelectItem>
+                        <SelectItem value="scheduled">scheduled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {scheduleType === "scheduled" && (
+                    <div className="space-y-2">
+                      <Label>Scheduled at</Label>
+                      <Input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} className="bg-background" />
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label>Chatbot template</Label>
+                    <Select value={chatbotTemplate} onValueChange={handleSelectChange(setChatbotTemplate)}>
+                      <SelectTrigger><SelectValue placeholder="Select template" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_CLEAR_" className="text-muted-foreground font-medium">Remove Selection</SelectItem>
+                        <SelectItem value="ai_call">ai_call</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>From Phone Number</Label>
+                    <Input value={waFromPhoneNumber} onChange={(e) => setWaFromPhoneNumber(e.target.value)} placeholder="Type phone number" className="bg-background" />
+                  </div>
+                </>
+              )}
+
               {/* Phone Number (Hide for CV Formatter & GDPR & AWR & Skill Search) */}
-              {!isCvFormatter && !isGdpr && !isAwr && !isSkillSearch && (
+              {!isCvFormatter && !isGdpr && !isAwr && !isSkillSearch && !isWhatsappCampaign && (
+
                 <div className="space-y-2">
                   <Label>Select Phone Number</Label>
                   <Select value={phoneNumberUid} onValueChange={handleSelectChange(setPhoneNumberUid)}>
@@ -1167,7 +1479,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
               )}
 
               {/* Existing Interview Fields (Calls, Voice ID) - Hide if CV Formatter or Message or GDPR or Skill Search */}
-              {!isCvFormatter && !isMessage && !isGdpr && !isAwr && !isSkillSearch && (
+              {!isCvFormatter && !isMessage && !isGdpr && !isAwr && !isSkillSearch && !isWhatsappCampaign && (
                 <>
                   <div className="space-y-2">
                     <Label>ElevenLabs Voice ID (Optional)</Label>
@@ -1188,7 +1500,8 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
           {/* Automation Logic Card - Hide for CV Formatter & GDPR */}
           {/* Interview Questions - Moved to Left Column */}
-          {!isCvFormatter && !isGdpr && !isAwr && !isSkillSearch && (
+          {!isCvFormatter && !isGdpr && !isAwr && !isSkillSearch && !isWhatsappCampaign && (
+
             <Card className="p-6 h-fit">
               <h2 className="text-xl font-semibold text-foreground mb-4">Interview Questions</h2>
               <p className="text-sm text-muted-foreground mb-4">
@@ -1287,7 +1600,11 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         ) : isSkillSearch ? (
           // Skill Search - Empty Right Column
           null
+        ) : isWhatsappCampaign ? (
+          // Campaign - Empty Right Column
+          null
         ) : (
+
           /* Automation Logic - Moved to Right Column */
           <Card className="p-6">
             <h2 className="text-xl font-semibold text-foreground mb-4">Automation Logic</h2>
@@ -1373,7 +1690,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           disabled={isSaving}
           className="bg-primary hover:bg-primary/90 min-w-[200px] cursor-pointer dark:border-white"
         >
-          {isSaving ? (isUpdateMode ? "Updating..." : "Saving...") : (isUpdateMode ? "Update Configure" : "Save Configure")}
+          {isSaving ? (isUpdateMode ? "Updating..." : "Saving...") : (isWhatsappCampaign ? "Create" : (isUpdateMode ? "Update Configure" : "Save Configure"))}
         </Button>
       </div>
 

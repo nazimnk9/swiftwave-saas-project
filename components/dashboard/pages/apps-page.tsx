@@ -36,7 +36,7 @@ interface AppFeatureResponse {
 // Configuration for static assets (images, buttons) mapped by keywords in the app name
 const APP_ASSET_CONFIG = [
   {
-    keywords: ["whatsapp", "what's app"],
+    keywords: ["recruiter"],
     id: "ai-what's-app-recruiter", // ID used for modal content lookup
     logoJobAdder: "/images/JobAdder.jpg",
     logoBullhorn: "/images/Bullhornconnector.jpg",
@@ -89,6 +89,14 @@ const APP_ASSET_CONFIG = [
     logoJobAdder: "/images/JobAdder.jpg",
     logoBullhorn: "/images/Bullhornconnector.jpg",
     buttons: ["Purchase", "Configure", "Report"],
+    hasMore: true,
+  },
+  {
+    keywords: ["campaign"],
+    id: "whatsapp-campaign",
+    logoJobAdder: "/images/JobAdder.jpg",
+    logoBullhorn: "/images/Bullhornconnector.jpg",
+    buttons: ["Purchase", "Create Campaign", "Campaign List"],
     hasMore: true,
   },
 ]
@@ -337,9 +345,9 @@ export default function AppsPage() {
                         onClick={() => {
                           if (buttonLabel === "Purchase") {
                             handlePurchaseClick(feature)
-                          } else if (buttonLabel === "Configure") {
+                          } else if (buttonLabel === "Configure" || buttonLabel === "Create Campaign") {
                             handleConfigureClick(feature)
-                          } else if (buttonLabel === "Report") {
+                          } else if (buttonLabel === "Report" || buttonLabel === "Campaign List") {
                             handleReportClick(feature)
                           }
                         }}

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { X, ArrowLeft, FileText } from "lucide-react"
+import { X, ArrowLeft, FileText, Trash2, Eye } from "lucide-react"
 import axios from "axios"
 import { BASE_URL } from "@/lib/baseUrl"
 import { LoaderOverlay } from "@/components/auth/loader-overlay"
@@ -16,9 +16,11 @@ import { useToastNotification } from "@/components/auth/toast-provider"
 
 // Interfaces based on user provided JSON structure
 interface ChatMessage {
-    role: string
-    content: string
-    timestamp: string
+    sender?: string
+    role?: string
+    message?: string
+    content?: string
+    timestamp?: string
 }
 
 interface InterviewData {
@@ -44,17 +46,29 @@ interface InterviewData {
     type?: string
 }
 
-interface ReportItem {
+// WhatsApp Campaign Types
+interface WhatsAppCampaign {
     id: number
-    interview_data?: InterviewData
-    uid?: string
-    candidate_name?: string
-    candidate_email?: string
-    candidate_phone?: string
-    conversation_json?: any[]
+    uid: string
+    campaign_title: string
+    created_at: string
     status: string
-    ai_decision: string
-    updated_at: string
+    schedule_type: string
+    scheduled_at: string | null
+    total_contacts: number
+    messages_sent: number
+}
+
+interface WhatsAppCampaignReport {
+    id: number
+    uid: string
+    created_at: string
+    contact_name: string
+    contact_email: string
+    contact_phone: string
+    message_status: string
+    conversation_json: ChatMessage[]
+    ai_decision?: string
 }
 
 // Internal normalized interface for display
@@ -84,6 +98,7 @@ interface DisplayReportItem {
     match_source?: string
     application_id?: number | null
     application_created?: boolean
+    // Campaign Extra Fields - we will use a separate state given structure differnce, but can fallback
 }
 
 interface ReportResponse {
@@ -113,10 +128,19 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
     const [isRecallModalOpen, setIsRecallModalOpen] = useState(false)
     const [recallLimit, setRecallLimit] = useState("5")
     const [isRecalling, setIsRecalling] = useState(false)
+
+    // Main Reports State
     const [reports, setReports] = useState<DisplayReportItem[]>([])
+
+    // Campaign Specific State
+    const [campaigns, setCampaigns] = useState<WhatsAppCampaign[]>([])
+    const [campaignReports, setCampaignReports] = useState<WhatsAppCampaignReport[]>([])
+    const [isCampaignReportModalOpen, setIsCampaignReportModalOpen] = useState(false)
+    const [campaignToDelete, setCampaignToDelete] = useState<WhatsAppCampaign | null>(null)
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+
     const [loading, setLoading] = useState(true)
     const [featureName, setFeatureName] = useState("Reports")
-    const [loadingFeature, setLoadingFeature] = useState(true)
     const [selectedInterview, setSelectedInterview] = useState<DisplayReportItem | null>(null)
     const router = useRouter()
 
@@ -124,10 +148,25 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
     const isCvFormatter = nameLower.includes("cv") && nameLower.includes("formatter")
     const isGdpr = nameLower.includes("gdpr")
     const isSms = nameLower.includes("sms")
-    const isWhatsApp = nameLower.includes("what's app") || nameLower.includes("whatsapp")
+    const isWhatsApp = nameLower.includes("recruiter") || nameLower.includes("recruiter")
     const isAwr = nameLower.includes("awr") && (nameLower.includes("complience") || nameLower.includes("compliance"))
     const isSkillSearch = nameLower.includes("skill") && nameLower.includes("search")
+    const isWhatsappCampaign = nameLower.includes("campaign") && nameLower.includes("whatsapp")
     const isMessage = isSms || isWhatsApp
+
+    const fetchCampaigns = async () => {
+        try {
+            setLoading(true)
+            const authToken = getCookie("authToken")
+            const headers = { Authorization: `Bearer ${authToken}` }
+            const res = await axios.get<ReportResponse>(`${BASE_URL}/campaign/whatsapp/config/`, { headers })
+            setCampaigns(res.data.results)
+        } catch (error) {
+            console.error("Error fetching campaigns:", error)
+        } finally {
+            setLoading(false)
+        }
+    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -149,6 +188,14 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                 }
 
                 const name = currentFeatureName.toLowerCase()
+
+                if (name.includes("campaign") && name.includes("whatsapp")) {
+                    // Campaign Fetch Logic
+                    const res = await axios.get<ReportResponse>(`${BASE_URL}/campaign/whatsapp/config/`, { headers })
+                    setCampaigns(res.data.results)
+                    setLoading(false)
+                    return // Exit early as structure is different
+                }
 
                 if (name.includes("cv") && name.includes("formatter")) {
                     // CV Formatter Report Fetch
@@ -245,8 +292,8 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                     }))
                     setReports(normalized)
 
-                } else if (name.includes("sms") || (name.includes("what's app") || name.includes("whatsapp"))) {
-                    const isWA = name.includes("what's app") || name.includes("whatsapp")
+                } else if (name.includes("sms") || (name.includes("recruiter") || name.includes("recruiter"))) {
+                    const isWA = name.includes("recruiter") || name.includes("recruiter")
                     const typeParam = isWA ? "AI_WHATSAPP" : "AI_SMS"
 
                     const reportsRes = await axios.get<ReportResponse>(`${BASE_URL}/interview/message/report`, {
@@ -298,7 +345,6 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                 console.error("Error fetching data:", error)
             } finally {
                 setLoading(false)
-                setLoadingFeature(false)
             }
         }
 
@@ -374,19 +420,83 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
         }
     }
 
+    // --- WhatsApp Campaign Handlers ---
+    const handleDeleteClick = (campaign: WhatsAppCampaign) => {
+        setCampaignToDelete(campaign)
+        setIsDeleteModalOpen(true)
+    }
+
+    const confirmDelete = async () => {
+        if (!campaignToDelete) return
+
+        try {
+            setIsRecalling(true) // Reusing loading state spinner
+            const authToken = getCookie("authToken")
+            await axios.delete(`${BASE_URL}/campaign/whatsapp/config/${campaignToDelete.uid}`, {
+                headers: { Authorization: `Bearer ${authToken}` }
+            })
+
+            toast({ title: "Success", description: "Campaign deleted successfully." })
+            setCampaigns(campaigns.filter(c => c.uid !== campaignToDelete.uid))
+            setIsDeleteModalOpen(false)
+        } catch (err) {
+            console.error("Delete failed", err)
+            toast({ variant: "destructive", title: "Error", description: "Failed to delete campaign" })
+        } finally {
+            setIsRecalling(false)
+        }
+    }
+
+    const handleViewCampaignReport = async (campaign: WhatsAppCampaign) => {
+        try {
+            setLoading(true)
+            const authToken = getCookie("authToken")
+            const res = await axios.get<ReportResponse>(`${BASE_URL}/campaign/whatsapp/reports/${campaign.uid}`, {
+                headers: { Authorization: `Bearer ${authToken}` }
+            })
+
+            // Normalize
+            const reports = res.data.results.map((r: any) => ({
+                id: r.id,
+                uid: r.uid,
+                created_at: r.created_at,
+                contact_name: r.contact_name,
+                contact_email: r.contact_email,
+                contact_phone: r.contact_phone,
+                message_status: r.message_status,
+                // Handle sender 'ai' -> 'assistant', etc if needed, but simple map is fine
+                conversation_json: r.conversation_json || [],
+                ai_decision: r.ai_conversation_outcome
+            }))
+
+            setCampaignReports(reports)
+            setIsCampaignReportModalOpen(true)
+        } catch (err) {
+            console.error("Fetch campaign report failed", err)
+            toast({ variant: "destructive", title: "Error", description: "Failed to load campaign reports" })
+        } finally {
+            setLoading(false)
+        }
+    }
+
     return (
         <div className="min-h-screen bg-background p-8">
-            <LoaderOverlay isLoading={loading || isRecalling} message={isRecalling ? "Processing recall..." : "Loading reports..."} />
+            <LoaderOverlay isLoading={loading || isRecalling} message={isRecalling ? "Processing..." : "Loading records..."} />
             {/* Header */}
             <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground mb-2">Report - {featureName}</h1>
+                    <h1 className="text-3xl font-bold text-foreground mb-2">
+                        {isWhatsappCampaign ? "Campaign List" : `Report - ${featureName}`}
+                    </h1>
                     <p className="text-muted-foreground">
-                        View {isCvFormatter ? "formatted CVs" : "automation interview records"} for the {featureName}.
+                        {isWhatsappCampaign
+                            ? "Manage your WhatsApp campaigns."
+                            : `View ${isCvFormatter ? "formatted CVs" : "automation interview records"} for the ${featureName}.`
+                        }
                     </p>
                 </div>
                 {/* Retry Call Interview Button (Only for Call Interview) */}
-                {!isCvFormatter && !isGdpr && !isAwr && !isSkillSearch && !isMessage && (
+                {!isCvFormatter && !isGdpr && !isAwr && !isSkillSearch && !isMessage && !isWhatsappCampaign && (
                     <Button
                         onClick={() => setIsRecallModalOpen(true)}
                         className="bg-primary hover:bg-primary/90 cursor-pointer"
@@ -401,7 +511,15 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-muted/50">
-                            {isCvFormatter ? (
+                            {isWhatsappCampaign ? (
+                                <>
+                                    <TableHead className="font-semibold text-foreground">Campaign Title</TableHead>
+                                    <TableHead className="font-semibold text-foreground">Status</TableHead>
+                                    <TableHead className="font-semibold text-foreground">Schedule Type</TableHead>
+                                    <TableHead className="font-semibold text-foreground">Created At</TableHead>
+                                    <TableHead className="font-semibold text-foreground">Action</TableHead>
+                                </>
+                            ) : isCvFormatter ? (
                                 <>
                                     <TableHead className="font-semibold text-foreground">Attachment ID</TableHead>
                                     <TableHead className="font-semibold text-foreground">Candidate ID</TableHead>
@@ -449,12 +567,27 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={isCvFormatter || isGdpr ? 4 : (isAwr ? 2 : (isSkillSearch ? 6 : 10))} className="text-center h-24">Loading records...</TableCell>
+                                <TableCell colSpan={10} className="text-center h-24">Loading records...</TableCell>
                             </TableRow>
-                        ) : reports.length === 0 ? (
+                        ) : (isWhatsappCampaign ? campaigns.length === 0 : reports.length === 0) ? (
                             <TableRow>
-                                <TableCell colSpan={isCvFormatter || isGdpr ? 4 : (isAwr ? 2 : (isSkillSearch ? 6 : 10))} className="text-center h-24">No records found.</TableCell>
+                                <TableCell colSpan={10} className="text-center h-24">No records found.</TableCell>
                             </TableRow>
+                        ) : isWhatsappCampaign ? (
+                            campaigns.map((row) => (
+                                <TableRow key={row.id} className="hover:bg-muted/30">
+                                    <TableCell>{row.campaign_title}</TableCell>
+                                    <TableCell>{row.status}</TableCell>
+                                    <TableCell>{row.schedule_type}</TableCell>
+                                    <TableCell>{formatDate(row.created_at)}</TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <Button size="sm" variant="destructive" onClick={() => handleDeleteClick(row)} className="cursor-pointer">Delete</Button>
+                                            <Button size="sm" variant="outline" onClick={() => handleViewCampaignReport(row)} className="cursor-pointer">Report</Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))
                         ) : (
                             reports.map((row) => (
                                 <TableRow key={row.id} className="hover:bg-muted/30">
@@ -595,14 +728,14 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                             <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                                 {selectedInterview?.conversation_json && selectedInterview.conversation_json.length > 0 ? (
                                     selectedInterview.conversation_json.map((msg, idx) => (
-                                        <div key={idx} className={`flex ${msg.role === "assistant" ? "justify-start" : "justify-end"}`}>
+                                        <div key={idx} className={`flex ${msg.role === "assistant" || msg.sender === "ai" ? "justify-start" : "justify-end"}`}>
                                             <div
-                                                className={`max-w-[80%] p-3 rounded-xl text-sm leading-relaxed shadow-sm ${msg.role === "assistant"
+                                                className={`max-w-[80%] p-3 rounded-xl text-sm leading-relaxed shadow-sm ${msg.role === "assistant" || msg.sender === "ai"
                                                     ? "bg-[#ebf0f5] text-foreground rounded-tl-none border border-slate-200"
                                                     : "bg-[#5fa0d6] text-white rounded-tr-none"
                                                     }`}
                                             >
-                                                {msg.content}
+                                                {msg.content || msg.message}
                                             </div>
                                         </div>
                                     ))
@@ -662,6 +795,74 @@ export default function ReportPage({ featureUid }: ReportPageProps) {
                                 {isRecalling ? "Processing..." : "Recall"}
                             </Button>
                         </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Modal */}
+            <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+                <DialogContent className="max-w-sm">
+                    <div className="flex items-center justify-between mb-2">
+                        <h2 className="text-xl font-semibold">Delete</h2>
+                        <button onClick={() => setIsDeleteModalOpen(false)}><X className="h-5 w-5" /></button>
+                    </div>
+                    <p className="text-muted-foreground mb-6">Are you sure you want to delete this campaign? This action cannot be undone.</p>
+                    <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Campaign Report Modal */}
+            <Dialog open={isCampaignReportModalOpen} onOpenChange={setIsCampaignReportModalOpen}>
+                <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col p-0">
+                    <div className="flex items-center justify-between p-4 border-b">
+                        <h2 className="text-xl font-semibold">Campaign Reports</h2>
+                        <button onClick={() => setIsCampaignReportModalOpen(false)}><X className="h-5 w-5" /></button>
+                    </div>
+
+                    <div className="p-4 overflow-y-auto flex-1 bg-muted/10">
+                        {campaignReports.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
+                                <p>No reports found for this campaign.</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                {campaignReports.map(r => (
+                                    <div key={r.id} className="bg-card border rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-200">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div className="flex flex-col">
+                                                <span className="font-semibold text-lg text-foreground">{r.contact_name}</span>
+                                                <span className="text-sm text-muted-foreground">{r.contact_email}</span>
+                                                <span className="text-xs text-muted-foreground mt-0.5">{r.contact_phone}</span>
+                                            </div>
+                                            <div className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize border ${r.message_status.toLowerCase() === 'sent' || r.message_status.toLowerCase() === 'delivered'
+                                                    ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800'
+                                                    : r.message_status.toLowerCase() === 'failed'
+                                                        ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800'
+                                                        : 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700'
+                                                }`}>
+                                                {r.message_status}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col gap-2 mt-4 pt-3 border-t">
+                                            {r.ai_decision && (
+                                                <div className="flex justify-between items-center text-sm">
+                                                    <span className="text-muted-foreground">AI Outcome:</span>
+                                                    <span className="font-medium text-foreground">{r.ai_decision}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="text-muted-foreground">Created:</span>
+                                                <span className="text-foreground">{formatDate(r.created_at)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </DialogContent>
             </Dialog>
