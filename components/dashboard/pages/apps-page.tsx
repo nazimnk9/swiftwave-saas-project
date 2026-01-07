@@ -180,6 +180,32 @@ const appDetails = {
       "Finally your AWR Compliance Assistant app is live!",
     ],
   },
+  "candidate-skill-search": {
+    title: "AI Candidate Skill Search",
+    about: [
+      "This app can automate recruitment process on JobAdder.",
+      "This App will check new live job applications, place a phone call to the applicant's phone or mobile number to start questionnaires by having automated call conversations. The interview questions will be build based on the job post details.",
+      "You will choose common mandatory questions which will be asked in every interview at first. Answers to these questions must be positive to continue the interview.",
+    ],
+    setup: [
+      "Purchase a phone number from our platform or choose a phone number from the purchased phone number list.",
+      "Configure to edit the settings of this App automation.",
+      "Finally your AWR Compliance Assistant app is live!",
+    ],
+  },
+  "whatsapp-campaign": {
+    title: "WhatsApp Campaign",
+    about: [
+      "This app can automate recruitment process on JobAdder.",
+      "This App will check new live job applications, place a phone call to the applicant's phone or mobile number to start questionnaires by having automated call conversations. The interview questions will be build based on the job post details.",
+      "You will choose common mandatory questions which will be asked in every interview at first. Answers to these questions must be positive to continue the interview.",
+    ],
+    setup: [
+      "Purchase a phone number from our platform or choose a phone number from the purchased phone number list.",
+      "Configure to edit the settings of this App automation.",
+      "Finally your AWR Compliance Assistant app is live!",
+    ],
+  },
 }
 
 export default function AppsPage() {
