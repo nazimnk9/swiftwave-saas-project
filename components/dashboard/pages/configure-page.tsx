@@ -82,6 +82,7 @@ interface CandidateStatus {
 interface ContentVariable {
   serial: string
   value: string
+  value_type?: string
 }
 
 interface Contact {
@@ -608,12 +609,13 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
 
   // --- Campaign Handlers ---
   const handleAddContentVariable = () => {
-    setContentVariables([...contentVariables, { serial: "", value: "" }])
+    setContentVariables([...contentVariables, { serial: "", value: "", value_type: "Custom Text" }])
   }
 
   const handleContentVariableChange = (index: number, field: keyof ContentVariable, val: string) => {
     const newVars = [...contentVariables]
-    newVars[index][field] = val
+    // @ts-ignore
+    newVars[index] = { ...newVars[index], [field]: val }
     setContentVariables(newVars)
   }
 
@@ -751,7 +753,10 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           platform_uid: platformUid,
           campaign_title: campaignTitle,
           twilio_content_sid: twilioContentSid,
-          content_variables: contentVariables,
+          content_variables: contentVariables.map(cv => ({
+            serial: cv.serial,
+            value: cv.value_type === "Client Name" ? "client_name" : cv.value
+          })),
           contact_filter_type: contactFilterType,
           selected_contact_ids: selectedContactIds,
           schedule_type: scheduleType,
@@ -1098,11 +1103,24 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                                 ))}
                               </SelectContent>
                             </Select>
+
+                            <div className="pt-2">
+                              <Label className="text-xs text-muted-foreground">Value Type</Label>
+                              <Select value={v.value_type || "Custom Text"} onValueChange={(val) => handleContentVariableChange(idx, 'value_type', val)}>
+                                <SelectTrigger><SelectValue placeholder="Select Type" /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Custom Text">Custom Text</SelectItem>
+                                  <SelectItem value="Client Name">Client Name</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
-                          <div className="space-y-1 flex-[2]">
-                            <Label className="text-xs text-muted-foreground">Value</Label>
-                            <Input value={v.value} onChange={(e) => handleContentVariableChange(idx, 'value', e.target.value)} />
-                          </div>
+                          {(v.value_type === "Custom Text" || !v.value_type) && (
+                            <div className="space-y-1 flex-[2]">
+                              <Label className="text-xs text-muted-foreground">Value</Label>
+                              <Input value={v.value} onChange={(e) => handleContentVariableChange(idx, 'value', e.target.value)} />
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
