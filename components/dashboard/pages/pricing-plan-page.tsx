@@ -33,6 +33,8 @@ interface PricingPlan {
   description: string
   price: string
   status: string
+  des_list: string[]
+  usage_fee_included: boolean
 }
 
 interface PricingPlanResponse {
@@ -235,19 +237,16 @@ export default function PricingPlanPage({ featureUid }: PricingPlanPageProps) {
                     </span>
                     <span className="text-[#6B7280] font-medium">/month</span>
                   </div>
-                  <p className="text-xs text-[#6B7280] mt-2 font-medium">+ usage fees</p>
+                  {!plan.usage_fee_included && (
+                    <p className="text-xs text-[#6B7280] mt-2 font-medium">+ Usage fee will have extra cost</p>
+                  )}
                   <div className="w-full h-[1px] bg-[#EEF1F5] mt-4" />
                 </div>
 
                 {/* Features */}
                 <div className="space-y-4 flex-1 mb-8">
-                  {/* Since API doesn't provide bullet points yet, we construct features from data or generic list */}
-                  {[
-                    plan.limit ? `${plan.limit} Interviews per month` : "Unlimited Interviews",
-                    "AI WhatsApp Recruiter",
-                    "Compliance Tools",
-                    "Dedicated Support"
-                  ].map((feature, idx, arr) => (
+                  {/* Features from API des_list */}
+                  {(plan.des_list || []).map((feature, idx, arr) => (
                     <div key={idx}>
                       <div className="flex items-start gap-3">
                         {/* Bullet */}
