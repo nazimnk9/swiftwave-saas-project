@@ -170,7 +170,7 @@ export default function PricingPlanPage({ featureUid }: PricingPlanPageProps) {
         </div>
 
         {/* Plans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {plans.map((plan) => {
             const isSelected = selectedPlanUid === plan.uid
 
@@ -283,6 +283,96 @@ export default function PricingPlanPage({ featureUid }: PricingPlanPageProps) {
               </div>
             )
           })}
+
+          {/* Static Enterprise Card */}
+          <div
+            onClick={() => handleSelectPlan("enterprise-plan")}
+            className={cn(
+              "relative rounded-2xl p-8 flex flex-col transition-all duration-300 cursor-pointer group bg-white",
+              "border",
+              selectedPlanUid === "enterprise-plan" ? "border-[rgba(46,168,255,0.55)]" : "border-[#E6E9EF] hover:border-[rgba(46,168,255,0.55)]",
+              selectedPlanUid === "enterprise-plan" ? "bg-gradient-to-b from-[#FFFFFF] to-[#EAF6FF]" : "bg-[#FFFFFF] hover:bg-gradient-to-b hover:from-[#FFFFFF] hover:to-[#EAF6FF]",
+              selectedPlanUid === "enterprise-plan"
+                ? "shadow-[0_0_0_6px_rgba(46,168,255,0.5),0_20px_40px_rgba(46,168,255,0.6),inset_0_0_60px_rgba(46,168,255,0.2)]"
+                : "shadow-[0_16px_25px_rgba(46,168,255,0.5)] hover:shadow-[0_0_0_6px_rgba(46,168,255,0.5),0_0_40px_rgba(46,168,255,0.6),inset_0_0_60px_rgba(46,168,255,0.2)]",
+              "h-full"
+            )}
+          >
+            {/* Floor Reflection */}
+            <div className={cn(
+              "absolute -bottom-16 inset-x-0 mx-auto w-[120%] -translate-x-[10%] h-24 z-[-1] transition-all duration-500",
+              "bg-[radial-gradient(ellipse_at_center,_rgba(120,200,255,0.7)_0%,_rgba(46,168,255,0.3)_30%,_rgba(46,168,255,0)_70%)] blur-2xl",
+              selectedPlanUid === "enterprise-plan" ? "opacity-100 scale-100" : "opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100"
+            )} />
+
+            {/* Blue Top Accent */}
+            <div className={cn(
+              "absolute top-0 inset-x-0 h-5.5 rounded-t-2xl z-10 transition-all duration-300",
+              "bg-gradient-to-r from-[#2EA8FF] via-[#80D0FF] to-[#2EA8FF]",
+              "shadow-[0_2px_15px_rgba(46,168,255,0.5)]",
+              selectedPlanUid === "enterprise-plan" ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            )}>
+              <div className="absolute inset-x-0 top-[1px] h-[1px] bg-white/40 blur-[1px]" />
+            </div>
+
+            {/* Plan Content */}
+            <div className="mb-6 text-center">
+              <h3 className="text-2xl font-bold text-[#111827] mb-2">Enterprise</h3>
+            </div>
+
+            <div className="w-full h-[1px] bg-[#EEF1F5] mb-6" />
+
+            {/* Price */}
+            <div className="text-center mb-8">
+              <div className="flex items-baseline justify-center gap-1">
+                <span className={cn(
+                  "text-4xl font-bold transition-colors duration-300",
+                  selectedPlanUid === "enterprise-plan" ? "text-[#147BFF]" : "text-[#111827] group-hover:text-[#147BFF]"
+                )}>
+                  Custom Price
+                </span>
+              </div>
+              <div className="w-full h-[1px] bg-[#EEF1F5] mt-4" />
+            </div>
+
+            {/* Features */}
+            {/* <div className="space-y-4 flex-1 mb-8">
+              {[
+                "Custom Volume",
+                "Dedicated Infrastructure",
+                "SLA Support",
+                "Priority Assistance"
+              ].map((feature, idx, arr) => (
+                <div key={idx}>
+                  <div className="flex items-start gap-3">
+                    <div className={cn(
+                      "mt-1 w-2 h-2 rounded-full flex-shrink-0 transition-colors duration-300",
+                      "bg-[#2EA8FF]"
+                    )} />
+                    <span className="text-[#4B5563] text-sm">{feature}</span>
+                  </div>
+                  {idx < arr.length - 1 && (
+                    <div className="w-full h-[1px] bg-[#EEF1F5] mt-4" />
+                  )}
+                </div>
+              ))}
+            </div> */}
+
+            {/* CTA Button */}
+            <Button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleSelectPlan("enterprise-plan")
+              }}
+              className={cn(
+                "w-full py-6 text-base font-semibold shadow-none transition-all duration-200 mt-auto",
+                selectedPlanUid === "enterprise-plan" ? "bg-[#147BFF] text-white hover:bg-[#147BFF]/90" : "bg-[#111827] text-white hover:bg-[#0B1220]",
+                selectedPlanUid === "enterprise-plan" && "ring-2 ring-[rgba(46,168,255,0.75)] ring-offset-2"
+              )}
+            >
+              Contact Us
+            </Button>
+          </div>
         </div>
 
         {/* Bottom Back Button */}
