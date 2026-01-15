@@ -749,7 +749,7 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
         }
 
       } else if (isWhatsappCampaign) {
-        const payload = {
+        const payload: any = {
           platform_uid: platformUid,
           campaign_title: campaignTitle,
           twilio_content_sid: twilioContentSid,
@@ -762,7 +762,10 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
           schedule_type: scheduleType,
           chatbot_template: chatbotTemplate,
           from_phone_number: waFromPhoneNumber,
-          scheduled_at: scheduledAt
+        }
+
+        if (scheduleType === "scheduled") {
+          payload.scheduled_at = scheduledAt
         }
 
         response = await axios.post(`${BASE_URL}/campaign/whatsapp/config/`, payload, {
@@ -1103,18 +1106,19 @@ export default function ConfigurePage({ featureUid }: ConfigurePageProps) {
                                 ))}
                               </SelectContent>
                             </Select>
-
-                            <div className="pt-2">
-                              <Label className="text-xs text-muted-foreground">Value Type</Label>
-                              <Select value={v.value_type || "Custom Text"} onValueChange={(val) => handleContentVariableChange(idx, 'value_type', val)}>
-                                <SelectTrigger><SelectValue placeholder="Select Type" /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Custom Text">Custom Text</SelectItem>
-                                  <SelectItem value="Client Name">Client Name</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
                           </div>
+
+                          <div className="space-y-1 flex-1">
+                            <Label className="text-xs text-muted-foreground">Value Type</Label>
+                            <Select value={v.value_type || "Custom Text"} onValueChange={(val) => handleContentVariableChange(idx, 'value_type', val)}>
+                              <SelectTrigger><SelectValue placeholder="Select Type" /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Custom Text">Custom Text</SelectItem>
+                                <SelectItem value="Client Name">Client Name</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
                           {(v.value_type === "Custom Text" || !v.value_type) && (
                             <div className="space-y-1 flex-[2]">
                               <Label className="text-xs text-muted-foreground">Value</Label>
