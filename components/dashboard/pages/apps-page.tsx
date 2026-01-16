@@ -33,10 +33,26 @@ interface AppFeatureResponse {
   results: AppFeature[]
 }
 
+interface Category {
+  id: number
+  uid: string
+  created_at: string
+  updated_at: string
+  name: string
+  description: string | null
+}
+
+interface CategoryResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: Category[]
+}
+
 // Configuration for static assets (images, buttons) mapped by keywords in the app name
 const APP_ASSET_CONFIG = [
   {
-    keywords: ["recruiter"],
+    keywords: ["recruiter", "sales"],
     id: "ai-what's-app-recruiter", // ID used for modal content lookup
     logoJobAdder: "/images/JobAdder.jpg",
     logoBullhorn: "/images/Bullhornconnector.jpg",
@@ -68,7 +84,7 @@ const APP_ASSET_CONFIG = [
     hasMore: true,
   },
   {
-    keywords: ["gdpr"],
+    keywords: ["gdpr", "compliance"],
     id: "gdpr-compliance",
     logoJobAdder: "/images/JobAdder.jpg",
     logoBullhorn: "/images/Bullhornconnector.jpg",
@@ -84,7 +100,7 @@ const APP_ASSET_CONFIG = [
     hasMore: true,
   },
   {
-    keywords: ["skill", "search"],
+    keywords: ["skill", "search", "candidate"],
     id: "candidate-skill-search",
     logoJobAdder: "/images/JobAdder.jpg",
     logoBullhorn: "/images/Bullhornconnector.jpg",
@@ -215,19 +231,53 @@ export default function AppsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
   const [skeletonCount, setSkeletonCount] = useState(5)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
+  const [isCategoriesLoading, setIsCategoriesLoading] = useState(true)
 
   const router = useRouter()
 
   useEffect(() => {
-    fetchFeatures()
+    fetchCategories()
   }, [])
 
-  const fetchFeatures = async () => {
+  useEffect(() => {
+    if (selectedCategory) {
+      fetchFeatures(selectedCategory.id)
+    }
+  }, [selectedCategory])
+
+  const fetchCategories = async () => {
+    try {
+      setIsCategoriesLoading(true)
+      const authToken = getCookie("authToken")
+      const response = await axios.get<CategoryResponse>(`${BASE_URL}/subscription/category/`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      })
+      setCategories(response.data.results)
+      if (response.data.results.length > 0) {
+        setSelectedCategory(response.data.results[0])
+      }
+      setIsCategoriesLoading(false)
+    } catch (err) {
+      console.error("Error fetching categories:", err)
+      // setError("Failed to load categories") // Optional: handle category error separately or combine
+      setIsCategoriesLoading(false)
+    }
+  }
+
+  const fetchFeatures = async (categoryId?: number) => {
     try {
       setIsLoading(true)
       const authToken = getCookie("authToken")
 
-      const response = await axios.get<AppFeatureResponse>(`${BASE_URL}/subscription/features/`, {
+      const url = categoryId
+        ? `${BASE_URL}/subscription/features/?category_id=${categoryId}`
+        : `${BASE_URL}/subscription/features/`
+
+      const response = await axios.get<AppFeatureResponse>(url, {
         headers: {
           Authorization: `Bearer ${authToken}`
         }
@@ -289,10 +339,37 @@ export default function AppsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Apps</h1>
         <p className="text-muted-foreground">Select an AI module to purchase or configure automation services.</p>
+
+        {/* Categories */}
+        <div className="flex flex-wrap gap-2 mt-4">
+          {isCategoriesLoading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-32" />
+            ))
+          ) : (
+            categories.map((category) => (
+              <Button
+                key={category.id}
+                variant={selectedCategory?.id === category.id ? "default" : "outline"}
+                onClick={() => setSelectedCategory(category)}
+                className={`transition-all ${selectedCategory?.id === category.id ? "bg-primary text-primary-foreground" : ""}`}
+              >
+                {category.name}
+              </Button>
+            ))
+          )}
+        </div>
       </div>
 
+      {/* Selected Category Title */}
+      {selectedCategory && (
+        <div className="mb-4">
+          <h2 className="text-2xl font-semibold text-foreground">{selectedCategory.name}</h2>
+        </div>
+      )}
+
       {/* Apps Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <Card className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 p-6">
         {isLoading && (
           Array.from({ length: skeletonCount }).map((_, index) => ( // Dynamic from API count
             <Card key={index} className="pt-4 pb-0 flex flex-col border-2">
@@ -315,6 +392,11 @@ export default function AppsPage() {
           ))
         )}
         {error && <p className="text-destructive">{error}</p>}
+        {!isLoading && !error && features.length === 0 && (
+          <div className="col-span-full flex items-center justify-center p-8">
+            <p className="text-muted-foreground text-lg">No apps found</p>
+          </div>
+        )}
         {!isLoading && !error && features.map((feature) => {
           const config = getAssetConfig(feature.name)
           const staticId = config?.id // Use static ID for modal lookup and button logic
@@ -387,7 +469,7 @@ export default function AppsPage() {
             </Card>
           )
         })}
-      </div>
+      </Card>
       {/* Purchase Modal */}
       <Dialog open={isPurchaseModalOpen} onOpenChange={setIsPurchaseModalOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] min-w-[45vw] overflow-y-auto p-0">
