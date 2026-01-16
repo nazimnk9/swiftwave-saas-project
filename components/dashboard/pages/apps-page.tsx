@@ -352,7 +352,7 @@ export default function AppsPage() {
                 key={category.id}
                 variant={selectedCategory?.id === category.id ? "default" : "outline"}
                 onClick={() => setSelectedCategory(category)}
-                className={`transition-all ${selectedCategory?.id === category.id ? "bg-primary text-primary-foreground" : ""}`}
+                className={`transition-all ${selectedCategory?.id === category.id ? "bg-primary text-primary-foreground cursor-pointer" : "cursor-pointer"}`}
               >
                 {category.name}
               </Button>
